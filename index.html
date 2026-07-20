@@ -22,7 +22,7 @@
   @keyframes slither{0%,100%{transform:translateX(-3px) rotate(-3deg)}50%{transform:translateX(3px) rotate(3deg)}}
 </style>
 <script>
-window.CQ_BUILD='v10.2 · 2026-07-20';
+window.CQ_BUILD='v10.3 · 2026-07-20';
 window.addEventListener('error',function(e){try{var b=document.getElementById('cq-err')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'cq-err'}));b.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#c62839;color:#fff;font:12px/1.4 monospace;padding:6px 10px;white-space:pre-wrap';b.textContent='Candy Quest error ('+window.CQ_BUILD+'): '+(e.message||e.type)+(e.filename?' @'+e.lineno+':'+e.colno:'');}catch(_){}});
 console.log('Candy Quest build',window.CQ_BUILD);
 </script>
@@ -1874,12 +1874,14 @@ function Game({onWin,onExit,level=1}){
     const wildKinds=CFG.wild.filter(k=>!owned.has(k));
     wildKinds.forEach((k,i)=>{const a=ALLIES[k];const sp=i<2?{x:rnd(300,560),y:rnd(560,980)}:spot(140,360);
       mk({faction:'wild',wkey:k,sprite:a.sprite,name:a.name,x:sp.x,y:sp.y,trust:0,speed:a.speed*0.5,home:{x:sp.x,y:sp.y}});});
+    // early levels (two pets) start you with free bait; later levels make you forage it out in the world
+    const BAIT=CFG.bait||'cotton_candy', freeBait=CFG.wild.length>=2;
     // items — scattered across the map
     const drop=(id,x,y,qty=1)=>mk({faction:'item',item:id,qty,sprite:null,x,y});
     const forage=CFG.forage;
-    forage.forEach(id=>{const sp=spot(30,160);drop(id,sp.x,sp.y,1);});
+    forage.forEach(id=>{const sp=(id===BAIT&&!freeBait)?spot(720,420):spot(30,160);drop(id,sp.x,sp.y,1);});
     // guaranteed early supplies right by the start
-    drop(CFG.bait||'cotton_candy',rnd(290,460),rnd(680,860));
+    if(freeBait) drop(BAIT,rnd(290,460),rnd(680,860));
     drop('mushroom',rnd(290,460),rnd(660,880));
     // gate
     const gate=mk({faction:'gate',x:2080,y:720});
@@ -1890,7 +1892,7 @@ function Game({onWin,onExit,level=1}){
     party.filter(p=>p.active).forEach((mem,i)=>{const a=ALLIES[mem.key];
       mk({faction:'ally',puid:mem.uid,sprite:mem.sprite,name:mem.name,x:player.x-40-i*26,y:player.y+30+(i%2)*22,
         maxhp:mem.maxhp,hp:mem.hp,atk:a.atk+(mem.level-1)*2,def:a.def,speed:a.speed,range:a.range,akind:a.kind});});
-    g.current={ents,player,gate,cam:{x:0,y:0},inv:{[CFG.bait||'cotton_candy']:3,mushroom:1},equip:{weapon:null,armor:null},
+    g.current={ents,player,gate,cam:{x:0,y:0},inv:{...(freeBait?{[BAIT]:3}:{}),mushroom:1},equip:{weapon:null,armor:null},
       party,crystals:0,bossDead:false,keys:new Set(),dashCd:0,iframe:0,
       buffs:[],last:0,won:false,mkNext:nid,mk:null};
     g.current.mk=mk;
@@ -1984,7 +1986,7 @@ function Game({onWin,onExit,level=1}){
     if(!best){toast('No wild animal nearby to tame.');return;}
     if(G.party.some(p=>p.key===best.wkey)){toast(`You already have a ${best.name} — 1 of each pet!`);return;}
     if(G.party.length>=11){toast('Pet limit reached — 11 pets max!');return;}
-    if((G.inv[BAIT]||0)<=0){toast(`Need a ${ITEMS[BAIT].name} to tame!`);return;}
+    if((G.inv[BAIT]||0)<=0){toast(`Need a ${ITEMS[BAIT].name} to tame — search the map for some!`);return;}
     G.inv[BAIT]--; best.trust=Math.min(100,best.trust+34); heartFx(best);
     const node=nodes.current[best.id]; const fill=node&&node.querySelector('[data-fill]'); if(fill)fill.style.width=best.trust+'%';
     if(best.trust>=100){ tameComplete(best); }
