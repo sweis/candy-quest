@@ -1,0 +1,10 @@
+#!/bin/sh
+# Bump the build stamp shown on the title screen unless this commit already changed it.
+if git diff --cached -- index.html | grep -q "^[+-]window.CQ_BUILD="; then exit 0; fi
+current=$(sed -n "s/^window\.CQ_BUILD='v\([0-9.]*\).*/\1/p" index.html)
+[ -z "$current" ] && exit 0
+new=$(echo "$current" | awk -F. -v OFS=. '{$NF=$NF+1; print}')
+today=$(date +%Y-%m-%d)
+sed -i "s/^window\.CQ_BUILD='v[0-9.]* · [0-9-]*'/window.CQ_BUILD='v$new · $today'/" index.html
+git add index.html
+echo "pre-commit: bumped build to v$new · $today"
