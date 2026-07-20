@@ -1,0 +1,131 @@
+/* candy.css — shared Candy Quest art tokens, scene + HUD + UI + creatures.
+   Linked via <link> (loads reliably). Reused by the bestiary sheet and the game. */
+:root{
+  --pink:#ff5d8f; --pink-d:#e23d72;
+  --orange:#ffb84d; --orange-d:#f59324;
+  --teal:#7ad9c4; --teal-d:#46b9a1;
+  --purple:#a98cff; --purple-d:#7c5cf0;
+  --cream:#fff7ef; --mint:#e8f7f0; --grass:#cdeede; --grass-d:#aee2cb;
+  --ink:#3a2233; --ink-soft:#6b4a5c;
+  --choco:#8a5a36; --choco-d:#5e3a1e;
+  --green:#7bd16a; --green-d:#4ba83f;
+  --red:#ff3b4e; --cornY:#ffe06a; --cornO:#ff9f3c;
+  --paper:#fffdf9;
+  --mono:'Space Mono', ui-monospace, monospace;
+}
+*{box-sizing:border-box}
+.cq{font-family:'Fredoka',system-ui,sans-serif;color:var(--ink)}
+
+/* ---------------- scene frame ---------------- */
+.scene{position:relative;width:920px;height:520px;overflow:hidden;border-radius:14px;
+  font-family:'Fredoka',sans-serif;color:var(--ink);box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.scene .caption{position:absolute;left:0;right:0;bottom:0;z-index:40;padding:26px 20px 14px;
+  font-size:13px;letter-spacing:.02em;color:#fff;display:flex;align-items:center;gap:8px;
+  background:linear-gradient(to top, rgba(20,8,18,.55), rgba(20,8,18,0));pointer-events:none}
+.scene .caption b{font-family:'Baloo 2';font-weight:800;font-size:15px}
+.scene .tag{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.12em;
+  padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.22);backdrop-filter:blur(4px)}
+.ph-note{font-family:var(--mono);font-size:9px;letter-spacing:.08em;color:rgba(255,255,255,.7);text-transform:uppercase}
+.shadow{position:absolute;border-radius:50%;background:radial-gradient(closest-side, rgba(28,13,26,.38), rgba(28,13,26,.2) 52%, rgba(28,13,26,0) 96%);filter:blur(1px)}
+
+/* ---------------- candy props ---------------- */
+.lolli{position:absolute}
+.lolli .stick{position:absolute;left:50%;bottom:0;width:7px;height:38px;transform:translateX(-50%);
+  background:linear-gradient(#fff,#efe6da);border-radius:4px}
+.lolli .top{position:absolute;left:50%;bottom:30px;width:46px;height:46px;transform:translateX(-50%);
+  border-radius:50%;background:conic-gradient(var(--pink) 0 25%, #fff 0 50%, var(--purple) 0 75%, #fff 0);
+  box-shadow:0 6px 12px rgba(58,34,51,.18), inset 0 -6px 10px rgba(0,0,0,.12), inset 0 5px 8px rgba(255,255,255,.6)}
+.lolli .top::after{content:'';position:absolute;left:16%;top:10%;width:36%;height:26%;border-radius:50%;
+  background:rgba(255,255,255,.6);filter:blur(2px)}
+.lolli .stick::after{content:'';position:absolute;left:100%;top:0;width:3px;height:100%;background:rgba(58,34,51,.14);border-radius:2px}
+.cane{position:absolute;aspect-ratio:92/172;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 92 172'%3E%3Cpath d='M30 162 L30 56 Q30 20 54 20 Q80 20 80 48' fill='none' stroke='%23ffffff' stroke-width='20' stroke-linecap='round'/%3E%3Cpath d='M30 162 L30 56 Q30 20 54 20 Q80 20 80 48' fill='none' stroke='%23ff4d63' stroke-width='20' stroke-dasharray='11 11' stroke-linecap='butt'/%3E%3Cpath d='M30 162 L30 56 Q30 20 54 20 Q80 20 80 48' fill='none' stroke='rgba(255,255,255,0.45)' stroke-width='5' stroke-linecap='round' transform='translate(-4,-3)'/%3E%3C/svg%3E") center bottom/contain no-repeat;
+  filter:drop-shadow(0 7px 7px rgba(58,34,51,.22))}
+.bush{position:absolute;border-radius:50%;background:radial-gradient(circle at 38% 30%, #fff, var(--purple) 80%);
+  box-shadow:inset 0 -8px 12px rgba(0,0,0,.2), 0 8px 14px rgba(58,34,51,.16)}
+.cotton{position:absolute;width:66px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, var(--pink) 75%);
+  box-shadow:0 8px 16px rgba(226,61,114,.22), inset 0 -8px 12px rgba(226,61,114,.25)}
+.cotton::before,.cotton::after{content:'';position:absolute;border-radius:50%}
+.cotton::before{width:42px;height:36px;left:-16px;top:8px;background:radial-gradient(circle at 40% 30%, #fff, var(--purple) 80%)}
+.cotton::after{width:40px;height:34px;right:-14px;top:6px;background:radial-gradient(circle at 40% 30%, #fff, var(--pink) 80%)}
+.rock{position:absolute;background:linear-gradient(160deg,#a9764e,var(--choco) 60%,var(--choco-d));
+  border-radius:46% 54% 50% 50%/60% 60% 42% 42%;box-shadow:inset 0 6px 10px rgba(255,255,255,.18), inset 0 -8px 12px rgba(0,0,0,.3), 0 10px 16px rgba(58,34,51,.2)}
+.crystal{position:absolute;width:24px;height:34px;
+  background:linear-gradient(150deg, #d8fff4, var(--teal) 60%, var(--teal-d));
+  clip-path:polygon(50% 0, 100% 35%, 78% 100%, 22% 100%, 0 35%);
+  filter:drop-shadow(0 4px 6px rgba(70,185,161,.45));animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.sugar{background-image:radial-gradient(rgba(255,255,255,.85) 1px, transparent 1.4px);background-size:7px 7px}
+
+/* ---------------- HUD ---------------- */
+.hud{position:absolute;inset:0;z-index:30;pointer-events:none;font-family:'Fredoka'}
+.hud-tl{position:absolute;top:16px;left:16px;display:flex;flex-direction:column;gap:8px}
+.hud-tr{position:absolute;top:16px;right:16px;display:flex;gap:8px}
+.hud-bl{position:absolute;bottom:58px;left:16px;display:flex;gap:8px;align-items:flex-end}
+.hud-br{position:absolute;bottom:58px;right:16px}
+.namebar{display:flex;align-items:center;gap:8px}
+.ava{width:40px;height:40px;border-radius:12px;background:linear-gradient(var(--purple),var(--purple-d));
+  box-shadow:0 3px 0 rgba(0,0,0,.18), inset 0 2px 4px rgba(255,255,255,.4);border:2px solid #fff;
+  display:grid;place-items:center;color:#fff;font-weight:800;font-family:'Baloo 2'}
+.hp{display:flex;gap:3px}
+.heart{width:18px;height:18px;background:var(--pink);
+  clip-path:path('M9 16 C2 11 0 7 0 4.5 A4.5 4.5 0 0 1 9 3 A4.5 4.5 0 0 1 18 4.5 C18 7 16 11 9 16Z');
+  filter:drop-shadow(0 1px 1px rgba(226,61,114,.5))}
+.heart.empty{background:rgba(255,255,255,.5);box-shadow:inset 0 0 0 2px rgba(226,61,114,.4)}
+.pill{display:flex;align-items:center;gap:6px;padding:6px 12px 6px 8px;border-radius:999px;
+  background:rgba(255,255,255,.92);box-shadow:0 3px 0 rgba(0,0,0,.12);font-weight:700;font-size:14px;color:var(--ink)}
+.pill .dot{width:18px;height:18px;border-radius:50%}
+.party{display:flex;gap:7px}
+.pmem{width:54px;height:54px;border-radius:16px;border:3px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.16);
+  position:relative;display:grid;place-items:end center;overflow:hidden}
+.pmem .lv{position:absolute;top:2px;left:3px;font-family:'Baloo 2';font-weight:800;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.pmem .hpbar{position:absolute;left:3px;right:3px;bottom:3px;height:5px;border-radius:3px;background:rgba(0,0,0,.3);overflow:hidden}
+.pmem .hpbar i{display:block;height:100%;background:var(--teal)}
+.minimap{width:120px;height:84px;border-radius:12px;border:3px solid #fff;background:rgba(255,255,255,.75);
+  box-shadow:0 4px 0 rgba(0,0,0,.14);position:relative;overflow:hidden}
+.minimap .blip{position:absolute;width:6px;height:6px;border-radius:50%}
+
+/* ---------------- bestiary cards ---------------- */
+.crit-card{position:relative;width:300px;height:330px;border-radius:18px;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 0%, #fff, var(--mint));box-shadow:inset 0 0 0 1px rgba(58,34,51,.06)}
+.crit-card.dark{background:radial-gradient(120% 80% at 50% 0%, #3a2a44, #241830)}
+.crit-stage{position:absolute;left:0;right:0;top:0;height:236px}
+.pedestal{position:absolute;left:50%;bottom:26px;width:150px;height:34px;transform:translateX(-50%);
+  border-radius:50%;background:radial-gradient(circle at 50% 35%, #fff, var(--grass-d));
+  box-shadow:0 10px 18px rgba(58,34,51,.16)}
+.pedestal.dark{background:radial-gradient(circle at 50% 35%, #4a3658, #2c1f3c)}
+.crit-name{position:absolute;left:0;right:0;bottom:0;padding:14px 16px}
+.crit-name h3{margin:0;font-family:'Baloo 2';font-weight:800;font-size:18px}
+.crit-name .role{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)}
+.crit-card.dark .crit-name h3{color:#fff}
+.crit-card.dark .crit-name .role{color:#c9b6dd}
+.crit-tag{position:absolute;top:12px;left:12px;font-family:'Baloo 2';font-weight:800;font-size:10px;
+  padding:4px 9px;border-radius:999px;color:#fff}
+.crit-stat{position:absolute;top:12px;right:12px;display:flex;gap:5px}
+.crit-stat span{font-family:var(--mono);font-size:9px;font-weight:700;padding:3px 6px;border-radius:6px;
+  background:rgba(255,255,255,.85);color:var(--ink)}
+.crit-card.dark .crit-stat span{background:rgba(255,255,255,.16);color:#fff}
+
+/* shared little parts */
+.eye{position:absolute;background:var(--ink);border-radius:50%}
+.eye.w{background:#fff}
+.redeye{position:absolute;border-radius:50%;background:radial-gradient(circle at 40% 35%, #ffd0d0, var(--red) 55%, #a00 100%);
+  box-shadow:0 0 8px 2px rgba(255,40,60,.8), 0 0 2px #fff inset}
+.beak{position:absolute;background:linear-gradient(var(--cornO),var(--orange-d));
+  clip-path:polygon(0 0, 100% 50%, 0 100%)}
+.leg{position:absolute;background:var(--orange-d);border-radius:3px}
+.foot{position:absolute;background:var(--orange-d);height:3px;border-radius:2px}
+.quill{position:absolute;width:18px;height:34px;transform-origin:bottom center;
+  clip-path:polygon(50% 0,100% 100%,0 100%);
+  background:linear-gradient(to top,var(--cornY) 0 38%,var(--cornO) 38% 72%,#fff 72% 100%)}
+.gloss{position:absolute;border-radius:inherit;background:linear-gradient(160deg, rgba(255,255,255,.6), transparent 45%);pointer-events:none}
+
+/* ---------------- inventory / craft (reused) ---------------- */
+.card{background:var(--paper);border-radius:16px;padding:14px;box-shadow:0 4px 0 rgba(58,34,51,.10), inset 0 0 0 1px rgba(58,34,51,.05)}
+.btn{font-family:'Baloo 2';font-weight:800;font-size:15px;color:#fff;border:none;cursor:pointer;padding:12px 18px;border-radius:14px;
+  background:linear-gradient(var(--pink),var(--pink-d));box-shadow:0 4px 0 var(--pink-d), 0 6px 12px rgba(226,61,114,.3)}
+.btn.alt{background:linear-gradient(var(--teal),var(--teal-d));box-shadow:0 4px 0 var(--teal-d)}
+.meter{height:12px;border-radius:8px;background:#eadfd2;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.12)}
+.meter i{display:block;height:100%;border-radius:8px}
+.muted{color:var(--ink-soft);font-size:13px}

@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Candy Quest — Bestiary & World B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@400;500;600;700&family=Lilita+One&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="candy.css" rel="stylesheet" />
+<style>
+  html,body{margin:0;height:100%;background:#f0eee9}
+  .brief{width:920px;background:var(--paper);border-radius:18px;padding:28px 32px;
+    box-shadow:0 6px 0 rgba(58,34,51,.08);line-height:1.5;font-family:'Fredoka'}
+  .brief h1{font-family:'Lilita One';font-weight:400;font-size:34px;margin:0 0 4px;color:var(--pink-d)}
+  .brief h1 span{color:var(--purple-d)}
+  .brief .sub{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:var(--ink-soft);margin-bottom:14px}
+  .brief p{margin:0;font-size:15px;color:var(--ink)}
+  .brief b{font-family:'Baloo 2';font-weight:800}
+  @keyframes squish{50%{transform:translate(-50%,-100%) scaleX(1.06) scaleY(.95)}}
+  @keyframes flutter{50%{transform:translate(-50%,-100%) translateY(-7px)}}
+</style>
+</head>
+<body class="cq">
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel">
+const { DesignCanvas, DCSection, DCArtboard } = window;
+
+/* ===== helpers ===== */
+// wrapper anchors a creature's bottom-center at (cx,cy) of its parent.
+function Mount({cx, cy, w, h, scale=1, anim, children}){
+  return (
+    <div style={{position:'absolute', left:cx, top:cy, width:w, height:h,
+      transform:`translate(-50%,-100%) scale(${scale})`, transformOrigin:'bottom center',
+      animation:anim}}>
+      {children}
+    </div>
+  );
+}
+const puff = (c1,c2)=>({borderRadius:'50%', background:`radial-gradient(circle at 38% 30%, ${c1}, ${c2} 78%)`,
+  boxShadow:'inset 0 -7px 11px rgba(0,0,0,.12), 0 6px 12px rgba(58,34,51,.12)'});
+const tri = (pts)=>({clipPath:`polygon(${pts})`});
+
+/* ============================================================ COTTON CANDY BIRD */
+function CottonCandyBird({cx, cy, scale=1, anim='flutter 3s ease-in-out infinite'}){
+  return (
+    <Mount cx={cx} cy={cy} w={140} h={140} scale={scale} anim={anim}>
+      <div className="shadow" style={{width:78,height:15,left:32,top:130}}/>
+      {/* legs */}
+      <div style={{position:'absolute',left:60,top:96,width:3,height:34,background:'var(--orange-d)',borderRadius:2}}/>
+      <div style={{position:'absolute',left:78,top:96,width:3,height:34,background:'var(--orange-d)',borderRadius:2}}/>
+      <div style={{position:'absolute',left:52,top:128,width:14,height:3,background:'var(--orange-d)',borderRadius:2}}/>
+      <div style={{position:'absolute',left:72,top:128,width:14,height:3,background:'var(--orange-d)',borderRadius:2}}/>
+      {/* tail */}
+      <div style={{position:'absolute',left:6,top:58,width:48,height:42,...puff('#fff','var(--purple)')}}/>
+      {/* body fluff */}
+      <div style={{position:'absolute',left:24,top:48,width:86,height:74,...puff('#fff','var(--pink)')}}/>
+      <div style={{position:'absolute',left:18,top:70,width:34,height:30,...puff('#fff','var(--purple)')}}/>
+      <div style={{position:'absolute',left:74,top:72,width:36,height:32,...puff('#fff','var(--pink)')}}/>
+      {/* wing */}
+      <div style={{position:'absolute',left:48,top:62,width:46,height:38,...puff('#ffd0df','var(--pink-d)')}}/>
+      {/* head */}
+      <div style={{position:'absolute',left:74,top:22,width:52,height:50,...puff('#fff','var(--pink)')}}/>
+      <div style={{position:'absolute',left:92,top:12,width:24,height:22,...puff('#fff','var(--purple)')}}/>
+      {/* beak */}
+      <div style={{position:'absolute',left:120,top:44,width:20,height:14,background:'linear-gradient(var(--cornO),var(--orange-d))',...tri('0 0,100% 50%,0 100%')}}/>
+      {/* eye */}
+      <div style={{position:'absolute',left:104,top:40,width:9,height:9,borderRadius:'50%',background:'var(--ink)'}}/>
+      <div style={{position:'absolute',left:106,top:41,width:3,height:3,borderRadius:'50%',background:'#fff'}}/>
+    </Mount>
+  );
+}
+
+/* ============================================================ ROCK CANDY BIRD */
+function RockCandyBird({cx, cy, scale=1, anim='flutter 3.4s ease-in-out infinite'}){
+  const facet = (c)=>({background:`linear-gradient(150deg, #e7fffa, ${c})`});
+  return (
+    <Mount cx={cx} cy={cy} w={130} h={140} scale={scale} anim={anim}>
+      <div className="shadow" style={{width:70,height:14,left:30,top:130}}/>
+      <div style={{position:'absolute',left:54,top:98,width:3,height:32,background:'var(--teal-d)',borderRadius:2}}/>
+      <div style={{position:'absolute',left:70,top:98,width:3,height:32,background:'var(--teal-d)',borderRadius:2}}/>
+      <div style={{position:'absolute',left:48,top:128,width:13,height:3,background:'var(--teal-d)',borderRadius:2}}/>
+      <div style={{position:'absolute',left:66,top:128,width:13,height:3,background:'var(--teal-d)',borderRadius:2}}/>
+      {/* tail shards */}
+      <div style={{position:'absolute',left:2,top:58,width:42,height:24,...facet('var(--purple)'),...tri('0 50%,100% 0,72% 100%')}}/>
+      <div style={{position:'absolute',left:6,top:74,width:38,height:22,...facet('var(--teal-d)'),...tri('0 50%,100% 0,72% 100%')}}/>
+      {/* body crystal */}
+      <div style={{position:'absolute',left:30,top:48,width:74,height:70,...facet('var(--teal-d)'),
+        clipPath:'polygon(50% 0,100% 30%,86% 100%,14% 100%,0 30%)',boxShadow:'inset 0 -8px 12px rgba(0,0,0,.18)'}}/>
+      <div style={{position:'absolute',left:44,top:54,width:34,height:46,background:'rgba(255,255,255,.45)',...tri('50% 0,100% 100%,0 100%')}}/>
+      {/* wing shard */}
+      <div style={{position:'absolute',left:40,top:56,width:44,height:48,...facet('var(--purple-d)'),...tri('0 0,100% 28%,30% 100%'),opacity:.92}}/>
+      {/* head */}
+      <div style={{position:'absolute',left:74,top:26,width:42,height:42,...facet('var(--purple)'),
+        clipPath:'polygon(50% 0,100% 38%,80% 100%,20% 100%,0 38%)'}}/>
+      {/* beak */}
+      <div style={{position:'absolute',left:110,top:44,width:18,height:12,background:'linear-gradient(var(--cornO),var(--orange-d))',...tri('0 0,100% 50%,0 100%')}}/>
+      {/* eye */}
+      <div style={{position:'absolute',left:96,top:40,width:8,height:8,borderRadius:'50%',background:'var(--ink)'}}/>
+      {/* sparkles */}
+      {[[20,40],[112,70],[60,30]].map((p,i)=>(
+        <div key={i} style={{position:'absolute',left:p[0],top:p[1],width:8,height:8,background:'#fff',
+          clipPath:'polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%)',opacity:.85}}/>
+      ))}
+    </Mount>
+  );
+}
+
+/* ============================================================ GUMDROP ALLIGATOR */
+function GumdropGator({cx, cy, scale=1, anim='squish 4s ease-in-out infinite'}){
+  const skin='linear-gradient(165deg, #a6ef93, var(--green) 55%, var(--green-d))';
+  return (
+    <Mount cx={cx} cy={cy} w={184} h={110} scale={scale} anim={anim}>
+      <div className="shadow" style={{width:150,height:16,left:18,top:98}}/>
+      {/* far legs */}
+      <div style={{position:'absolute',left:56,top:74,width:15,height:26,background:'var(--green-d)',borderRadius:6}}/>
+      <div style={{position:'absolute',left:118,top:74,width:15,height:26,background:'var(--green-d)',borderRadius:6}}/>
+      {/* tail */}
+      <div style={{position:'absolute',left:0,top:50,width:64,height:34,background:skin,...tri('0 50%,100% 6%,100% 94%')}}/>
+      {/* body */}
+      <div className="sugar" style={{position:'absolute',left:30,top:44,width:118,height:46,borderRadius:'26px 30px 30px 26px',
+        background:skin,boxShadow:'inset 0 -7px 10px rgba(0,0,0,.22), inset 0 6px 9px rgba(255,255,255,.4)'}}/>
+      {/* near legs */}
+      <div style={{position:'absolute',left:46,top:80,width:17,height:26,background:'var(--green)',borderRadius:6,boxShadow:'inset 0 -3px 5px rgba(0,0,0,.2)'}}/>
+      <div style={{position:'absolute',left:108,top:80,width:17,height:26,background:'var(--green)',borderRadius:6,boxShadow:'inset 0 -3px 5px rgba(0,0,0,.2)'}}/>
+      {/* back ridges */}
+      {[44,62,80,98,116].map((x,i)=>(
+        <div key={i} style={{position:'absolute',left:x,top:30,width:16,height:18,background:'var(--green-d)',...tri('50% 0,100% 100%,0 100%')}}/>
+      ))}
+      {/* snout */}
+      <div style={{position:'absolute',left:138,top:46,width:44,height:18,background:skin,borderRadius:'8px 12px 12px 8px',boxShadow:'inset 0 -4px 6px rgba(0,0,0,.2)'}}/>
+      <div style={{position:'absolute',left:140,top:62,width:40,height:11,background:'var(--green-d)',borderRadius:'6px 10px 10px 6px'}}/>
+      {/* teeth */}
+      {[143,151,159,167].map((x,i)=>(
+        <div key={i} style={{position:'absolute',left:x,top:60,width:6,height:7,background:'#fff',...tri('50% 100%,0 0,100% 0')}}/>
+      ))}
+      {/* eye bumps */}
+      <div style={{position:'absolute',left:128,top:30,width:20,height:18,borderRadius:'50%',background:'#bdf0ab',boxShadow:'inset 0 -3px 5px rgba(0,0,0,.2)'}}/>
+      <div style={{position:'absolute',left:134,top:35,width:8,height:8,borderRadius:'50%',background:'var(--ink)'}}/>
+      <div style={{position:'absolute',left:136,top:36,width:2.5,height:2.5,borderRadius:'50%',background:'#fff'}}/>
+      {/* nostril */}
+      <div style={{position:'absolute',left:172,top:50,width:4,height:4,borderRadius:'50%',background:'var(--green-d)'}}/>
+    </Mount>
+  );
+}
+
+/* ============================================================ CANDY CORN PORCUPINE */
+function CornPorcupine({cx, cy, scale=1, anim='squish 4.2s ease-in-out infinite'}){
+  const quills = [[40,-48],[52,-34],[64,-20],[78,-8],[92,4],[34,-58],[48,-44],[60,-30],[72,-16]];
+  return (
+    <Mount cx={cx} cy={cy} w={150} h={120} scale={scale} anim={anim}>
+      <div className="shadow" style={{width:96,height:16,left:30,top:108}}/>
+      {/* quills (behind body) */}
+      {quills.map((q,i)=>(
+        <div key={i} className="quill" style={{left:q[0],top:30,transform:`rotate(${q[1]}deg)`}}/>
+      ))}
+      {/* body */}
+      <div style={{position:'absolute',left:28,top:50,width:88,height:58,borderRadius:'46% 46% 48% 48%/56% 56% 44% 44%',
+        background:'radial-gradient(circle at 40% 32%, #fff4dc, #f0c98a 80%)',boxShadow:'inset 0 -7px 10px rgba(0,0,0,.16)'}}/>
+      {/* legs */}
+      {[44,66,88].map((x,i)=>(
+        <div key={i} style={{position:'absolute',left:x,top:96,width:11,height:16,background:'#c79a5d',borderRadius:5}}/>
+      ))}
+      {/* head/snout */}
+      <div style={{position:'absolute',left:96,top:58,width:46,height:38,borderRadius:'40% 60% 60% 40%/50% 60% 50% 50%',
+        background:'radial-gradient(circle at 40% 35%, #fff4dc, #ecc079 85%)'}}/>
+      {/* ear */}
+      <div style={{position:'absolute',left:104,top:50,width:14,height:14,background:'#e7b76a',...tri('50% 0,100% 100%,0 100%')}}/>
+      {/* nose */}
+      <div style={{position:'absolute',left:136,top:74,width:9,height:8,borderRadius:'50%',background:'var(--pink-d)'}}/>
+      {/* eye */}
+      <div style={{position:'absolute',left:116,top:66,width:8,height:8,borderRadius:'50%',background:'var(--ink)'}}/>
+      <div style={{position:'absolute',left:118,top:67,width:2.5,height:2.5,borderRadius:'50%',background:'#fff'}}/>
+    </Mount>
+  );
+}
+
+/* ============================================================ LOLLIPOP BEETLE */
+function LollipopBeetle({cx, cy, scale=1, anim='squish 3.6s ease-in-out infinite'}){
+  return (
+    <Mount cx={cx} cy={cy} w={124} h={124} scale={scale} anim={anim}>
+      <div className="shadow" style={{width:84,height:15,left:20,top:112}}/>
+      {/* legs */}
+      {[[24,60,-28],[20,80,-8],[26,100,14]].map((l,i)=>(
+        <div key={'L'+i} style={{position:'absolute',left:l[0],top:l[1],width:30,height:4,background:'#5a3b22',borderRadius:3,transform:`rotate(${l[2]}deg)`}}/>
+      ))}
+      {[[70,60,28],[74,80,8],[68,100,-14]].map((l,i)=>(
+        <div key={'R'+i} style={{position:'absolute',left:l[0],top:l[1],width:30,height:4,background:'#5a3b22',borderRadius:3,transform:`rotate(${l[2]}deg)`}}/>
+      ))}
+      {/* antennae */}
+      <div style={{position:'absolute',left:44,top:6,width:3,height:18,background:'#5a3b22',borderRadius:2,transform:'rotate(18deg)'}}/>
+      <div style={{position:'absolute',left:74,top:6,width:3,height:18,background:'#5a3b22',borderRadius:2,transform:'rotate(-18deg)'}}/>
+      <div style={{position:'absolute',left:38,top:2,width:8,height:8,borderRadius:'50%',background:'var(--pink)'}}/>
+      <div style={{position:'absolute',left:78,top:2,width:8,height:8,borderRadius:'50%',background:'var(--purple)'}}/>
+      {/* head */}
+      <div style={{position:'absolute',left:46,top:14,width:32,height:24,borderRadius:'50% 50% 45% 45%',background:'#6b4427'}}/>
+      <div style={{position:'absolute',left:54,top:22,width:5,height:5,borderRadius:'50%',background:'#fff'}}/>
+      <div style={{position:'absolute',left:66,top:22,width:5,height:5,borderRadius:'50%',background:'#fff'}}/>
+      {/* shell with lollipop swirl */}
+      <div style={{position:'absolute',left:18,top:26,width:88,height:84,borderRadius:'50%',
+        background:'conic-gradient(from 0deg, var(--pink) 0 10%, #fff 10% 20%, var(--pink) 20% 30%, #fff 30% 40%, var(--pink) 40% 50%, #fff 50% 60%, var(--pink) 60% 70%, #fff 70% 80%, var(--pink) 80% 90%, #fff 90%)',
+        boxShadow:'inset 0 -8px 14px rgba(0,0,0,.22), inset 0 7px 12px rgba(255,255,255,.5), 0 8px 14px rgba(58,34,51,.16)'}}/>
+      {/* center + split */}
+      <div style={{position:'absolute',left:58,top:64,width:8,height:8,borderRadius:'50%',background:'var(--pink-d)'}}/>
+      <div style={{position:'absolute',left:61,top:28,width:2,height:80,background:'rgba(90,50,40,.35)'}}/>
+      <div style={{position:'absolute',left:30,top:36,width:24,height:20,borderRadius:'50%',background:'rgba(255,255,255,.5)',filter:'blur(2px)'}}/>
+    </Mount>
+  );
+}
+
+/* ============================================================ BLOB MONSTER */
+function BlobMonster({cx, cy, scale=1, variant='sour', anim='squish 2.8s ease-in-out infinite'}){
+  const skins={
+    sour:{body:'radial-gradient(circle at 38% 28%, #d6ff8f, var(--green) 60%, #2f7a26)', drip:'#3d8a2f'},
+    licorice:{body:'radial-gradient(circle at 38% 28%, #6b4d8f, #3a2150 60%, #1c0f2a)', drip:'#2a1640'},
+  };
+  const s=skins[variant];
+  return (
+    <Mount cx={cx} cy={cy} w={124} h={114} scale={scale} anim={anim}>
+      <div className="shadow" style={{width:88,height:16,left:18,top:104}}/>
+      {/* drips */}
+      <div style={{position:'absolute',left:28,top:84,width:18,height:24,borderRadius:'0 0 50% 50%',background:s.drip}}/>
+      <div style={{position:'absolute',left:74,top:86,width:16,height:20,borderRadius:'0 0 50% 50%',background:s.drip}}/>
+      {/* body */}
+      <div className="sugar" style={{position:'absolute',left:14,top:18,width:96,height:80,
+        borderRadius:'52% 48% 56% 44%/60% 62% 40% 42%',background:s.body,
+        boxShadow:'inset 0 -9px 14px rgba(0,0,0,.32), inset 0 7px 11px rgba(255,255,255,.25)'}}/>
+      {/* gloss */}
+      <div style={{position:'absolute',left:30,top:28,width:30,height:22,borderRadius:'50%',background:'rgba(255,255,255,.4)',filter:'blur(2px)'}}/>
+      {/* red eyes */}
+      <div className="redeye" style={{left:42,top:42,width:15,height:15}}/>
+      <div className="redeye" style={{left:68,top:42,width:15,height:15}}/>
+      {/* fangs + mouth */}
+      <div style={{position:'absolute',left:46,top:66,width:30,height:12,background:'rgba(0,0,0,.55)',
+        clipPath:'polygon(0 0,100% 0,100% 40%,86% 100%,72% 40%,58% 100%,44% 40%,30% 100%,16% 40%,0 40%)'}}/>
+    </Mount>
+  );
+}
+
+/* ============================================================ HICHEW SOLDIER */
+function Soldier({cx, cy, scale=1, weapon='sword'}){
+  const taffy='linear-gradient(160deg,#ffb27a,#f57a3c)';
+  const armor='linear-gradient(160deg,#a9764e,var(--choco) 55%,var(--choco-d))';
+  const steel='linear-gradient(120deg,#fff,#b9c2cf 45%,#7d8794)';
+  const cane='repeating-linear-gradient(-40deg,#ff5566 0 6px,#fff 6px 12px)';
+  return (
+    <Mount cx={cx} cy={cy} w={150} h={188} scale={scale}>
+      <div className="shadow" style={{width:74,height:15,left:40,top:178}}/>
+      {/* legs + cane greaves */}
+      <div style={{position:'absolute',left:58,top:128,width:14,height:30,background:taffy,borderRadius:'6px 6px 4px 4px'}}/>
+      <div style={{position:'absolute',left:78,top:128,width:14,height:30,background:taffy,borderRadius:'6px 6px 4px 4px'}}/>
+      <div style={{position:'absolute',left:57,top:150,width:16,height:16,background:cane,borderRadius:4}}/>
+      <div style={{position:'absolute',left:77,top:150,width:16,height:16,background:cane,borderRadius:4}}/>
+      <div style={{position:'absolute',left:54,top:164,width:22,height:9,background:'#4a3320',borderRadius:'5px 7px 4px 4px'}}/>
+      <div style={{position:'absolute',left:76,top:164,width:22,height:9,background:'#4a3320',borderRadius:'5px 7px 4px 4px'}}/>
+
+      {/* ===== weapon-specific arms / gear (behind torso where needed) ===== */}
+      {weapon==='sword' && <>
+        {/* shield (left) */}
+        <div style={{position:'absolute',left:30,top:84,width:40,height:40,borderRadius:'50%',
+          background:'conic-gradient(#fff 0 12.5%, var(--red) 0 25%, #fff 0 37.5%, var(--red) 0 50%, #fff 0 62.5%, var(--red) 0 75%, #fff 0 87.5%, var(--red) 0)',
+          boxShadow:'inset 0 0 0 4px #e7ebf0, 0 4px 8px rgba(0,0,0,.3)'}}/>
+      </>}
+
+      {/* torso / breastplate */}
+      <div style={{position:'absolute',left:46,top:78,width:58,height:54,borderRadius:'16px 16px 18px 18px',background:armor,
+        boxShadow:'inset 0 -7px 10px rgba(0,0,0,.32), inset 0 6px 9px rgba(255,255,255,.25)'}}/>
+      <div style={{position:'absolute',left:71,top:90,width:10,height:10,borderRadius:'50%',background:'radial-gradient(circle at 38% 30%,#fff,var(--pink) 70%)',boxShadow:'0 0 6px rgba(255,93,143,.7)'}}/>
+      {/* shoulder pads */}
+      <div style={{position:'absolute',left:40,top:74,width:24,height:20,borderRadius:'12px 12px 8px 8px',background:armor,boxShadow:'inset 0 -3px 5px rgba(0,0,0,.3)'}}/>
+      <div style={{position:'absolute',left:86,top:74,width:24,height:20,borderRadius:'12px 12px 8px 8px',background:armor,boxShadow:'inset 0 -3px 5px rgba(0,0,0,.3)'}}/>
+
+      {/* head + helmet */}
+      <div style={{position:'absolute',left:58,top:44,width:34,height:34,borderRadius:'50%',background:taffy}}/>
+      <div style={{position:'absolute',left:55,top:38,width:40,height:24,borderRadius:'20px 20px 6px 6px',background:armor,boxShadow:'inset 0 4px 6px rgba(255,255,255,.25)'}}/>
+      <div style={{position:'absolute',left:55,top:58,width:40,height:7,background:'var(--choco-d)',borderRadius:3}}/>
+      <div style={{position:'absolute',left:62,top:62,width:26,height:7,background:'#1c0f16',borderRadius:4}}/>
+      <div style={{position:'absolute',left:66,top:64,width:6,height:3,borderRadius:2,background:'var(--red)',boxShadow:'0 0 5px var(--red)'}}/>
+      <div style={{position:'absolute',left:78,top:64,width:6,height:3,borderRadius:2,background:'var(--red)',boxShadow:'0 0 5px var(--red)'}}/>
+      <div style={{position:'absolute',left:70,top:32,width:10,height:10,borderRadius:'50%',background:'radial-gradient(circle at 38% 30%,#fff,var(--purple) 70%)'}}/>
+
+      {/* ===== weapons (in front) ===== */}
+      {weapon==='sword' && <>
+        {/* right arm raised */}
+        <div style={{position:'absolute',left:96,top:64,width:13,height:30,background:taffy,borderRadius:7,transform:'rotate(18deg)'}}/>
+        {/* sword */}
+        <div style={{position:'absolute',left:104,top:2,width:9,height:64,background:steel,borderRadius:'4px 4px 1px 1px',boxShadow:'0 0 4px rgba(255,255,255,.5)'}}/>
+        <div style={{position:'absolute',left:96,top:62,width:26,height:7,background:'var(--cornY)',borderRadius:3}}/>
+        <div style={{position:'absolute',left:105,top:68,width:7,height:14,background:'#6b4427',borderRadius:2}}/>
+        <div style={{position:'absolute',left:104,top:80,width:9,height:6,borderRadius:'50%',background:'var(--cornO)'}}/>
+      </>}
+
+      {weapon==='spear' && <>
+        <div style={{position:'absolute',left:96,top:70,width:13,height:26,background:taffy,borderRadius:7}}/>
+        {/* pole */}
+        <div style={{position:'absolute',left:100,top:6,width:8,height:150,background:cane,borderRadius:4}}/>
+        {/* tip */}
+        <div style={{position:'absolute',left:95,top:-12,width:18,height:24,background:steel,...tri('50% 0,100% 100%,0 100%')}}/>
+        <div style={{position:'absolute',left:98,top:10,width:12,height:6,background:'var(--cornY)',borderRadius:3}}/>
+      </>}
+
+      {weapon==='bow' && <>
+        {/* left arm forward holds bow */}
+        <div style={{position:'absolute',left:36,top:88,width:24,height:11,background:taffy,borderRadius:6}}/>
+        {/* bow arc (C shape) */}
+        <div style={{position:'absolute',left:22,top:52,width:30,height:84,borderRadius:'50%',
+          border:'7px solid #7a4a24',borderRight:'7px solid transparent',borderTop:'7px solid transparent',borderBottom:'7px solid transparent',
+          transform:'rotate(0deg)'}}/>
+        {/* string */}
+        <div style={{position:'absolute',left:24,top:54,width:2,height:80,background:'rgba(255,255,255,.85)'}}/>
+        {/* arrow */}
+        <div style={{position:'absolute',left:24,top:92,width:60,height:3,background:'#caa', borderRadius:2}}/>
+        <div style={{position:'absolute',left:80,top:88,width:12,height:11,background:steel,...tri('100% 50%,0 0,0 100%')}}/>
+        {/* right arm draws string */}
+        <div style={{position:'absolute',left:84,top:84,width:18,height:11,background:taffy,borderRadius:6}}/>
+      </>}
+
+      {weapon==='crossbow' && <>
+        {/* both arms at chest */}
+        <div style={{position:'absolute',left:38,top:92,width:20,height:11,background:taffy,borderRadius:6}}/>
+        <div style={{position:'absolute',left:92,top:92,width:20,height:11,background:taffy,borderRadius:6}}/>
+        {/* stock */}
+        <div style={{position:'absolute',left:46,top:94,width:62,height:11,background:'#6b4427',borderRadius:3}}/>
+        {/* bow limbs (vertical at front) */}
+        <div style={{position:'absolute',left:96,top:74,width:9,height:50,borderRadius:'50%',
+          border:'5px solid #4a3320',borderLeft:'5px solid transparent',transform:'rotate(0deg)'}}/>
+        {/* string */}
+        <div style={{position:'absolute',left:100,top:78,width:2,height:42,background:'rgba(255,255,255,.8)'}}/>
+        {/* bolt */}
+        <div style={{position:'absolute',left:60,top:98,width:54,height:3,background:'#caa',borderRadius:2}}/>
+        <div style={{position:'absolute',left:110,top:95,width:11,height:9,background:steel,...tri('100% 50%,0 0,0 100%')}}/>
+      </>}
+    </Mount>
+  );
+}
+
+/* ============================================================ ENRICHED WORLD B */
+function WorldHud(){
+  return (
+    <div className="hud">
+      <div className="hud-tl"><div className="namebar"><div className="ava">P</div>
+        <div><div style={{fontFamily:'Baloo 2',fontWeight:800,fontSize:14,color:'#fff',textShadow:'0 1px 3px rgba(0,0,0,.5)'}}>Pip</div>
+        <div className="hp">{[1,1,1,1,0].map((h,i)=><div key={i} className={'heart'+(h?'':' empty')}/>)}</div></div></div></div>
+      <div className="hud-tr">
+        <div className="pill"><span className="dot" style={{background:'linear-gradient(var(--pink),var(--pink-d))'}}/>248</div>
+        <div className="pill"><span className="dot" style={{background:'linear-gradient(var(--teal),var(--teal-d))'}}/>12</div></div>
+      <div className="hud-bl"><div className="party">
+        {[['var(--purple)',.8,7],['var(--teal)',.55,5],['var(--orange)',1,6]].map((p,i)=>(
+          <div key={i} className="pmem" style={{background:`linear-gradient(${p[0]}, rgba(0,0,0,.25))`}}>
+            <span className="lv">L{p[2]}</span><div className="hpbar"><i style={{width:(p[1]*100)+'%'}}/></div></div>))}
+        <div className="pmem" style={{background:'rgba(255,255,255,.35)',display:'grid',placeItems:'center',color:'#fff',fontSize:26,fontFamily:'Baloo 2'}}>+</div>
+      </div></div>
+      <div className="hud-br"><div className="minimap">
+        <div className="blip" style={{background:'var(--purple-d)',left:'46%',top:'52%',width:9,height:9}}/>
+        <div className="blip" style={{background:'var(--pink)',left:'70%',top:'30%'}}/>
+        <div className="blip" style={{background:'var(--red)',left:'30%',top:'40%'}}/>
+        <div className="blip" style={{background:'var(--green-d)',left:'60%',top:'70%'}}/></div></div>
+    </div>
+  );
+}
+function WorldRich(){
+  const N=9, tiles=[];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++) tiles.push(<div key={r+'-'+c} style={{background:(r+c)%2?'var(--mint)':'var(--cream)'}}/>);
+  return (
+    <div className="scene" style={{background:'linear-gradient(#bfe7f6, #d8f3ea 46%, #f3ece2)'}}>
+      {/* distant candy-corn mountains (foreshadow L3) */}
+      <svg width="920" height="200" style={{position:'absolute',top:34,left:0,opacity:.5}}>
+        <path d="M-20 180 L120 70 L240 180 Z" fill="#ffd98a"/>
+        <path d="M120 180 L120 70 L150 92 L120 110Z" fill="#fff" opacity=".7"/>
+        <path d="M180 180 L360 50 L520 180 Z" fill="#ffcf86"/>
+        <path d="M360 180 L360 50 L398 78 L360 100Z" fill="#fff" opacity=".7"/>
+        <path d="M460 180 L640 80 L800 180 Z" fill="#ffd98a"/>
+        <path d="M720 180 L900 96 L1000 180 Z" fill="#ffcf86"/>
+      </svg>
+      {/* iso floor */}
+      <div style={{position:'absolute',inset:0,perspective:'900px',perspectiveOrigin:'50% 28%'}}>
+        <div style={{position:'absolute',left:'50%',top:'60%',width:820,height:820,
+          transform:'translate(-50%,-50%) rotateX(60deg) rotateZ(45deg)',display:'grid',
+          gridTemplateColumns:`repeat(${N},1fr)`,gridTemplateRows:`repeat(${N},1fr)`,borderRadius:28,overflow:'hidden',
+          boxShadow:'0 60px 80px rgba(60,30,50,.25)'}}>{tiles}</div>
+      </div>
+      {/* syrup pond */}
+      <div style={{position:'absolute',left:120,top:300,width:200,height:96,borderRadius:'50%',
+        background:'radial-gradient(circle at 45% 35%, #8fd0ff, #3f9bdf 70%, #2a78c4)',
+        boxShadow:'inset 0 -10px 16px rgba(0,0,0,.25), 0 8px 14px rgba(40,80,120,.3)',zIndex:6}}/>
+      <div style={{position:'absolute',left:150,top:316,width:60,height:20,borderRadius:'50%',background:'rgba(255,255,255,.5)',filter:'blur(2px)',zIndex:7}}/>
+
+      {/* chocolate rocks */}
+      <div className="rock" style={{left:700,top:360,width:80,height:54,zIndex:8}}/>
+      <div className="rock" style={{left:756,top:344,width:50,height:38,zIndex:8}}/>
+      <div className="rock sugar" style={{left:60,top:150,width:64,height:46,zIndex:8}}/>
+
+      {/* trees: lollipops + candy canes */}
+      <div className="lolli" style={{left:230,top:120,width:54,height:96,transform:'scale(1.25)',zIndex:11}}>
+        <div className="shadow" style={{width:42,height:14,left:'50%',marginLeft:-21,top:62}}/><div className="stick"/><div className="top"/></div>
+      <div className="lolli" style={{left:560,top:96,width:54,height:96,transform:'scale(1.5)',zIndex:11}}>
+        <div className="shadow" style={{width:46,height:15,left:'50%',marginLeft:-23,top:66}}/><div className="stick"/>
+        <div className="top" style={{background:'conic-gradient(var(--teal) 0 25%, #fff 0 50%, var(--orange) 0 75%, #fff 0)'}}/></div>
+      <div className="lolli" style={{left:786,top:150,width:54,height:96,transform:'scale(1.1)',zIndex:11}}>
+        <div className="shadow" style={{width:40,height:13,left:'50%',marginLeft:-20,top:60}}/><div className="stick"/>
+        <div className="top" style={{background:'conic-gradient(var(--orange) 0 25%, #fff 0 50%, var(--pink) 0 75%, #fff 0)'}}/></div>
+      <div className="cane" style={{left:430,top:120,height:118,zIndex:11}}/>
+      <div className="cane" style={{left:820,top:300,height:96,transform:'scale(.9)',zIndex:11}}/>
+
+      {/* gumdrop bushes */}
+      <div className="bush" style={{left:330,top:188,width:54,height:40,zIndex:9}}/>
+      <div className="bush" style={{left:372,top:196,width:42,height:32,zIndex:9,background:'radial-gradient(circle at 38% 30%, #fff, var(--teal) 80%)'}}/>
+      <div className="bush" style={{left:640,top:330,width:50,height:38,zIndex:9,background:'radial-gradient(circle at 38% 30%, #fff, var(--orange) 80%)'}}/>
+
+      {/* sprinkles */}
+      {Array.from({length:34}).map((_,i)=>(
+        <span key={i} style={{position:'absolute',width:7,height:3,borderRadius:2,zIndex:5,
+          background:['#ff5d8f','#ffb84d','#7ad9c4','#a98cff','#fff'][i%5],
+          left:(i*149%860)+30,top:(i*223%200)+250,transform:`rotate(${i*47}deg)`}}/>
+      ))}
+
+      {/* crystals */}
+      <div className="crystal" style={{left:470,top:300,transform:'scale(1.2)',zIndex:13}}/>
+      <div className="crystal" style={{left:300,top:260,transform:'scale(1)',zIndex:13,animationDelay:'.5s'}}/>
+
+      {/* hero (player) */}
+      <div style={{position:'absolute',left:420,top:300,zIndex:22}}>
+        <div className="shadow" style={{width:42,height:14,left:-21,top:42}}/>
+        <div style={{width:38,height:42,margin:'0 auto',borderRadius:'44% 44% 40% 40%/54% 54% 40% 40%',
+          background:'linear-gradient(160deg, var(--purple), var(--purple-d))',position:'relative',
+          boxShadow:'inset 0 -7px 10px rgba(0,0,0,.22)'}}>
+          <div style={{position:'absolute',left:'50%',top:-16,transform:'translateX(-50%)',width:30,height:30,borderRadius:'50%',
+            background:'radial-gradient(circle at 38% 32%, #fff6ec, #ffd9b8)'}}>
+            <span style={{position:'absolute',left:8,top:11,width:5,height:7,background:'var(--ink)',borderRadius:'50%'}}/>
+            <span style={{position:'absolute',right:8,top:11,width:5,height:7,background:'var(--ink)',borderRadius:'50%'}}/></div></div>
+      </div>
+
+      {/* roaming creatures + threats */}
+      <CottonCandyBird cx={520} cy={262} scale={.62}/>
+      <GumdropGator cx={250} cy={392} scale={.62}/>
+      <CornPorcupine cx={690} cy={300} scale={.55}/>
+      <BlobMonster cx={360} cy={340} scale={.6} variant="sour"/>
+      <Soldier cx={620} cy={250} scale={.6} weapon="spear"/>
+
+      <WorldHud/>
+      <div className="caption"><b>Lollipop &amp; Cotton Candy Forest</b><span className="tag">level 1 · enriched</span>
+        <span style={{marginLeft:'auto'}} className="ph-note">// trees · pond · choco rocks · candy-corn mountains on the horizon</span></div>
+    </div>
+  );
+}
+
+/* ============================================================ APP */
+function CritCard({tag, tagColor, name, role, atk, def, dark, children}){
+  return (
+    <div className={'crit-card'+(dark?' dark':'')}>
+      <div className="crit-stage">
+        <div className={'pedestal'+(dark?' dark':'')}/>
+        {children}
+      </div>
+      <div className="crit-tag" style={{background:tagColor}}>{tag}</div>
+      <div className="crit-stat"><span>ATK {atk}</span><span>DEF {def}</span></div>
+      <div className="crit-name"><h3>{name}</h3><div className="role">{role}</div></div>
+    </div>
+  );
+}
+
+function App(){
+  return (
+    <DesignCanvas>
+      <DCSection id="brief" title="Bestiary & World B" subtitle="Real candy-animals, not blobs — approve these and I drop them into playable Level 1">
+        <DCArtboard id="b-brief" label="Read me" width={920} height={150}>
+          <div className="brief">
+            <h1>The <span>Cast</span> of Candy Quest</h1>
+            <div className="sub">Look B · Candy Diorama · Quest 1</div>
+            <p>Five <b>tameable allies</b> (each a real animal made of candy), the Hichew King's <b>monsters</b> —
+            mindless <b>red-eyed gloop blobs</b> and armed <b>humanoid troops</b> with sword, spear, bow &amp; crossbow —
+            and an <b>enriched Lollipop &amp; Cotton Candy Forest</b>. Tell me what to tweak; then I build the playable level.</p>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="world" title="World B · Enriched landscape" subtitle="More trees, ponds, rocks — Candy Corn Mountains looming on the horizon">
+        <DCArtboard id="w-iso" label="Lollipop & Cotton Candy Forest" width={920} height={520}><WorldRich/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="allies" title="Tameable allies" subtitle="Tame with cotton candy → they join your party & fight">
+        <DCArtboard id="a1" label="Cotton Candy Bird" width={300} height={330}>
+          <CritCard tag="FLYER" tagColor="var(--pink)" name="Floss Finch" role="cotton candy bird · healer" atk="6" def="3"><CottonCandyBird cx={150} cy={196}/></CritCard></DCArtboard>
+        <DCArtboard id="a2" label="Rock Candy Bird" width={300} height={330}>
+          <CritCard tag="FLYER" tagColor="var(--teal-d)" name="Geode Jay" role="rock candy bird · ranged" atk="11" def="5"><RockCandyBird cx={150} cy={196}/></CritCard></DCArtboard>
+        <DCArtboard id="a3" label="Gumdrop Alligator" width={300} height={330}>
+          <CritCard tag="BRAWLER" tagColor="var(--green-d)" name="Chompgum" role="gumdrop alligator · tank" atk="14" def="12"><GumdropGator cx={150} cy={194}/></CritCard></DCArtboard>
+        <DCArtboard id="a4" label="Candy Corn Porcupine" width={300} height={330}>
+          <CritCard tag="SPIKER" tagColor="var(--orange-d)" name="Prickletreat" role="candy corn porcupine · counter" atk="9" def="9"><CornPorcupine cx={150} cy={196}/></CritCard></DCArtboard>
+        <DCArtboard id="a5" label="Lollipop Beetle" width={300} height={330}>
+          <CritCard tag="SCURRIER" tagColor="var(--purple-d)" name="Swirlbug" role="lollipop beetle · speed" atk="7" def="6"><LollipopBeetle cx={150} cy={196}/></CritCard></DCArtboard>
+      </DCSection>
+
+      <DCSection id="blobs" title="Monsters · Gloop blobs" subtitle="Mindless. Red eyes. Drop weak armor & alien food.">
+        <DCArtboard id="bl1" label="Sour Gloop" width={300} height={330}>
+          <CritCard tag="GLOOP" tagColor="var(--green-d)" name="Sour Gloop" role="gummy blob · common" atk="8" def="4" dark><BlobMonster cx={150} cy={196} variant="sour"/></CritCard></DCArtboard>
+        <DCArtboard id="bl2" label="Licorice Lump" width={300} height={330}>
+          <CritCard tag="GLOOP" tagColor="var(--purple-d)" name="Licorice Lump" role="gummy blob · brute" atk="13" def="7" dark><BlobMonster cx={150} cy={196} variant="licorice"/></CritCard></DCArtboard>
+      </DCSection>
+
+      <DCSection id="troops" title="Monsters · Hichew Troops" subtitle="The King's soldiers — armored, armed, and not sweet">
+        <DCArtboard id="t1" label="Sword" width={300} height={330}>
+          <CritCard tag="TROOP" tagColor="var(--red)" name="Taffy Swordsman" role="melee · shield" atk="15" def="13" dark><Soldier cx={150} cy={198} weapon="sword"/></CritCard></DCArtboard>
+        <DCArtboard id="t2" label="Spear" width={300} height={330}>
+          <CritCard tag="TROOP" tagColor="var(--red)" name="Gumguard Lancer" role="reach · poke" atk="13" def="11" dark><Soldier cx={150} cy={198} weapon="spear"/></CritCard></DCArtboard>
+        <DCArtboard id="t3" label="Bow" width={300} height={330}>
+          <CritCard tag="TROOP" tagColor="var(--red)" name="Sugar Archer" role="ranged · volley" atk="12" def="8" dark><Soldier cx={150} cy={198} weapon="bow"/></CritCard></DCArtboard>
+        <DCArtboard id="t4" label="Crossbow" width={300} height={330}>
+          <CritCard tag="TROOP" tagColor="var(--red)" name="Brittle Bolter" role="ranged · pierce" atk="16" def="9" dark><Soldier cx={150} cy={198} weapon="crossbow"/></CritCard></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
