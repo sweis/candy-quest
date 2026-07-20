@@ -1403,7 +1403,7 @@ function HUD({hud,onPanel,onAttack,onTame,onExit,onAutoHit}){
         <button className="iconbtn tame lg" onClick={onTame} title={'Tame (E) — uses '+ITEMS[hud.bait||'cotton_candy'].name}><span className="gly" style={{width:24,height:24,display:'grid',placeItems:'center'}}><ItemIcon id={hud.bait||'cotton_candy'} size={24}/></span>Tame</button>
         <div className="hitcol">
           <label className="autohit glass" title="Attack automatically when an enemy is in range">
-            <input type="checkbox" checked={!!hud.autoHit} onChange={e=>onAutoHit(e.target.checked)}/>Auto-hit</label>
+            <input type="checkbox" checked={!!hud.autoHit} onChange={e=>{onAutoHit(e.target.checked);e.target.blur();}}/>Auto-hit</label>
           <button className="iconbtn hot lg" onClick={onAttack} title="Attack (Space)"><span className="gly">⚔</span>Hit</button>
         </div>
       </div>
@@ -1489,9 +1489,7 @@ function CraftPanel({ui,onClose,onCraft}){
     </div></div>
   );
 }
-function PartyPanel({ui,onClose,onToggle,onRevive}){
-  const active=ui.party.filter(p=>p.active), bench=ui.party.filter(p=>!p.active);
-  const Card=({p,bench})=>{
+function PartyCard({p,bench,onToggle,onRevive}){
     const a=ALLIES[p.key];
     const recPct=p.fainted?Math.round(100*(1-(p.reviveT||0)/REVIVE_T)):0;
     return (
@@ -1509,22 +1507,23 @@ function PartyPanel({ui,onClose,onToggle,onRevive}){
           <div style={{display:'flex',gap:8,fontSize:11,color:'var(--ink-soft)',fontWeight:600}}>
             <span>ATK {a.atk+(p.level-1)*2}</span><span>DEF {a.def}</span>
             <span>XP {p.xp}/{p.level*40}</span></div>
-          <button className={'btn sm wide '+(bench?'alt':'ghost')+' swap'} onClick={()=>onToggle(p.uid)}
-            disabled={!bench && active.length<=0}>
+          <button className={'btn sm wide '+(bench?'alt':'ghost')+' swap'} onClick={()=>onToggle(p.uid)}>
             {bench?'Send in →':'Bench'}</button>
         </>}
       </div>
     );
-  };
+}
+function PartyPanel({ui,onClose,onToggle,onRevive}){
+  const active=ui.party.filter(p=>p.active), bench=ui.party.filter(p=>!p.active);
   return (
     <div className="scrim" onClick={onClose}><div className="panel" onClick={e=>e.stopPropagation()} style={{width:680}}>
       <div className="panel-h"><span className="gly" style={{fontSize:22}}>👥</span><h2>Party</h2>
         <span className="muted" style={{marginLeft:8}}>{active.length}/3 in the field · {ui.party.length}/11 pets</span><button className="x" onClick={onClose}>✕</button></div>
       <div className="panel-b">
         <div style={{fontFamily:'Baloo 2',fontWeight:800,fontSize:13,marginBottom:10}}>In the field</div>
-        <div className="partyrow">{active.length?active.map(p=><Card key={p.uid} p={p}/>):<div className="muted">No active allies — tame some with cotton candy!</div>}</div>
+        <div className="partyrow">{active.length?active.map(p=><PartyCard key={p.uid} p={p} onToggle={onToggle} onRevive={onRevive}/>):<div className="muted">No active allies — tame some wild animals!</div>}</div>
         {bench.length>0 && <><div style={{fontFamily:'Baloo 2',fontWeight:800,fontSize:13,margin:'18px 0 10px'}}>On the bench</div>
-          <div className="partyrow">{bench.map(p=><Card key={p.uid} p={p} bench/>)}</div></>}
+          <div className="partyrow">{bench.map(p=><PartyCard key={p.uid} p={p} bench onToggle={onToggle} onRevive={onRevive}/>)}</div></>}
       </div>
     </div></div>
   );
@@ -1865,12 +1864,12 @@ function Game({onWin,onExit,level=1}){
     // enemies — randomized each play, never within the safe radius of the player's start
     const enemyPool=CFG.enemyPool;
     enemyPool.forEach(k=>{const m=MONSTERS[k];const {x,y}=spot(520,420);
-      mk({faction:'enemy',mkey:k,sprite:m.sprite,name:m.name,x,y,maxhp:m.hp,hp:m.hp,atk:m.atk,def:m.def,speed:m.speed,range:m.range,akind:m.kind,xp:m.xp,proj:m.proj,cd:0.4+Math.random()*0.9,home:{x,y}});});
+      mk({faction:'enemy',mkey:k,sprite:m.sprite,name:m.name,x,y,maxhp:m.hp,hp:m.hp,atk:m.atk,def:m.def,speed:m.speed,range:m.range,akind:m.kind,xp:m.xp,proj:m.proj,spike:m.spike,cd:0.4+Math.random()*0.9,home:{x,y}});});
     // boss guards the gate (far side)
     const bk=MONSTERS[CFG.boss]; const by=rnd(560,900); mk({faction:'enemy',mkey:CFG.boss,sprite:bk.sprite,name:bk.name,x:1860,y:by,maxhp:bk.hp,hp:bk.hp,atk:bk.atk,def:bk.def,speed:bk.speed,range:bk.range,akind:bk.kind,xp:bk.xp,boss:true,scale:1,home:{x:1860,y:by}});
     // wild tameable — kept near the start so you can build a party early (skip species you already own)
-    let savedPets=[]; try{savedPets=JSON.parse(localStorage.getItem('cq_pets'))||[];}catch(e){}
-    savedPets=savedPets.filter(s=>ALLIES[s.key]).slice(0,11);
+    let savedPets=[]; try{const s=JSON.parse(localStorage.getItem('cq_pets')); if(Array.isArray(s))savedPets=s;}catch(e){}
+    savedPets=savedPets.filter(s=>s&&ALLIES[s.key]).slice(0,11);
     const owned=new Set(savedPets.map(s=>s.key));
     const wildKinds=CFG.wild.filter(k=>!owned.has(k));
     wildKinds.forEach((k,i)=>{const a=ALLIES[k];const sp=i<2?{x:rnd(300,560),y:rnd(560,980)}:spot(140,360);
@@ -1880,7 +1879,7 @@ function Game({onWin,onExit,level=1}){
     const forage=CFG.forage;
     forage.forEach(id=>{const sp=spot(30,160);drop(id,sp.x,sp.y,1);});
     // guaranteed early supplies right by the start
-    drop('cotton_candy',rnd(290,460),rnd(680,860));
+    drop(CFG.bait||'cotton_candy',rnd(290,460),rnd(680,860));
     drop('mushroom',rnd(290,460),rnd(660,880));
     // gate
     const gate=mk({faction:'gate',x:2080,y:720});
@@ -1892,8 +1891,8 @@ function Game({onWin,onExit,level=1}){
       mk({faction:'ally',puid:mem.uid,sprite:mem.sprite,name:mem.name,x:player.x-40-i*26,y:player.y+30+(i%2)*22,
         maxhp:mem.maxhp,hp:mem.hp,atk:a.atk+(mem.level-1)*2,def:a.def,speed:a.speed,range:a.range,akind:a.kind});});
     g.current={ents,player,gate,cam:{x:0,y:0},inv:{[CFG.bait||'cotton_candy']:3,mushroom:1},equip:{weapon:null,armor:null},
-      party,crystals:0,bossDead:false,keys:new Set(),pointer:null,attackQ:false,dashCd:0,iframe:0,
-      buffs:[],last:0,fxN:0,won:false,mkNext:nid,mk:null};
+      party,crystals:0,bossDead:false,keys:new Set(),dashCd:0,iframe:0,
+      buffs:[],last:0,won:false,mkNext:nid,mk:null};
     g.current.mk=mk;
   }
   const G=g.current;
@@ -1903,7 +1902,8 @@ function Game({onWin,onExit,level=1}){
   const reg=(id,n)=>{ if(n) nodes.current[id]=n; else delete nodes.current[id]; };
   const rebuild=()=>setEnts([...G.ents.values()].map(e=>({id:e.id,sprite:e.sprite,faction:e.faction,name:e.name,scale:e.scale,item:e.item,qty:e.qty})));
   useEffect(()=>{rebuild();},[]);
-  const syncUI=()=>setUi({inv:{...G.inv},equip:{...G.equip},party:G.party.map(p=>({...p}))});
+  // crystals are tracked separately from the bag, but show and craft them like an item
+  const syncUI=()=>setUi({inv:{...G.inv,crystal:G.crystals},equip:{...G.equip},party:G.party.map(p=>({...p}))});
   useEffect(()=>{syncUI();},[]);
   useEffect(()=>{ if(panel) syncUI(); },[panel]);
   const toast=(msg)=>{const id=Math.random();setToasts(t=>[...t.slice(-3),{id,msg}]);setTimeout(()=>setToasts(t=>t.filter(x=>x.id!==id)),2600);};
@@ -1918,7 +1918,9 @@ function Game({onWin,onExit,level=1}){
     d.innerHTML=`<svg width="120" height="120" style="overflow:visible"><path d="M20 90 Q70 10 104 34" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/><path d="M24 96 Q74 18 108 42" fill="none" stroke="var(--pink)" stroke-width="4" stroke-linecap="round"/></svg>`;
     d.style.cssText+=`left:${x}px;top:${y-110}px;transform:translateX(-50%) scaleX(${dir});z-index:9000;animation:fade .3s forwards`;fx(d,300);};
   const projs=useRef([]);
-  const spawnProj=(from,to,faction,dmg,color)=>{const dx=to.x-from.x,dy=to.y-from.y,L=Math.hypot(dx,dy)||1;
+  const spawnProj=(from,to,faction,color)=>{const dx=to.x-from.x,dy=to.y-from.y,L=Math.hypot(dx,dy)||1;
+    const a=eff(from).atk,d=eff(to).def;
+    const dmg=Math.max(2,a*(1-d/(d+42)))*(0.85+Math.random()*0.3);
     const node=document.createElement('div');node.className='proj';
     node.innerHTML=`<div style="width:18px;height:8px;border-radius:6px;background:${color};box-shadow:0 0 8px ${color};transform:rotate(${Math.atan2(dy,dx)}rad)"></div>`;
     fxRef.current.appendChild(node);
@@ -1944,8 +1946,11 @@ function Game({onWin,onExit,level=1}){
     if(t.faction==='player')G.iframe=Math.max(G.iframe,24);
     if(t.hp<=0) onDeath(t);
   };
-  const grantXP=(amt)=>{G.party.filter(p=>p.active&&!p.fainted).forEach(p=>{p.xp+=amt;
-    while(p.xp>=p.level*40){p.xp-=p.level*40;p.level++;p.maxhp+=12;p.hp=p.maxhp;toast(`✨ ${p.name} reached Lv ${p.level}!`);}});savePets();syncUI();};
+  const grantXP=(amt)=>{G.party.filter(p=>p.active&&!p.fainted).forEach(p=>{p.xp+=amt; let up=false;
+    while(p.xp>=p.level*40){p.xp-=p.level*40;p.level++;p.maxhp+=12;p.hp=p.maxhp;up=true;toast(`✨ ${p.name} reached Lv ${p.level}!`);}
+    if(up){const e=[...G.ents.values()].find(x=>x.faction==='ally'&&x.puid===p.uid);
+      if(e){e.maxhp=p.maxhp;e.hp=p.hp;e.atk=ALLIES[p.key].atk+(p.level-1)*2;}}});
+    savePets();syncUI();};
   const dropLoot=(e)=>{const here=(id,qty=1)=>{const ix=(Math.random()-0.5)*60,iy=(Math.random()-0.5)*40;
       G.mk({faction:'item',item:id,qty,sprite:null,x:e.x+ix,y:e.y+iy});};
     const k=e.mkey, r=Math.random();
@@ -1956,7 +1961,7 @@ function Game({onWin,onExit,level=1}){
   const onDeath=(e)=>{
     if(e.faction==='enemy'){
       grantXP(e.xp); dropLoot(e);
-      if(e.boss){G.bossDead=true; G.gateOpen=true; toast(`💥 The ${CFG.bossName} falls! Reach the Candy Gate →`);}
+      if(e.boss){G.bossDead=true; toast(`💥 The ${CFG.bossName} falls! Reach the Candy Gate →`);}
       else toast(`Defeated ${e.name}`);
       G.ents.delete(e.id); delete nodes.current[e.id]; rebuild();
     } else if(e.faction==='ally'){
@@ -1971,9 +1976,8 @@ function Game({onWin,onExit,level=1}){
   // ---------- actions ----------
   const doAttack=()=>{const p=G.player; if(p.cd>0)return; p.cd=0.42;
     slashFx(p.x,p.y,p.facing);
-    let hit=false;
     G.ents.forEach(t=>{ if(t.faction==='enemy'){ const dx=t.x-p.x;
-      if(D(p,t)<104 && Math.sign(dx)===p.facing || D(p,t)<70){ dealDmg(p,t); t.vx+=p.facing*1.4; hit=true; } }});
+      if(D(p,t)<104 && Math.sign(dx)===p.facing || D(p,t)<70) dealDmg(p,t); }});
   };
   const doTame=()=>{const p=G.player; let best=null,bd=120; const BAIT=CFG.bait||'cotton_candy';
     G.ents.forEach(w=>{if(w.faction==='wild'){const d=D(p,w);if(d<bd){bd=d;best=w;}}});
@@ -2013,20 +2017,24 @@ function Game({onWin,onExit,level=1}){
     if(it.effect==='heal'){G.player.hp=Math.min(G.player.maxhp,G.player.hp+it.val);toast(`+${it.val} HP`);}
     else {G.buffs=G.buffs.filter(b=>b.effect!==it.effect);G.buffs.push({effect:it.effect,val:it.val,t:it.dur});toast(`✨ ${it.name} active!`);}
     syncUI();};
-  const craft=(i)=>{const r=RECIPES[i]; if(!Object.entries(r.in).every(([k,n])=>(G.inv[k]||0)>=n))return;
-    Object.entries(r.in).forEach(([k,n])=>G.inv[k]-=n); G.inv[r.out]=(G.inv[r.out]||0)+1; toast(`🍳 Cooked ${ITEMS[r.out].name}!`); syncUI();};
+  const have=(k)=>k==='crystal'?G.crystals:(G.inv[k]||0);
+  const craft=(i)=>{const r=RECIPES[i]; if(!Object.entries(r.in).every(([k,n])=>have(k)>=n))return;
+    Object.entries(r.in).forEach(([k,n])=>{if(k==='crystal')G.crystals-=n; else G.inv[k]-=n;});
+    G.inv[r.out]=(G.inv[r.out]||0)+1; toast(`🍳 Cooked ${ITEMS[r.out].name}!`); syncUI();};
 
   // ---------- input ----------
+  const panelRef=useRef(null); panelRef.current=panel;
   useEffect(()=>{
-    const typing=(e)=>{const t=e.target; return t&&t!==document.body&&(t.tagName==='INPUT'||t.tagName==='TEXTAREA'||t.tagName==='SELECT'||t.isContentEditable||(t.closest&&t.closest('input,textarea,select,[contenteditable],[contenteditable] *')));};
-    const dn=(e)=>{ if(typing(e)){G.keys.clear();return;} const k=e.key.toLowerCase(); G.keys.add(k); if(G.kick&&G.running&&performance.now()-G.last>120)G.kick();
+    const dn=(e)=>{ const k=e.key.toLowerCase();
+      if(k==='i'){setPanel(p=>p==='inv'?null:'inv');return;}
+      if(k==='c'){setPanel(p=>p==='craft'?null:'craft');return;}
+      if(k==='p'){setPanel(p=>p==='party'?null:'party');return;}
+      if(k==='escape'){setPanel(null);return;}
+      if(panelRef.current)return; // sim is paused while a panel is open
+      G.keys.add(k); if(G.kick&&G.running&&performance.now()-G.last>120)G.kick();
       if(k===' '||k==='j'){doAttack();e.preventDefault();}
       if(k==='e'||k==='f')doTame();
       if(k==='shift'&&G.dashCd<=0){G.dashCd=0.9;G.iframe=Math.max(G.iframe,16);const p=G.player;p.dash=10;}
-      if(k==='i')setPanel(p=>p==='inv'?null:'inv');
-      if(k==='c')setPanel(p=>p==='craft'?null:'craft');
-      if(k==='p')setPanel(p=>p==='party'?null:'party');
-      if(k==='escape')setPanel(null);
       if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k)){G.player.moveT=null;G.player.focus=null;G.player.focusWild=null;setHint(false);if(k.startsWith('arrow'))e.preventDefault();}
     };
     const up=(e)=>G.keys.delete(e.key.toLowerCase());
@@ -2056,9 +2064,12 @@ function Game({onWin,onExit,level=1}){
   useEffect(()=>{
     let lastHudKey='';
     const step=(dt)=>{
-      const p=G.player, K=G.keys;
-      G.dashCd-=dt/60; G.iframe-=1; p.cd-=dt/60;
+      const p=G.player, K=G.keys, S=SPD*dt;
+      G.dashCd-=dt/60; G.iframe-=dt; p.cd-=dt/60;
       G.buffs.forEach(b=>{if(b.t!=null)b.t-=dt/60;}); G.buffs=G.buffs.filter(b=>b.t==null||b.t>0);
+      const allies=[]; G.ents.forEach(x=>{if(x.faction==='ally')allies.push(x);});
+      // keep party HP in sync with the fielded ally
+      allies.forEach(e=>{const m=G.party.find(pm=>pm.uid===e.puid); if(m)m.hp=e.hp;});
       // fainted allies recover over time
       let revivedAny=false;
       G.party.forEach(m=>{ if(m.fainted){ m.reviveT=(m.reviveT==null?REVIVE_T:m.reviveT)-dt/60;
@@ -2080,9 +2091,9 @@ function Game({onWin,onExit,level=1}){
         if(p.moveT){const dx=p.moveT.x-p.x,dy=p.moveT.y-p.y,L=Math.hypot(dx,dy);
           if(L<8){p.moveT=null;}else{mx=dx/L;my=dy/L;}}
       }
-      const L=Math.hypot(mx,my)||1; let sp=p.speed*SPD; 
+      const L=Math.hypot(mx,my)||1; let sp=p.speed*S;
       G.buffs.forEach(b=>{if(b.effect==='speed')sp*=1.5;});
-      if(p.dash>0){sp*=2.4;p.dash--;}
+      if(p.dash>0){sp*=2.4;p.dash-=dt;}
       p.x=clamp(p.x+mx/L*(mx||my?sp:0),40,W-40); p.y=clamp(p.y+my/L*(mx||my?sp:0),60,H-30);
       if(mx)p.facing=mx>0?1:-1;
       // auto-hit
@@ -2098,50 +2109,51 @@ function Game({onWin,onExit,level=1}){
         if(e.faction==='ally'){
           let foe=null,fdv=440; G.ents.forEach(t=>{if(t.faction==='enemy'){const d=D(e,t);if(d<fdv){fdv=d;foe=t;}}});
           if(e.akind==='heal'){ // healer: heal lowest friendly
-            let low=null,lr=1; const friends=[p,...[...G.ents.values()].filter(x=>x.faction==='ally')];
-            friends.forEach(f=>{if(f.hp/f.maxhp<lr&&D(e,f)<300){lr=f.hp/f.maxhp;low=f;}});
+            let low=null,lr=1;
+            [p,...allies].forEach(f=>{if(f.hp/f.maxhp<lr&&D(e,f)<300){lr=f.hp/f.maxhp;low=f;}});
             if(low&&lr<0.95&&e.cd<=0){e.cd=1.8;low.hp=Math.min(low.maxhp,low.hp+10);floatDmg(low,10,'#7ad9c4');}
             // hover near player
             const tx=p.x-50,ty=p.y-40; const dx=tx-e.x,dy=ty-e.y,dl=Math.hypot(dx,dy);
-            if(dl>10){e.x+=dx/dl*e.speed*SPD;e.y+=dy/dl*e.speed*SPD;}
+            if(dl>10){e.x+=dx/dl*e.speed*S;e.y+=dy/dl*e.speed*S;}
           } else if(foe){
             const d=D(e,foe); e.facing=foe.x>e.x?1:-1;
-            if(d>e.range*0.9){const dx=foe.x-e.x,dy=foe.y-e.y,dl=Math.hypot(dx,dy);e.x+=dx/dl*e.speed*SPD;e.y+=dy/dl*e.speed*SPD;}
+            if(d>e.range*0.9){const dx=foe.x-e.x,dy=foe.y-e.y,dl=Math.hypot(dx,dy);e.x+=dx/dl*e.speed*S;e.y+=dy/dl*e.speed*S;}
             else if(e.cd<=0){e.cd=e.akind==='ranged'?1.4:0.8;
-              if(e.akind==='ranged')spawnProj(e,foe,'ally',0,'#a98cff'),spawnProjDmg(e,foe);
+              if(e.akind==='ranged')spawnProj(e,foe,'ally','#a98cff');
               else dealDmg(e,foe);}
           } else { // follow player formation
-            const idx=[...G.ents.values()].filter(x=>x.faction==='ally').indexOf(e);
+            const idx=allies.indexOf(e);
             const tx=p.x-60-idx*30, ty=p.y+40+(idx%2)*20; const dx=tx-e.x,dy=ty-e.y,dl=Math.hypot(dx,dy);
-            if(dl>14){e.x+=dx/dl*e.speed*SPD;e.y+=dy/dl*e.speed*SPD;e.facing=dx>0?1:-1;}
+            if(dl>14){e.x+=dx/dl*e.speed*S;e.y+=dy/dl*e.speed*S;e.facing=dx>0?1:-1;}
           }
         }
         else if(e.faction==='enemy'){
-          let tgt=null,td=380; const cand=[p,...[...G.ents.values()].filter(x=>x.faction==='ally')];
-          cand.forEach(c=>{const d=D(e,c);if(d<td){td=d;tgt=c;}});
+          let tgt=null,td=380;
+          [p,...allies].forEach(c=>{const d=D(e,c);if(d<td){td=d;tgt=c;}});
           if(e.boss && !tgt){const d=D(e,p);if(d<700)tgt=p,td=d;}
           // spike contact: stepping on a spiked enemy hurts you
           if(e.spike){ e.cd2=(e.cd2||0)-dt/60;
-            const dp=D(e,p); if(dp<46 && G.iframe<=0 && (e.cd2||0)<=0){ e.cd2=0.9; applyDamage(p,Math.max(4,e.atk*0.7),'enemy'); p.vx+=(p.x-e.x)>0?2:-2; } }
+            const dp=D(e,p); if(dp<46 && G.iframe<=0 && e.cd2<=0){ e.cd2=0.9; applyDamage(p,Math.max(4,e.atk*0.7),'enemy'); } }
           if(tgt){ e.facing=tgt.x>e.x?1:-1; const d=td;
-            if(d>e.range*0.85){const dx=tgt.x-e.x,dy=tgt.y-e.y,dl=Math.hypot(dx,dy);e.x+=dx/dl*e.speed*SPD;e.y+=dy/dl*e.speed*SPD;}
+            if(d>e.range*0.85){const dx=tgt.x-e.x,dy=tgt.y-e.y,dl=Math.hypot(dx,dy);e.x+=dx/dl*e.speed*S;e.y+=dy/dl*e.speed*S;}
             else if(e.cd<=0){e.cd=e.akind==='ranged'?1.6:1.2;
-              if(e.akind==='ranged'){const pc=e.proj||(e.sprite==='corn_box'?'#ff9124':'#ff5d6c');spawnProj(e,tgt,'enemy',0,pc);spawnProjDmg(e,tgt);}
+              if(e.akind==='ranged'){const pc=e.proj||(e.sprite==='corn_box'?'#ff9124':'#ff5d6c');spawnProj(e,tgt,'enemy',pc);}
               else dealDmg(e,tgt);}
           } else { // wander near home
-            const dx=e.home.x-e.x,dy=e.home.y-e.y,dl=Math.hypot(dx,dy); if(dl>20){e.x+=dx/dl*e.speed*SPD*0.5;e.y+=dy/dl*e.speed*SPD*0.5;}
+            const dx=e.home.x-e.x,dy=e.home.y-e.y,dl=Math.hypot(dx,dy); if(dl>20){e.x+=dx/dl*e.speed*S*0.5;e.y+=dy/dl*e.speed*S*0.5;}
           }
         }
         else if(e.faction==='wild'){ const dx=e.home.x-e.x,dy=e.home.y-e.y,dl=Math.hypot(dx,dy);
-          if(dl>26){e.x+=dx/dl*e.speed*SPD*0.4;e.y+=dy/dl*e.speed*SPD*0.4;e.facing=dx>0?1:-1;} }
+          if(dl>26){e.x+=dx/dl*e.speed*S*0.4;e.y+=dy/dl*e.speed*S*0.4;e.facing=dx>0?1:-1;} }
         else if(e.faction==='item'){ if(D(p,e)<48){ collect(e); } }
       });
       // projectiles
-      for(let i=projs.current.length-1;i>=0;i--){const pr=projs.current[i];pr.x+=pr.vx;pr.y+=pr.vy;pr.life--;
+      for(let i=projs.current.length-1;i>=0;i--){const pr=projs.current[i];pr.x+=pr.vx*dt;pr.y+=pr.vy*dt;pr.life-=dt;
         pr.node.style.transform=`translate(${pr.x}px,${pr.y}px)`;
         let hitE=null;
+        // projectiles fly at chest height (44px above the ground anchor), so test against that
         G.ents.forEach(t=>{ if(pr.faction==='enemy'&&(t.faction==='player'||t.faction==='ally')||pr.faction==='ally'&&t.faction==='enemy'){
-          if(Math.hypot(t.x-pr.x,t.y-(pr.y))<30&&!hitE)hitE=t;} });
+          if(Math.hypot(t.x-pr.x,t.y-44-pr.y)<30&&!hitE)hitE=t;} });
         if(hitE){applyDamage(hitE,pr.dmg,pr.faction);pr.node.remove();projs.current.splice(i,1);continue;}
         if(pr.life<=0){pr.node.remove();projs.current.splice(i,1);}
       }
@@ -2159,14 +2171,14 @@ function Game({onWin,onExit,level=1}){
         const moving=(ddx*ddx+ddy*ddy)>0.25;
         if(moving && Math.abs(ddx)>0.05) e.facing=ddx>0?1:-1;
         e.walkPhase=(e.walkPhase||0)+(moving?0.4:0);
-        const inner=n.querySelector('[data-inner]');
-        if(inner){ const f=e.facing!=null?e.facing:1;
+        if(e.domFor!==n){e.domFor=n;e.inner=n.querySelector('[data-inner]');e.fill=n.querySelector('[data-fill]');}
+        if(e.inner){ const f=e.facing!=null?e.facing:1;
           const bob = moving? -Math.abs(Math.sin(e.walkPhase))*3 : 0;
           const humanoid = e.sprite==='hero'||e.sprite==='sword'||e.sprite==='spear'||e.sprite==='bow'||e.sprite==='crossbow'||e.sprite==='boss';
           const lean = (humanoid&&moving)? Math.sin(e.walkPhase)*5 : 0;
-          inner.style.transform=`scaleX(${f}) translateY(${bob}px) rotate(${lean}deg)`;
+          e.inner.style.transform=`scaleX(${f}) translateY(${bob}px) rotate(${lean}deg)`;
         }
-        const fill=n.querySelector('[data-fill]'); if(fill){ if(e.faction==='wild')fill.style.width=e.trust+'%'; else if(e.maxhp)fill.style.width=Math.max(0,100*e.hp/e.maxhp)+'%'; }
+        if(e.fill){ if(e.faction==='wild')e.fill.style.width=e.trust+'%'; else if(e.maxhp)e.fill.style.width=Math.max(0,100*e.hp/e.maxhp)+'%'; }
       });
       // hud sync
       const pl=G.player, ef=eff(pl);
@@ -2175,10 +2187,8 @@ function Game({onWin,onExit,level=1}){
         setHud({hp:Math.max(0,Math.round(pl.hp)),maxhp:pl.maxhp,crystals:G.crystals,cotton:G.inv[CFG.bait||'cotton_candy']||0,bait:CFG.bait,
           atk:ef.atk,def:ef.def,objective:G.bossDead?'Reach the Candy Gate →':'Defeat the '+CFG.bossName,
           buff:G.buffs.length?G.buffs.map(b=>b.effect.toUpperCase()).join(' '):null,
-          party:G.party.filter(p=>!p.benchHidden).map(p=>({uid:p.uid,sprite:p.sprite,level:p.level,hp:p.hp,maxhp:p.maxhp,fainted:p.fainted,active:p.active,name:p.name}))});}
+          party:G.party.map(p=>({uid:p.uid,sprite:p.sprite,level:p.level,hp:p.hp,maxhp:p.maxhp,fainted:p.fainted,active:p.active,name:p.name}))});}
     };
-    // helper used above (declared late, hoisted)
-    function spawnProjDmg(att,tgt){const a=eff(att).atk,d=eff(tgt).def;projs.current[projs.current.length-1].dmg=Math.max(2,a*(1-d/(d+42)))*(0.85+Math.random()*0.3);}
     G.running=true; G.last=0;
     let alive=true, raf=0;
     const run=()=>{ if(!G.running)return; const t=performance.now();
@@ -2200,7 +2210,7 @@ function Game({onWin,onExit,level=1}){
         <Scenery kind={CFG.scenery}/>
         <div className="world-light" style={{width:W,height:H}}/>
         {/* gate */}
-        <div className="gate" style={{position:'absolute',left:G.gate.x,top:G.gate.y,transform:'translate(-50%,-100%)',zIndex:Math.round(G.gate.y)}}>
+        <div className={'gate'+(G.bossDead?'':' locked')} style={{position:'absolute',left:G.gate.x,top:G.gate.y,transform:'translate(-50%,-100%)',zIndex:Math.round(G.gate.y)}}>
           <div className="shadow" style={{width:110,height:18,left:5,top:126}}/>
           <div className="arch"><div className="swirl"/></div>
           <div style={{position:'absolute',left:'50%',top:-30,transform:'translateX(-50%)',fontFamily:'Baloo 2',fontWeight:800,color:'#fff',fontSize:13,textShadow:'0 1px 3px rgba(0,0,0,.5)',whiteSpace:'nowrap'}}>Candy Gate</div>
@@ -2339,18 +2349,9 @@ function WinScreen({onSelect,onReplay,crystals,level=1}){
     </div>
   );
 }
-function ComingSoon({name,onBack}){
-  return <div className="screen lvl" style={{background:'radial-gradient(130% 100% at 50% 0%, #e9d9ff, #b79bf0 60%, #8f6fe0)'}}>
-    <button className="backlink" onClick={onBack}>← Level Select</button>
-    <div className="bigtitle" style={{fontSize:46}}>{name}</div>
-    <div className="tagline">🚧 This level is on the way. You unlocked it — the adventure continues soon!</div>
-    <button className="bigbtn" onClick={onBack} style={{fontSize:18,padding:'14px 28px'}}>Back</button>
-  </div>;
-}
-
 /* ============================ APP ============================ */
 function App(){
-  const [screen,setScreen]=useState('title'); // title|select|play|win|soon
+  const [screen,setScreen]=useState('title'); // title|select|play|win
   const [playLevel,setPlayLevel]=useState(1);
   const [gameKey,setGameKey]=useState(0);
   const [unlocked,setUnlocked]=useState(()=>{try{return JSON.parse(localStorage.getItem('cq_unlocked'))||{1:true};}catch(e){return {1:true};}});
@@ -2364,7 +2365,6 @@ function App(){
       {screen==='select' && <LevelSelect unlocked={unlocked} onPlay={startLevel} onBack={()=>setScreen('title')}/>}
       {screen==='play' && <Game key={gameKey} level={playLevel} onWin={win} onExit={()=>setScreen('select')}/>}
       {screen==='win' && <WinScreen crystals={lastWin.crystals} level={lastWin.level} onSelect={()=>setScreen('select')} onReplay={()=>startLevel(lastWin.level)}/>}
-      {screen==='soon' && <ComingSoon name={'Candy Corn Mountains'} onBack={()=>setScreen('select')}/>}
     </ScaleStage>
   );
 }

@@ -102,19 +102,18 @@ html,body{margin:0;height:100%;background:#0e0710;overflow:hidden}
   animation:floatUp .7s ease-out forwards;text-shadow:0 1px 2px rgba(0,0,0,.4)}
 @keyframes floatUp{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-34px)}}
 .slash{position:absolute;left:0;top:0;pointer-events:none}
-.ring{position:absolute;border-radius:50%;border:3px dashed rgba(255,255,255,.5);pointer-events:none}
-.proj{position:absolute;left:0;top:0;will-change:transform;pointer-events:none}
+.proj{position:absolute;left:0;top:0;will-change:transform;pointer-events:none;z-index:9000}
 
 /* exit gate */
 .gate{position:absolute;left:0;top:0}
 .gate .arch{width:120px;height:130px;border-radius:60px 60px 0 0;border:16px solid;
   border-image:repeating-linear-gradient(45deg,#ff5566 0 12px,#fff 12px 24px) 16;border-bottom:none;
   box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.gate.locked .swirl{filter:grayscale(.7) brightness(.6)}
 .gate .swirl{position:absolute;left:18px;top:24px;width:84px;height:100px;border-radius:42px 42px 0 0;
   background:conic-gradient(from 0deg,var(--purple),var(--pink),var(--teal),var(--purple));opacity:.85;
   animation:spin 6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.gate.locked .swirl{filter:grayscale(.7) brightness(.6)}
 
 /* ---------------- HUD ---------------- */
 .ghud{position:absolute;inset:0;z-index:50;pointer-events:none;font-family:'Fredoka'}
@@ -136,29 +135,24 @@ html,body{margin:0;height:100%;background:#0e0710;overflow:hidden}
 .iconbtn.hot{background:linear-gradient(var(--pink),var(--pink-d));color:#fff;box-shadow:0 4px 0 var(--pink-d)}
 .iconbtn.tame{background:linear-gradient(var(--teal),var(--teal-d));color:#fff;box-shadow:0 4px 0 var(--teal-d)}
 .iconbtn.badge{position:relative}
-.iconbtn .bdg{position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;
-  background:var(--purple-d);color:#fff;font-size:10px;display:grid;place-items:center;border:2px solid #fff}
 .statchip{display:flex;align-items:center;gap:7px;padding:8px 14px 8px 9px;border-radius:14px;font-weight:700;font-size:15px;color:var(--ink)}
-.statchip .dot{width:20px;height:20px;border-radius:50%}
 .statchip .ico20{width:22px;height:22px;display:grid;place-items:center;flex:0 0 auto}
 .heartrow{display:flex;gap:3px;padding:8px 12px;border-radius:14px}
 .heartrow .heart{width:20px;height:20px}
 .namechip{display:flex;align-items:center;gap:9px;padding:7px 14px 7px 7px}
 .namechip .ava{width:42px;height:42px}
-.partybar{display:flex;gap:7px;align-items:flex-start}
+.partybar{display:flex;gap:7px;align-items:flex-start;flex-wrap:wrap;max-width:600px}
 .pwrap{display:flex;flex-direction:column;align-items:center;gap:3px}
 .pname{font-family:'Baloo 2';font-weight:800;font-size:10px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.65);
   background:rgba(28,12,24,.45);padding:1px 8px;border-radius:999px;line-height:1.5;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pslot{width:60px;height:64px;border-radius:16px;border:3px solid #fff;box-shadow:0 4px 0 rgba(0,0,0,.16);
   position:relative;overflow:hidden;cursor:pointer;background:#cdeede}
-.pslot.active{outline:3px solid var(--orange);outline-offset:2px}
 .pslot .spr{position:absolute;left:50%;bottom:9px;transform:none}
 .pslot .lv{position:absolute;top:2px;left:4px;font-family:'Baloo 2';font-weight:800;font-size:10px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);z-index:2}
 .pslot .hpb{position:absolute;left:3px;right:3px;bottom:3px;height:5px;border-radius:3px;background:rgba(0,0,0,.35);overflow:hidden;z-index:2}
 .pslot .hpb i{display:block;height:100%;background:var(--teal)}
 .pslot.empty{background:rgba(255,255,255,.4);display:grid;place-items:center;color:#fff;font-family:'Baloo 2';font-size:24px}
 .pslot.bench{display:grid;place-items:center;background:rgba(255,255,255,.72);color:var(--ink);font-family:'Baloo 2';font-weight:800;font-size:17px}
-.partybar{max-width:600px;flex-wrap:wrap}
 .toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 .toast .t{background:rgba(28,12,24,.86);color:#fff;font-weight:600;font-size:13px;padding:8px 16px;border-radius:999px;
   box-shadow:0 6px 16px rgba(0,0,0,.4);animation:toastIn .3s, fade .4s 2.1s forwards}
@@ -179,10 +173,6 @@ html,body{margin:0;height:100%;background:#0e0710;overflow:hidden}
 .panel-h h2{margin:0;font-family:'Baloo 2';font-weight:800;font-size:21px}
 .panel-h .x{margin-left:auto;width:36px;height:36px;border:none;border-radius:12px;background:#f0e6da;cursor:pointer;font-size:18px;color:var(--ink-soft);font-weight:800}
 .panel-b{padding:18px 20px;overflow-y:auto}
-.tabs{display:flex;gap:8px}
-.tab{font-family:'Baloo 2';font-weight:800;font-size:13px;padding:8px 16px;border-radius:999px;border:none;cursor:pointer;
-  background:#f0e6da;color:var(--ink-soft)}
-.tab.on{background:var(--purple);color:#fff}
 .invgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .islot{aspect-ratio:1;border-radius:14px;background:#fbf3ea;position:relative;cursor:pointer;
   box-shadow:inset 0 0 0 2px rgba(58,34,51,.07);display:grid;place-items:center;transition:transform .08s}
