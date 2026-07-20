@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>Candy Quest — Quest 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,18 +28,8 @@ console.log('Candy Quest build',window.CQ_BUILD);
 </script>
 </head>
 <body class="cq">
-<template id="__bundler_thumbnail" data-bg-color="#1b1020">
-  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1200" height="800" fill="#1b1020"></rect>
-    <circle cx="600" cy="330" r="140" fill="#ff5d8f"></circle>
-    <circle cx="600" cy="330" r="140" fill="none" stroke="#fff" stroke-width="24" stroke-dasharray="48 44" stroke-linecap="round"></circle>
-    <circle cx="600" cy="330" r="48" fill="#fff"></circle>
-    <rect x="587" y="460" width="26" height="130" rx="13" fill="#f0b429"></rect>
-    <text x="600" y="680" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="44" fill="#fff">Candy Quest is loading…</text>
-    <text x="600" y="730" text-anchor="middle" font-family="sans-serif" font-size="26" fill="#c9a0b8">Stuck here? This embed is blocking JavaScript — remove the iframe sandbox or add allow-scripts.</text>
-  </svg>
-</template>
 <div id="app"></div>
+<div class="rotate-hint">🔄 Rotate your device to landscape to play</div>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
@@ -1320,23 +1313,33 @@ const SPD=2.6;
 const REVIVE_T=13; // seconds for a fainted ally to recover on its own
 
 /* ---------------- Scale wrapper ---------------- */
+const STAGE_H=600, STAGE_W_MIN=960, STAGE_W_MAX=1340;
 function ScaleStage({children}){
-  const ref=useRef(null);
+  const fitRef=useRef(null), stageRef=useRef(null);
   useLayoutEffect(()=>{
-    const fit=()=>{const vw=(window.visualViewport?window.visualViewport.width:window.innerWidth);
-      const vh=(window.visualViewport?window.visualViewport.height:window.innerHeight);
-      const s=Math.min(vw/972,vh/612);
-      if(ref.current) ref.current.style.transform=`scale(${s.toFixed(4)})`;};
+    const fit=()=>{
+      const box=fitRef.current, st=stageRef.current; if(!box||!st)return;
+      const vw=box.clientWidth, vh=box.clientHeight; if(!vw||!vh)return;
+      // widen the stage to the screen's aspect ratio so phones aren't letterboxed
+      const w=clamp(Math.round(STAGE_H*vw/vh),STAGE_W_MIN,STAGE_W_MAX);
+      const pad=vw>=1100?24:0;
+      const s=Math.min((vw-pad)/w,(vh-pad)/STAGE_H);
+      window.CQ_VW=w;
+      st.style.width=w+'px';
+      st.style.transform=`translate(${((vw-w*s)/2).toFixed(1)}px,${((vh-STAGE_H*s)/2).toFixed(1)}px) scale(${s.toFixed(4)})`;
+    };
     fit();
     window.addEventListener('resize',fit);
+    window.addEventListener('orientationchange',fit);
     if(window.visualViewport) window.visualViewport.addEventListener('resize',fit);
     const ro=(typeof ResizeObserver!=='undefined')?new ResizeObserver(fit):null;
-    if(ro) ro.observe(document.body);
+    if(ro) ro.observe(fitRef.current);
     return ()=>{window.removeEventListener('resize',fit);
+      window.removeEventListener('orientationchange',fit);
       if(window.visualViewport) window.visualViewport.removeEventListener('resize',fit);
       if(ro) ro.disconnect();};
   },[]);
-  return <div className="fit"><div className="stage" ref={ref}>{children}</div></div>;
+  return <div className="fit" ref={fitRef}><div className="stage" ref={stageRef}>{children}</div></div>;
 }
 
 /* ---------------- Entity view ---------------- */
@@ -2034,7 +2037,7 @@ function Game({onWin,onExit,level=1}){
   },[]);
   const kick=()=>{ if(G.kick&&G.running&&performance.now()-G.last>120) G.kick(); };
   const aimAt=(e)=>{ const r=vpRef.current.getBoundingClientRect();
-    const sx=(e.clientX-r.left)/(r.width/960), sy=(e.clientY-r.top)/(r.height/600);
+    const sx=(e.clientX-r.left)/(r.width/(window.CQ_VW||STAGE_W_MIN)), sy=(e.clientY-r.top)/(r.height/STAGE_H);
     const wx=sx+G.cam.x, wy=sy+G.cam.y; setHint(false);
     let foe=null,fd=80; G.ents.forEach(t=>{if(t.faction==='enemy'){const d=Math.hypot(t.x-wx,t.y-wy);if(d<fd){fd=d;foe=t;}}});
     let wild=null,wd=80; G.ents.forEach(t=>{if(t.faction==='wild'){const d=Math.hypot(t.x-wx,t.y-wy);if(d<wd){wd=d;wild=t;}}});
@@ -2087,7 +2090,8 @@ function Game({onWin,onExit,level=1}){
         if(foe){if(!mx&&!my)p.facing=foe.x>p.x?1:-1;
           if(fd<70||Math.sign(foe.x-p.x)===p.facing)doAttack();}}
       // camera
-      G.cam.x=clamp(p.x-480,0,W-960); G.cam.y=clamp(p.y-300,0,H-600);
+      const VW=window.CQ_VW||STAGE_W_MIN;
+      G.cam.x=clamp(p.x-VW/2,0,W-VW); G.cam.y=clamp(p.y-STAGE_H/2,0,H-STAGE_H);
       // entities AI
       G.ents.forEach(e=>{
         if(e.cd>0)e.cd-=dt/60;
