@@ -74,28 +74,36 @@ export class Hud {
   }
 
   // ---------------------------------------------------------------- panels (sim pauses while one is open, as in the classic build)
-  openPanel(name) { this.panel = this.panel === name ? null : name; this.sel = null; this.renderPanel(); }
+  openPanel(name) { this.panel = this.panel === name ? null : name; this.sel = null; this.panelEl.innerHTML = ''; this.renderPanel(); }
   closePanel() { this.panel = null; this.panelEl.innerHTML = ''; }
   renderPanel() {
     const G = this.G, P = this.panelEl; if (!this.panel) { P.innerHTML = ''; return; }
-    const shell = (icon, title, extra, body) => `<div class="scrim" data-a="close"><div class="pnl" data-stop><div class="pnl-h"><span style="font-size:1.4em">${icon}</span><h2>${title}</h2>${extra || ''}<button class="x" data-a="close">✕</button></div><div class="pnl-b">${body}</div></div></div>`;
+    const shell = (icon, title, extra, body) => {
+      const cur = P.firstElementChild;
+      if (cur && cur.dataset.panel === this.panel) { // refresh in place: keep scroll + no pop-in animation
+        const b = cur.querySelector('.pnl-b'), top = b.scrollTop; b.innerHTML = body; b.scrollTop = top;
+        cur.querySelector('.pnl-x').innerHTML = extra || ''; return null;
+      }
+      return `<div class="scrim" data-a="close" data-panel="${this.panel}"><div class="pnl" data-stop><div class="pnl-h"><span style="font-size:1.4em">${icon}</span><h2>${title}</h2><span class="pnl-x">${extra || ''}</span><button class="x" data-a="close">✕</button></div><div class="pnl-b">${body}</div></div></div>`;
+    };
+    const set = (html) => { if (html != null) P.innerHTML = html; };
     const inv = { ...G.inv, crystal: G.crystals };
     if (this.panel === 'inv') {
       const ents = Object.entries(inv).filter(([, v]) => v > 0);
       const it = this.sel && ITEMS[this.sel];
       const eq = (slot, icon) => `<div class="eq"><div class="box">${G.equip[slot] ? this.img(G.equip[slot]) : icon}</div><div><b>${slot === 'weapon' ? 'Weapon' : 'Armor'}</b><span class="muted" style="font-size:.8em">${G.equip[slot] ? esc(ITEMS[G.equip[slot]].name) : '— none —'}</span></div></div>`;
-      P.innerHTML = shell('🎒', 'Backpack', `<span class="muted">${ents.length} kinds</span>`,
+      set(shell('🎒', 'Backpack', `<span class="muted">${ents.length} kinds</span>`,
         `<div class="eqs">${eq('weapon', '⚔')}${eq('armor', '🛡')}</div>
          <div class="grid">${ents.map(([k, v]) => `<button class="slot ${ITEMS[k].rarity !== 'common' ? ITEMS[k].rarity : ''}${this.sel === k ? ' sel' : ''}" data-a="sel" data-uid="${k}" title="${esc(ITEMS[k].name)}">${this.img(k)}${v > 1 ? `<span class="ct">${v}</span>` : ''}</button>`).join('') || '<div class="muted" style="grid-column:1/-1;text-align:center;padding:1.5em">Empty. Defeat monsters &amp; pick up loot!</div>'}</div>
          <div class="desc">${it ? `<h4>${esc(it.name)} <span class="muted" style="font:400 .7em var(--mono);text-transform:uppercase">${it.kind}</span></h4><div class="muted">${esc(it.desc)}</div>
            <div style="margin-top:.7em;display:flex;gap:.5em">${it.kind === 'weapon' || it.kind === 'armor' ? `<button class="btn alt" data-a="equip" data-uid="${this.sel}">${G.equip[it.kind] === this.sel ? 'Unequip' : 'Equip'}</button>` : ''}${it.kind === 'food' ? `<button class="btn" data-a="use" data-uid="${this.sel}">Use</button>` : ''}</div>`
-           : '<div class="muted">Select an item to inspect it.</div>'}</div>`);
+           : '<div class="muted">Select an item to inspect it.</div>'}</div>`));
     } else if (this.panel === 'craft') {
-      P.innerHTML = shell('🧪', 'Alien-Food Kitchen', '', `<div class="muted" style="margin-bottom:.8em">Combine loot &amp; foraged candy into alien food that buffs your team.</div>` +
+      set(shell('🧪', 'Alien-Food Kitchen', '', `<div class="muted" style="margin-bottom:.8em">Combine loot &amp; foraged candy into alien food that buffs your team.</div>` +
         RECIPES.map((r, i) => { const can = canCraft(G, i), o = ITEMS[r.out];
           return `<div class="row${can ? '' : ' no'}"><div class="ico">${this.img(r.out)}</div><div style="flex:1"><div class="nm">${esc(o.name)}</div><div class="muted" style="font-size:.8em">${esc(o.desc)}</div>
             <div class="ings">${Object.entries(r.in).map(([k, n]) => `<span class="${have(G, k) >= n ? '' : 'miss'}">${this.img(k)}${esc(ITEMS[k].name)} ×${n} <span class="muted">(${have(G, k)})</span></span>`).join('')}</div></div>
-            <button class="btn alt" data-a="craftrow" data-uid="${i}" ${can ? '' : 'disabled'}>Cook</button></div>`; }).join(''));
+            <button class="btn alt" data-a="craftrow" data-uid="${i}" ${can ? '' : 'disabled'}>Cook</button></div>`; }).join('')));
     } else if (this.panel === 'party') {
       const card = (m, bench) => { const a = ALLIES[m.key];
         const rec = m.fainted ? Math.round(100 * (1 - (m.reviveT || 0) / REVIVE_T)) : 0;
@@ -106,11 +114,11 @@ export class Hud {
           : `<div class="meter"><i style="width:${(100 * m.hp) / m.maxhp}%"></i></div><div class="sts"><span>ATK ${a.atk + (m.level - 1) * 2}</span><span>DEF ${a.def}</span><span>XP ${m.xp}/${m.level * 40}</span></div>
             <button class="btn ${bench ? 'alt' : 'ghost'}" data-a="toggle" data-uid="${m.uid}">${bench ? 'Send in →' : 'Bench'}</button>`}</div>`; };
       const act = G.party.filter((m) => m.active), ben = G.party.filter((m) => !m.active);
-      P.innerHTML = shell('👥', 'Party', `<span class="muted">${act.length}/3 in the field · ${G.party.length}/11 pets</span>`,
+      set(shell('👥', 'Party', `<span class="muted">${act.length}/3 in the field · ${G.party.length}/11 pets</span>`,
         `<b style="font:800 .9em var(--display)">In the field</b><div class="pcards" style="margin:.5em 0 1em">${act.length ? act.map((m) => card(m, false)).join('') : '<div class="muted">No active allies — tame some wild animals!</div>'}</div>` +
-        (ben.length ? `<b style="font:800 .9em var(--display)">On the bench</b><div class="pcards" style="margin-top:.5em">${ben.map((m) => card(m, true)).join('')}</div>` : ''));
+        (ben.length ? `<b style="font:800 .9em var(--display)">On the bench</b><div class="pcards" style="margin-top:.5em">${ben.map((m) => card(m, true)).join('')}</div>` : '')));
     } else if (this.panel === 'help') {
-      P.innerHTML = shell('❓', 'How to play', '', helpSheet(G, this));
+      set(shell('❓', 'How to play', '', helpSheet(G, this)));
     }
     P.onclick = (ev) => {
       const b = ev.target.closest('[data-a]');

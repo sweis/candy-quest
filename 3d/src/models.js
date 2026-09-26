@@ -171,16 +171,23 @@ export function soldier({ weapon = 'sword', boss = false, king = false, rock = f
   } else if (weapon === 'spear') {
     W(G.cyl(0.05, 0.05, 2.6, 12), { pat: PAT.caneDense, p: [0.1, 1.5, 0.52] });
     W(G.cone(0.13, 0.36, 4), { c: steel, p: [0.1, 2.98, 0.52], s: [0.45, 1, 1] });
-  } else if (weapon === 'bow') {
-    W(G.torus(0.62, 0.04, 8, 30, Math.PI * 0.9), { c: 0x7a4a24, p: [-0.1, 1.2, 0.52], r: [0, 0, -72] });
-    W(G.cyl(0.008, 0.008, 1.2, 4), { c: 0xffffff, p: [0.04, 1.2, 0.52] });
-    W(G.cyl(0.015, 0.015, 0.9, 6), { c: 0xd9b2a0, p: [0.3, 1.2, 0.52], r: [0, 0, 90] });
-    W(G.cone(0.05, 0.12, 4), { c: steel, p: [0.8, 1.2, 0.52], r: [0, 0, -90] });
-  } else if (weapon === 'crossbow') {
-    W(G.rbox(0.9, 0.12, 0.14, 0.04), { c: 0x6b4427, p: [0.35, 1.18, 0.52] });
-    W(G.torus(0.34, 0.035, 8, 20, Math.PI * 0.85), { c: 0x4a3320, p: [0.66, 1.18, 0.52], r: [90, 0, 105] });
-    W(G.cyl(0.012, 0.012, 0.7, 6), { c: 0xd9b2a0, p: [0.58, 1.25, 0.52], r: [0, 0, 90] });
-    W(G.cone(0.04, 0.1, 4), { c: steel, p: [0.95, 1.25, 0.52], r: [0, 0, -90] });
+  } else if (weapon === 'bow') { // limbs bulge toward the target (+X); string on the archer's side
+    const z = 0.52, y = 1.2;
+    W(G.tube([[0.1, y - 0.62, z], [0.26, y - 0.3, z], [0.32, y, z], [0.26, y + 0.3, z], [0.1, y + 0.62, z]], 0.035, 30, 8), { c: 0x7a4a24 });
+    W(G.cyl(0.05, 0.05, 0.16, 10), { c: 0xffc93c, p: [0.32, y, z] });
+    W(G.limb([0.1, y - 0.62, z], [-0.02, y, z], 0.007, 4), { c: 0xffffff });
+    W(G.limb([-0.02, y, z], [0.1, y + 0.62, z], 0.007, 4), { c: 0xffffff });
+    W(G.limb([-0.02, y, z], [0.62, y, z], 0.014, 6), { c: 0xd9b2a0 });
+    W(G.cone(0.05, 0.13, 4), { c: steel, p: [0.68, y, z], r: [0, 0, -90] });
+    for (const s of [-1, 1]) W(G.cone(0.035, 0.1, 3), { c: 0xff5d8f, p: [0.02, y + s * 0.03, z], r: [0, 0, -90] });
+  } else if (weapon === 'crossbow') { // stock along +X, prod (limbs) at the front bulging forward, bolt loaded
+    const z = 0.52, y = 1.18;
+    W(G.rbox(0.82, 0.12, 0.14, 0.04), { c: 0x6b4427, p: [0.33, y, z] });
+    W(G.tube([[0.62, y + 0.04, z - 0.44], [0.74, y + 0.04, z - 0.2], [0.78, y + 0.04, z], [0.74, y + 0.04, z + 0.2], [0.62, y + 0.04, z + 0.44]], 0.035, 30, 8), { c: 0x4a3320 });
+    W(G.limb([0.62, y + 0.05, z - 0.44], [0.32, y + 0.07, z], 0.007, 4), { c: 0xffffff });
+    W(G.limb([0.32, y + 0.07, z], [0.62, y + 0.05, z + 0.44], 0.007, 4), { c: 0xffffff });
+    W(G.limb([0.32, y + 0.09, z], [0.9, y + 0.09, z], 0.016, 6), { c: 0xd9b2a0 });
+    W(G.cone(0.045, 0.12, 4), { c: steel, p: [0.95, y + 0.09, z], r: [0, 0, -90] });
   }
   return k;
 }

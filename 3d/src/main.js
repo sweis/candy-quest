@@ -141,7 +141,7 @@ let pointerHeld = false;
 function aim(ev) {
   const G = app.G; const pk = world.pick(ev.clientX, ev.clientY);
   if (pk.wx == null) return;
-  const r = Sim.aimAt(G, pk.wx, pk.wy, pk.id); hud.hideHint();
+  const r = Sim.aimAt(G, pk.wx, pk.wy, pk.item ? 'ground' : pk.id); hud.hideHint();
   app.lastAim = { ...pk, result: r };
 }
 canvas.addEventListener('pointerdown', (ev) => {
@@ -220,7 +220,9 @@ function state() {
   return { screen: app.screen, build: window.CQ3D_BUILD, quality: quality.name, paused: app.paused, frozen: app.frozen, panel: hud ? hud.panel : null,
     frameMs: { p50: +pct(app.frameMs, 0.5).toFixed(2), p99: +pct(app.frameMs, 0.99).toFixed(2) }, drawCalls: s.calls, triangles: s.tris, programs: s.programs,
     gpu: s.gpu, contextLost: s.contextLost, lastShaderError: s.lastShaderError, lights: s.lights, bootMs: app.bootMs, cam: world ? world.camName : null,
-    views: world ? world.views.size : 0, sim: G ? Sim.snapshot(G) : null, lastAim: app.lastAim || null };
+    views: world ? world.views.size : 0,
+    heroGear: (() => { const v = world && app.G && world.views.get(app.G.player.id); return v ? { weapon: v.weaponId, armor: v.armorId, weaponMeshes: v.parts.weapon.children.length, armorMeshes: v.parts.armor.children.length } : null; })(),
+    panelShell: (() => { const e = document.querySelector('#panel .scrim'); return e ? (e.dataset.gen || (e.dataset.gen = String(Math.random()))) : null; })(), faded: world && world.biome ? world.biome.occluders.filter((o) => o.fade < 0.6).map((o) => o.mesh.name + '@' + Math.round(o.x / PX) + ',' + Math.round(o.z / PX)) : [], sim: G ? Sim.snapshot(G) : null, lastAim: app.lastAim || null };
 }
 const SPOTS = { start: () => Sim.PLAYER_START, camp: () => Sim.CAMP, gate: () => ({ x: app.G.gate.x - 150, y: app.G.gate.y }),
   boss: () => { const b = [...app.G.ents.values()].find((e) => e.boss); return b ? { x: b.x - 140, y: b.y } : Sim.PLAYER_START; },
@@ -240,6 +242,12 @@ const hooks = {
   lose() { const G = app.G; G.iframe = 0; Sim.debugDamage(G, G.player, G.player.hp + 1); },
   killBoss() { const b = [...app.G.ents.values()].find((e) => e.boss); if (b) { b.hp = 0.5; } },
   cam(name) { world.setCam(name); return world.camName; },
+  // screen position (CSS px) of an entity's chest, or of a world px point, for driving real mouse input in tests
+  screenOf(idOrX, y) {
+    if (typeof idOrX === 'string') { const v = world.views.get(idOrX) || world.itemViews.get(idOrX); if (!v) return null; const p = v.group.position; return world.project(p.x, (v.h || 0.5) * 0.5, p.z); }
+    return world.project(idOrX * PX, 0, y * PX);
+  },
+  hudRect(sel) { const e = document.querySelector(sel); if (!e) return null; const r = e.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, w: r.width, h: r.height }; },
   diag(on = true) { diagOn = !on; toggleDiag(); },
   sim: Sim, get G() { return app.G; }, get world() { return world; }, THREE,
 };

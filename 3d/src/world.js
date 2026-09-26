@@ -114,9 +114,11 @@ export class World {
   dressHero(v, G) {
     const w = G.equip.weapon || 'default', a = G.equip.armor || null;
     if (v.weaponId !== w) {
-      const slot = v.parts.weapon; while (slot.children.length > 1) { const c = slot.children.pop(); c.traverse((o) => o.geometry && o.geometry.dispose()); }
+      const slot = v.parts.weapon;
+      if (v.weaponMesh) { slot.remove(v.weaponMesh); v.weaponMesh.geometry.dispose(); }
       const k = heroWeapon(w); const m = new THREE.Mesh(k.static(), v.mat); m.castShadow = true;
       m.rotation.z = -0.9; // blade forward-up from the fist
+      v.weaponMesh = m;
       slot.add(m); v.weaponId = w;
     }
     if (v.armorId !== a) {
@@ -154,6 +156,7 @@ export class World {
     this.updateGate(G, dt);
     this.updateCamera(G, dt);
     if (this.biome) for (const c of this.biome.clouds.children) { c.position.x += c.userData.speed * dt; if (c.position.x > this.biome.W + 40) c.position.x = -40; }
+    this.updateOccluders(G, dt);
     this.updateTags();
   }
   updateView(v, dt, G) {
@@ -325,6 +328,24 @@ export class World {
     if (open && Math.random() < dt * 8) this.burst(this.gate.position.x + (Math.random() - 0.5) * 2, 2 + Math.random(), this.gate.position.z, [0xff5d8f, 0x7ad9c4, 0xffd24d, 0xa98cff][Math.floor(Math.random() * 4)], 1, 0.6, -1.5);
   }
 
+  // fade tall props that stand between the camera and Pip (screen-space overlap + nearer to the camera)
+  updateOccluders(G, dt) {
+    if (!this.biome) return;
+    const px = G.player.x * PX, pz = G.player.y * PX;
+    const pb = this.project(px, 0.1, pz), pt = this.project(px, 1.6, pz);
+    for (const o of this.biome.occluders) {
+      let want = 1;
+      if (o.z > pz - 0.3 && (this.camName === 'play' || this.camName === 'hud-check')) {
+        const a = this.project(o.x, 0, o.z), b = this.project(o.x, o.top, o.z);
+        const halfPx = Math.abs(this.project(o.x + o.halfW, o.top * 0.8, o.z).x - this.project(o.x, o.top * 0.8, o.z).x) + 14;
+        const overlapY = Math.min(a.y, pb.y) > Math.max(b.y, pt.y) - 10;
+        if (overlapY && Math.abs(pb.x - a.x) < halfPx + 10) want = 0.25;
+      }
+      o.fade += (want - o.fade) * (1 - Math.exp(-dt * 10));
+      o.mesh.material.opacity = o.fade; o.mesh.material.depthWrite = o.fade > 0.95; o.mesh.castShadow = true;
+    }
+  }
+
   // ---------------------------------------------------------------- camera
   setCam(name) { if (CAMS[name]) { this.camName = name; this.cut = true; } }
   updateCamera(G, dt) {
@@ -405,6 +426,13 @@ export class World {
       const d = Math.hypot((sx - cx) / 1, (sy - cy) / 1.4);
       if (d < rad && d < bd) { bd = d; best = v; }
     }
+    // pickups: a tap right on a visible item walks to it (otherwise a nearby animal would steal the click)
+    let item = null, id2 = Infinity;
+    for (const v of this.itemViews.values()) {
+      const gp = v.group.position, a = this.project(gp.x, 0.45, gp.z); if (!a.vis) continue;
+      const d = Math.hypot(sx - a.x, sy - a.y); if (d < 30 && d < id2) { id2 = d; item = v; }
+    }
+    if (item && (!best || id2 < bd * 0.8)) return { id: null, item: item.id, wx: item.e.x, wy: item.e.y, sx, sy };
     const ndc = new THREE.Vector2((sx / c.clientWidth) * 2 - 1, -(sy / c.clientHeight) * 2 + 1);
     const ray = new THREE.Raycaster(); ray.setFromCamera(ndc, this.camera);
     const hit = new THREE.Vector3(); const ok = ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), hit);

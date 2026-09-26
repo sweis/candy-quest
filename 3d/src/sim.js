@@ -238,6 +238,7 @@ export function cancelOrders(G) { const p = G.player; p.moveT = null; p.focus = 
 export function aimAt(G, wx, wy, picked = null) {
   const p = G.player;
   let foe = null, fd = 80, wild = null, wd = 80;
+  if (picked === 'ground') { p.moveT = { x: wx, y: wy }; p.focus = null; p.focusWild = null; return { kind: 'ground' }; }
   if (picked && G.ents.get(picked)) {
     const t = G.ents.get(picked);
     if (t.faction === 'enemy') { foe = t; fd = 0; } else if (t.faction === 'wild') { wild = t; wd = 0; }

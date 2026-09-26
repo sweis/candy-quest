@@ -153,10 +153,19 @@ export function buildBiome(kind, W_px, H_px) {
     const gl = kit.staticGlow(); if (gl) { gl.translate(x, 0, z); chunks.get(key).glows.push(gl); }
   };
   const colorHex = { 'var(--purple)': 0xa98cff, 'var(--teal)': 0x7ad9c4, 'var(--orange)': 0xffb84d, 'var(--pink)': 0xff5d8f, '#fff': 0xffffff };
+  // tall props are separate meshes so they can fade when they stand between the camera and Pip
+  const occluders = [];
+  const occMat = M.candy.clone(); occMat.transparent = true; occMat.name = 'occluder'; // transparent from boot: fading never recompiles
   for (const o of items) {
     const [x, z] = V(o.x, o.y);
     const b = PROPS[o.t]; if (!b) continue;
     const k = new Kit(); b(k, { ...o, cHex: colorHex[o.c] }, rnd);
+    if (o.t === 'lolli' || o.t === 'cane') {
+      const g = k.static(); g.computeBoundingBox(); const bb = g.boundingBox;
+      const m = new THREE.Mesh(g, occMat.clone()); m.position.set(x, 0, z); m.castShadow = m.receiveShadow = true; m.name = 'occ:' + o.t; group.add(m);
+      occluders.push({ mesh: m, x, z, top: bb.max.y, halfW: Math.max(bb.max.x - bb.min.x, bb.max.z - bb.min.z) / 2, fade: 1 });
+      continue;
+    }
     put(x, z, k, !['pebble', 'tuft', 'flower'].includes(o.t));
   }
   // flourish: scatter extra tufts + flowers across the meadow (not in the classic build; decoration only)
@@ -199,5 +208,5 @@ export function buildBiome(kind, W_px, H_px) {
   const clouds = new THREE.Group(); clouds.name = 'clouds';
   for (let i = 0; i < 9; i++) { const k = new Kit(); PROPS.cloud(k, {}, rnd); const m = new THREE.Mesh(k.static(), M.matte); m.position.set(-30 + rnd() * (W + 60), 26 + rnd() * 10, -40 - rnd() * 40); m.userData.speed = 0.3 + rnd() * 0.5; clouds.add(m); }
   group.add(clouds);
-  return { group, pal, W, H, clouds };
+  return { group, pal, W, H, clouds, occluders };
 }
