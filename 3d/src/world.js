@@ -458,5 +458,6 @@ export class World {
   stats() { return { ...(this.lastInfo || {}), gpu: this.gpu, contextLost: this.contextLost, lastShaderError: this.lastShaderError, lights: 2, pixelRatio: this.renderer.getPixelRatio() }; }
 }
 
-function disposeTree(o) { o.traverse((c) => { if (c.isMesh) { c.geometry.dispose(); if (c.material && c.material.name === 'water') c.material.dispose(); } }); }
+// Geometry only: materials are shared or tiny, and disposing the last user of a program would force a recompile next level.
+function disposeTree(o) { o.traverse((c) => { if (c.isMesh) c.geometry.dispose(); }); }
 export { PX };

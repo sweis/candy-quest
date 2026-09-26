@@ -233,7 +233,9 @@ export function materials() {
     candy: new THREE.MeshStandardMaterial({ vertexColors: true, map, roughness: 0.42, metalness: 0 }),
     matte: new THREE.MeshStandardMaterial({ vertexColors: true, map, roughness: 0.8, metalness: 0 }),
     glow: new THREE.MeshBasicMaterial({ vertexColors: true, map, toneMapped: false }),
+    water: new THREE.MeshStandardMaterial({ color: 0x3fa6e6, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.88 }),
   };
+  mats.water.name = 'water';
   mats.candy.name = 'candy'; mats.matte.name = 'matte'; mats.glow.name = 'glow';
   return mats;
 }

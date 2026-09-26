@@ -22,7 +22,7 @@
   @keyframes slither{0%,100%{transform:translateX(-3px) rotate(-3deg)}50%{transform:translateX(3px) rotate(3deg)}}
 </style>
 <script>
-window.CQ_BUILD='v10.4 · 2026-07-22';
+window.CQ_BUILD='v10.5 · 2026-09-26';
 window.addEventListener('error',function(e){try{var b=document.getElementById('cq-err')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'cq-err'}));b.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#c62839;color:#fff;font:12px/1.4 monospace;padding:6px 10px;white-space:pre-wrap';b.textContent='Candy Quest error ('+window.CQ_BUILD+'): '+(e.message||e.type)+(e.filename?' @'+e.lineno+':'+e.colno:'');}catch(_){}});
 console.log('Candy Quest build',window.CQ_BUILD);
 </script>
@@ -2324,6 +2324,7 @@ function TitleScreen({onStart}){
       <div className="bigtitle">CANDY<br/><span className="a">QUEST</span></div>
       <div className="tagline">A real-time candy-world adventure · stop the evil Hichew King</div>
       <button className="bigbtn" onClick={onStart}>▶ Play</button>
+      <a href="3d/" style={{marginTop:16,fontFamily:'Baloo 2',fontWeight:800,fontSize:16,color:'#fff',textDecoration:'none',padding:'8px 18px',borderRadius:999,background:'rgba(58,34,51,.28)',boxShadow:'inset 0 0 0 2px rgba(255,255,255,.55)'}}>✨ Try Candy Quest 3D (beta) →</a>
       <div style={{position:'absolute',right:14,bottom:10,fontFamily:'Space Mono',fontSize:10,letterSpacing:'.08em',color:'rgba(255,255,255,.4)'}}>{window.CQ_BUILD}</div>
     </div>
   );

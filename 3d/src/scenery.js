@@ -97,7 +97,7 @@ function buildGround(W, H, pal, items) {
   const c0 = new THREE.Color(pal.ground[0]), c1 = new THREE.Color(pal.ground[1]), c2 = new THREE.Color(pal.ground[2]), c3 = new THREE.Color(pal.ground[3]);
   const dirt = new THREE.Color(pal.dirt), hill = new THREE.Color(pal.hill), tmp = new THREE.Color();
   const dirts = items.filter((o) => o.t === 'dirt').map((o) => ({ x: o.x * PX, z: o.y * PX, rx: 1.5 * (o.s || 1), rz: 0.92 * (o.s || 1) }));
-  const ponds = items.filter((o) => o.t === 'pond').map((o) => ({ x: o.x * PX, z: o.y * PX, rx: 2.5, rz: 1.35 }));
+  const ponds = items.filter((o) => o.t === 'pond').map((o) => ({ x: o.x * PX, z: o.y * PX, rx: 2.75, rz: 1.5 }));
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), z = pos.getZ(i);
     const n = fbm(x * 0.07, z * 0.07), n2 = vnoise(x * 0.45 + 3, z * 0.45 + 9);
@@ -108,7 +108,7 @@ function buildGround(W, H, pal, items) {
     let y = 0;
     if (out > 0) { const t = THREE.MathUtils.smoothstep(out, 1.5, 18); y = t * (1.2 + fbm(x * 0.05 + 40, z * 0.05) * 7); tmp.lerp(hill, t * 0.6); }
     for (const d of dirts) { const q = Math.hypot((x - d.x) / d.rx, (z - d.z) / d.rz) + (vnoise(x * 1.7, z * 1.7) - 0.5) * 0.35; if (q < 1) tmp.lerp(dirt, THREE.MathUtils.smoothstep(1 - q, 0, 0.25)); }
-    for (const p of ponds) { const q = Math.hypot((x - p.x) / p.rx, (z - p.z) / p.rz); if (q < 1.25) { tmp.lerp(new THREE.Color(0xf3dcb0), THREE.MathUtils.smoothstep(1.25 - q, 0, 0.12)); } if (q < 1) y = -0.35 * THREE.MathUtils.smoothstep(1 - q, 0, 0.35); }
+    for (const p of ponds) { const q = Math.hypot((x - p.x) / p.rx, (z - p.z) / p.rz); if (q < 1.25) { tmp.lerp(new THREE.Color(0xf3dcb0), THREE.MathUtils.smoothstep(1.25 - q, 0, 0.12)); } if (q < 1) y = -0.4 * THREE.MathUtils.smoothstep(1 - q, 0, 0.3); }
     pos.setY(i, y);
     col[i * 3] = tmp.r; col[i * 3 + 1] = tmp.g; col[i * 3 + 2] = tmp.b;
   }
@@ -197,8 +197,7 @@ export function buildBiome(kind, W_px, H_px) {
   // pond water (sits in the basin carved into the ground)
   for (const o of items.filter((it) => it.t === 'pond')) {
     const [x, z] = V(o.x, o.y);
-    const water = new THREE.Mesh(new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3fa6e6, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.88 }));
-    water.material.name = 'water';
+    const water = new THREE.Mesh(new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2), M.water);
     water.scale.set(2.45, 1, 1.3); water.position.set(x, -0.08, z); water.receiveShadow = true; water.name = 'water'; group.add(water);
     const pads = new Kit();
     for (const [dx, dz, s] of [[-1.2, 0.3, 1], [0.9, -0.4, 0.8], [1.5, 0.5, 0.7]]) { pads.add('root', G.cyl(0.32 * s, 0.32 * s, 0.03, 18), { c: 0x6fbf5a, p: [dx, 0, dz] }); pads.add('root', G.sphere(0.07 * s, 8, 6), { c: 0xff8fbf, p: [dx + 0.08, 0.05, dz] }); }
