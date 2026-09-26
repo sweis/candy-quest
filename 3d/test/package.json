@@ -1,0 +1,10 @@
+{
+  "name": "candy-quest-3d-test",
+  "private": true,
+  "type": "module",
+  "description": "Dev-only test + capture harness for Candy Quest (not shipped).",
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "playwright": "1.57.0"
+  }
+}

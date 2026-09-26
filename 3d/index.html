@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Candy Quest 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Fredoka:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="style.css?v=3d-0.1.0" rel="stylesheet" />
+<script>
+window.CQ3D_BUILD='3d-0.1.0 · 2026-09-26';
+window.addEventListener('error',function(e){try{var b=document.getElementById('cq-err')||document.body.appendChild(Object.assign(document.createElement('div'),{id:'cq-err'}));b.textContent='Candy Quest 3D error ('+window.CQ3D_BUILD+'): '+(e.message||e.type)+(e.filename?' @'+e.filename.split('/').pop()+':'+e.lineno:'');}catch(_){}});
+</script>
+</head>
+<body>
+<div id="app">
+  <canvas id="gl"></canvas>
+  <div id="tags"></div>
+  <div id="hud" hidden></div>
+  <div id="toasts"></div>
+  <div id="screen"></div>
+  <div id="panel"></div>
+  <div id="diag" hidden></div>
+  <div id="loading"><div class="spin"></div><div class="lt">Unwrapping the candy world…</div></div>
+</div>
+<div class="rotate-hint">🔄 Rotate your device to landscape to play</div>
+<script type="module" src="src/main.js?v=3d-0.1.0"></script>
+</body>
+</html>
