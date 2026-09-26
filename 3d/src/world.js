@@ -40,7 +40,7 @@ export class World {
     this.hemi = new THREE.HemisphereLight(0xd6ecff, 0x8cc77a, 1.15); this.scene.add(this.hemi);
     const sun = new THREE.DirectionalLight(0xfff0d6, 3.1); sun.castShadow = quality.shadows;
     sun.shadow.mapSize.set(quality.shadowMap, quality.shadowMap);
-    const sc = sun.shadow.camera; sc.left = -17; sc.right = 17; sc.top = 17; sc.bottom = -17; sc.near = 1; sc.far = 80;
+    const sc = sun.shadow.camera; sc.left = -14; sc.right = 14; sc.top = 14; sc.bottom = -14; sc.near = 1; sc.far = 80;
     sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03; sun.shadow.radius = 3;
     this.sun = sun; this.sunDir = new THREE.Vector3(-0.55, 0.72, 0.42).normalize();
     this.scene.add(sun, sun.target);
@@ -335,7 +335,7 @@ export class World {
     cam.fov = C.fov * (cam.aspect < 1.3 ? 1.18 : 1);
     cam.updateProjectionMatrix();
     const W = G.W * PX, H = G.H * PX;
-    if (C.fixed) { cam.position.set(W / 2, 46, H + 30); cam.lookAt(W / 2, 0, H / 2 + 1); this.fitSun(new THREE.Vector3(W / 2, 0, H / 2), 30); return; }
+    if (C.fixed) { cam.position.set(W / 2, 52, H + 14); cam.lookAt(W / 2, 0, H / 2 + 2); this.fitSun(new THREE.Vector3(W / 2, 0, H / 2), 30); return; }
     const pv = this.views.get(G.player.id);
     const target = tmpV.set(G.player.x * PX, 0, G.player.y * PX);
     if (this.camName === 'play' || this.camName === 'hud-check') { // keep the view mostly inside the map, like the classic camera
@@ -352,7 +352,7 @@ export class World {
     const look = this.camTarget.clone().add(new THREE.Vector3(...C.look));
     if (this.shake > 0) { this.shake = Math.max(0, this.shake - dt * 1.8); const s = this.shake * this.shake * 0.35; cam.position.x += (Math.random() - 0.5) * s; cam.position.y += (Math.random() - 0.5) * s; }
     cam.lookAt(look);
-    this.fitSun(this.camTarget, 17);
+    this.fitSun(this.camTarget, 14);
   }
   // shadow frustum fitted to the play area around the camera target, snapped to texels to stop shimmering
   fitSun(center, half) {

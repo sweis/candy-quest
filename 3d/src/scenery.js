@@ -172,8 +172,8 @@ export function buildBiome(kind, W_px, H_px) {
   for (let z = -0.6 + step; z <= H + 0.6 - step; z += step) for (const x of [-0.7, W + 0.7]) { const k = new Kit(); PROPS.gumdrop(k, {}, rnd); put(x, z + (rnd() - 0.5) * 0.3, k); }
   // backdrop: giant lollipops on the hills
   const cs = ['pink', 'teal', 'orange'];
-  for (let i = 0; i < 46; i++) {
-    const a = rnd() * Math.PI * 2, d = 6 + rnd() * 30;
+  for (let i = 0; i < 34; i++) {
+    const a = rnd() * Math.PI * 2, d = 14 + rnd() * 34;
     let x = W / 2 + Math.cos(a) * (W / 2 + d), z = H / 2 + Math.sin(a) * (H / 2 + d);
     if (x > -3 && x < W + 3 && z > -3 && z < H + 3) continue;
     const k = new Kit(); PROPS.giantLolli(k, { c: cs[i % 3] }, rnd);

@@ -5,7 +5,7 @@
 import * as THREE from '../vendor/three-0.186.1.min.js';
 
 // ------------------------------------------------------------------ pattern atlas
-const CELL = 128, GRID = 4, SIZE = CELL * GRID, PAD = 10;
+const CELL = 256, GRID = 4, SIZE = CELL * GRID, PAD = 16;
 export const PAT = { white: 0, cane: 1, caneDense: 2, caneWide: 3, swirlPink: 4, swirlTeal: 5, swirlOrange: 6, mint: 7,
   licorice: 8, cornBands: 9, bandsRed: 10, sugar: 11, gold: 12, swirlRainbow: 13, dots: 14, stripesV: 15 };
 
@@ -21,7 +21,7 @@ export function atlas() {
   const DARK = hex(0x2a2030), CY = hex(0xffe06a), CO = hex(0xff9f3c);
   const mix = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
   // smooth 2-colour step so stripes are crisp but not aliased: s in [0,1) periodic, returns 0..1
-  const band = (s, w = 0.5, soft = 0.02) => { s -= Math.floor(s); const a = THREE.MathUtils.smoothstep(s, 0, soft) - THREE.MathUtils.smoothstep(s, w, w + soft); return a; };
+  const band = (s, w = 0.5, soft = 0.012) => { s -= Math.floor(s); const a = THREE.MathUtils.smoothstep(s, 0, soft) - THREE.MathUtils.smoothstep(s, w, w + soft); return a; };
   const fns = {
     [PAT.white]: () => W,
     [PAT.cane]: (u, v) => mix(W, RED, band(u * 1 + v * 4)),
@@ -112,6 +112,13 @@ export const G = {
   star: (ro, ri, n = 5) => { const s = new THREE.Shape(); for (let i = 0; i < n * 2; i++) { const r = i % 2 ? ri : ro, a = (i / (n * 2)) * Math.PI * 2 + Math.PI / 2; const x = Math.cos(a) * r, y = Math.sin(a) * r; i ? s.lineTo(x, y) : s.moveTo(x, y); } s.closePath(); return s; },
   heart: (sz) => { const s = new THREE.Shape(); const k = sz; s.moveTo(0, -0.9 * k); s.bezierCurveTo(-0.2 * k, -0.6 * k, -1 * k, -0.2 * k, -0.95 * k, 0.3 * k); s.bezierCurveTo(-0.9 * k, 0.85 * k, -0.2 * k, 0.95 * k, 0, 0.45 * k); s.bezierCurveTo(0.2 * k, 0.95 * k, 0.9 * k, 0.85 * k, 0.95 * k, 0.3 * k); s.bezierCurveTo(1 * k, -0.2 * k, 0.2 * k, -0.6 * k, 0, -0.9 * k); return s; },
   plane: (w, h) => new THREE.PlaneGeometry(w, h),
+  // capsule spanning a -> b (model space); add() it with no p/r
+  limb: (a, b, r, rad = 8) => {
+    const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A), L = d.length();
+    const g = new THREE.CapsuleGeometry(r, Math.max(0.001, L), 4, rad);
+    g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
+    g.translate((A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2); return g;
+  },
   ico: (r, d = 0) => new THREE.IcosahedronGeometry(r, d),
   oct: (r) => new THREE.OctahedronGeometry(r, 0),
 };

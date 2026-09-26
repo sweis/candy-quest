@@ -234,9 +234,11 @@ export function flossFinch() {
 export function swirlbug() {
   const k = new Kit();
   k.part('legL', 'root', [0, 0.36, -0.2]).part('legR', 'root', [0, 0.36, 0.2]).part('body', 'root', [0, 0.36, 0]).part('head', 'body', [0.4, 0.62, 0]);
-  for (const [p, s] of [['legL', -1], ['legR', 1]]) for (const x of [-0.28, 0, 0.28]) {
-    k.add(p, G.capsule(0.035, 0.34, 3, 6), { c: 0x3d2613, p: [x, 0.22, s * 0.44], r: [s * 58, 0, 0] });
-    k.add(p, G.capsule(0.03, 0.18, 3, 6), { c: 0x3d2613, p: [x, 0.08, s * 0.62], r: [s * 10, 0, 0] });
+  for (const [p, s] of [['legL', -1], ['legR', 1]]) for (const x of [-0.3, 0, 0.3]) {
+    const knee = [x + x * 0.4, 0.46, s * 0.62], foot = [x + x * 0.7, 0.03, s * 0.74];
+    k.add(p, G.limb([x * 0.8, 0.5, s * 0.25], knee, 0.04), { c: 0x3d2613 });
+    k.add(p, G.limb(knee, foot, 0.035), { c: 0x3d2613 });
+    k.add(p, G.sphere(0.045, 8, 6), { c: 0x2a190c, p: foot });
   }
   k.add('body', G.sphere(0.5, 24, 18), { c: 0x6b4427, p: [-0.05, 0.58, 0], s: [1.15, 0.72, 0.9] });
   // candy shell: two swirl elytra

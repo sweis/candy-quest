@@ -392,3 +392,6 @@ export function snapshot(G) {
     gate: { x: G.gate.x, y: G.gate.y, open: G.bossDead },
   };
 }
+
+// Dev/test only: route damage through the real damage path (i-frames, KO, death, loot all apply).
+export function debugDamage(G, target, n) { applyDamage(G, target, n, null); }
