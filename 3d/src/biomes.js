@@ -215,7 +215,7 @@ export const POOLS = { pond: { color: 0x3fa6e6 }, cpool: { color: 0x8f6bf5, glow
 // painted into the ground's vertex colours (flat decals never z-fight)
 export const PAINT = { dirt: { color: 0xd9b27c, rx: 1.5, rz: 0.92 }, foam: { color: 0xf4fbff, rx: 1.1, rz: 0.45 }, drift: { color: 0xffffff, rx: 1.8, rz: 0.8 }, dune: { color: 0xf6d0a0, rx: 2.8, rz: 1.0 } };
 // tall props that fade when they stand between the camera and Pip
-export const OCCLUDERS = new Set(['lolli', 'cane', 'rcrystal', 'stala', 'pine', 'gmound', 'vinetree', 'choctree', 'canecoral', 'beam', 'bigcane', 'tower', 'wall', 'banner', 'ccboulder']);
+export const OCCLUDERS = new Set(['lolli', 'cane', 'rcrystal', 'stala', 'pine', 'gmound', 'vinetree', 'choctree', 'canecoral', 'beam', 'bigcane', 'tower', 'wall', 'banner', 'ccboulder', 'chewblock', 'mintrock', 'orerock', 'fudge', 'stone', 'cart']);
 export const FLAT = new Set(['pebble', 'tuft', 'flower', 'rail', 'snowlump', 'deserttuft', 'caneshards', 'shard', 'fern', 'coil', 'drift', 'dune', 'nerdpile']);
 
 // ---------------------------------------------------------------------- biome palettes + dressing

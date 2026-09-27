@@ -206,3 +206,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
 .graphics-reset{position:absolute;inset:0;z-index:90;display:grid;place-items:center;background:rgba(30,12,28,.7);color:#fff;font:600 1.2em var(--round)}
 
 body.on-title #tags{opacity:0}
+/* many pets fielded (Level 10): compact slots, no names */
+.party.many{gap:.3em}
+.party.many .pslot{width:calc(var(--u)*3.2)}
+.party.many .pslot .face{width:calc(var(--u)*3.2);height:calc(var(--u)*3.2);border-radius:.8em}
+.party.many .pslot .pn{display:none}

@@ -59,12 +59,13 @@ export class Hud {
     const hp = Math.max(0, Math.round(p.hp)); $('.hp i', E).style.width = (100 * hp) / p.maxhp + '%'; $('.hp .num', E).textContent = hp;
     $('.cry', E).textContent = G.crystals; $('.bait', E).textContent = G.inv[G.BAIT] || 0;
     const bf = $('.buff', E); bf.hidden = !G.buffs.length; bf.textContent = '✨ ' + G.buffs.map((b) => b.effect.toUpperCase()).join(' · ');
-    const shown = G.party.filter((m) => m.active || m.fainted), bench = G.party.length - shown.length;
+    const MAXSHOW = 7; // L10 fields every pet: show the first few, the rest count toward the Party button
+    const fielded = G.party.filter((m) => m.active || m.fainted), shown = fielded.slice(0, MAXSHOW), bench = G.party.length - shown.length;
     let h = shown.map((m) => `<button class="pslot${m.fainted ? ' faint' : ''}" data-a="party" title="${esc(m.name)}"><div class="face">${this.img('pet:' + m.key)}
       ${m.fainted ? '<span class="zz">💤</span>' : `<span class="lv">L${m.level}</span><div class="hpb"><i style="width:${(100 * m.hp) / m.maxhp}%"></i></div>`}</div><span class="pn">${esc(m.name.split(' ')[0])}</span></button>`).join('');
     for (let i = shown.length; i < 3; i++) h += `<div class="pslot empty"><div class="face">+</div><span class="pn">—</span></div>`;
     h += `<button class="pslot" data-a="party" title="Party (P)"><div class="face" style="font-size:1.3em">${bench > 0 ? '+' + bench : '👥'}</div><span class="pn">Party</span></button>`;
-    $('.party', E).innerHTML = h;
+    const pe = $('.party', E); pe.innerHTML = h; pe.classList.toggle('many', shown.length > 3);
     if (this.panel) this.renderPanel();
   }
   toast(msg) {

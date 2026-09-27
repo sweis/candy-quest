@@ -71,7 +71,7 @@ export class World {
     // gate
     const gk = buildGate(); this.gate = gk.build(this.M.candy, this.M.glow); bindRest(this.gate.userData.parts);
     this.gate.position.set(G.gate.x * PX, 0, G.gate.y * PX); this.scene.add(this.gate); b.group.add(this.gate);
-    this.gateOpen = null; this.gateLabel = this.tag('gatelabel', 'Candy Gate');
+    this.gateOpen = null; if (this.gateLabel) this.gateLabel.remove(); this.gateLabel = this.tag('gatelabel', 'Candy Gate');
     this.cut = true; this.sync(G, 0);
   }
 
@@ -185,7 +185,7 @@ export class World {
     v.yaw += d * (1 - Math.exp(-dt * (v.attackT > 0 ? 30 : 11)));
     v.group.rotation.y = v.yaw;
     v.attackT = Math.max(0, v.attackT - dt); v.hitT = Math.max(0, v.hitT - dt * 4); v.spawnT = Math.max(0, v.spawnT - dt / 0.4);
-    v.flash = Math.max(0, v.flash - dt * 6);
+    v.flash = Math.max(0, v.flash - dt * 9);
     const rim = v.rim; v.rim = Math.max(0, v.rim - dt * 4);
     if (v.faction === 'player') {
       this.dressHero(v, G);
@@ -223,7 +223,7 @@ export class World {
         case 'slash': { const p = this.views.get(G.player.id); if (p) { p.attackT = p.attackDur = 0.28; } this.spawnSlash(ev.x * PX, ev.y * PX, ev.dir); break; }
         case 'swing': if (v) { v.attackT = v.attackDur = v.ranged ? 0.45 : 0.36; } break;
         case 'hit': {
-          if (v) { v.hitT = 1; v.flash = 0.9; }
+          if (v) { v.hitT = 1; v.flash = v.e.boss ? 0.35 : 0.6; }
           const col = ev.faction === 'enemy' ? '#ffffff' : '#ffd24d';
           this.floatText(ev.x, ev.y, (v ? v.h : 1.5) + 0.3, String(Math.round(ev.n)), 'dmg' + (ev.boss ? ' big' : '') + (ev.faction === 'enemy' ? '' : ' hurt'), col);
           this.burst(ev.x * PX, (v ? v.h * 0.55 : 0.8), ev.y * PX, ev.faction === 'enemy' ? 0xffffff : 0xffd24d, 6, 3.2);
