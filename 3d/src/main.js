@@ -17,9 +17,9 @@ const store = {
 // ------------------------------------------------------------------ quality ladder (persisted; steps down after a lost context)
 const COARSE = matchMedia('(pointer:coarse)').matches;
 const TIERS = {
-  high: { name: 'high', msaa: true, maxDpr: 2, shadows: true, softShadows: true, shadowMap: 2048 },
-  medium: { name: 'medium', msaa: false, maxDpr: 2, shadows: true, softShadows: false, shadowMap: 1024 },
-  low: { name: 'low', msaa: false, maxDpr: 1.5, shadows: false, softShadows: false, shadowMap: 512 },
+  high: { name: 'high', msaa: true, maxDpr: 2, shadows: true, softShadows: true, shadowMap: 2048, lodNear: 11 },
+  medium: { name: 'medium', msaa: false, maxDpr: 2, shadows: true, softShadows: false, shadowMap: 1024, lodNear: 7 },
+  low: { name: 'low', msaa: false, maxDpr: 1.5, shadows: false, softShadows: false, shadowMap: 512, lodNear: 5 },
 };
 const tierName = Q.get('gfx') || store.get('gfx', COARSE ? 'medium' : 'high');
 const quality = TIERS[tierName] || TIERS.high;
@@ -48,10 +48,8 @@ function showTitle() {
     <a class="lnk" href="../">Play the classic 2D version</a>
     <div class="stamp">${window.CQ3D_BUILD}</div></div>`;
 }
-function levelThumb(id) {
-  if (id === 1 && app.thumb1) return `background-image:url(${app.thumb1})`;
-  return `background:${LEVELS[id].sky}`;
-}
+// Thumbnails are real engine frames rendered offline by test/thumbs.mjs (fallback: the classic sky gradient)
+function levelThumb(id) { return `background:url(thumbs/L${id}.jpg?v=${encodeURIComponent(window.CQ3D_BUILD)}) center/cover, ${LEVELS[id].sky}`; }
 function showSelect() {
   app.screen = 'select'; hud.unmount(); document.body.classList.remove('on-title');
   const cards = Object.values(LEVELS).map((L) => {
@@ -74,7 +72,8 @@ function showWin() {
   if (G.level < 10) { app.unlocked = { ...app.unlocked, [G.level + 1]: true }; store.set('unlocked', app.unlocked); }
   app.lastWin = { level: G.level, crystals: G.crystals };
   const next = LEVELS[G.level + 1];
-  screenEl.innerHTML = `<div class="scr win"><h1>Level ${G.level}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
+  const purple = G.level === 2 || G.level === 4 || G.level === 5;
+  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>Level ${G.level}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
     <div class="rewards"><div class="reward">${hud.img('crystal')}${G.crystals} crystals</div>${next ? `<div class="reward">🔓 ${next.name} unlocked!</div>` : '<div class="reward">🏆 Quest 1 complete!</div>'}</div>
     <div style="display:flex;gap:1em;margin-top:1em"><button class="bigbtn" data-go="select">Level Select →</button><button class="bigbtn alt" data-go="replay">↺ Replay</button></div></div>`;
   hud.el.hidden = true;
@@ -242,6 +241,12 @@ const hooks = {
   lose() { const G = app.G; G.iframe = 0; Sim.debugDamage(G, G.player, G.player.hp + 1); },
   killBoss() { const b = [...app.G.ents.values()].find((e) => e.boss); if (b) { b.hp = 0.5; } },
   cam(name) { world.setCam(name); return world.camName; },
+  // spawn a passive creature beside Pip and frame it (bestiary checks); returns its entity id
+  showcase(sprite) {
+    const G = app.G; for (const e of [...G.ents.values()]) if (e.showcase) { e.dead = true; G.ents.delete(e.id); }
+    const e = G._mk({ faction: 'wild', sprite, name: sprite, x: G.player.x + 170, y: G.player.y, trust: 0, speed: 0, home: { x: G.player.x + 170, y: G.player.y }, showcase: true, facing: 1 });
+    world.focusId = e.id; world.setCam('showcase'); return e.id;
+  },
   // screen position (CSS px) of an entity's chest, or of a world px point, for driving real mouse input in tests
   screenOf(idOrX, y) {
     if (typeof idOrX === 'string') { const v = world.views.get(idOrX) || world.itemViews.get(idOrX); if (!v) return null; const p = v.group.position; return world.project(p.x, (v.h || 0.5) * 0.5, p.z); }
@@ -269,7 +274,6 @@ async function boot() {
   world.sync(app.G, 0); world.renderer.compile(world.scene, world.camera); world.render();
   for (const p of [...world.parts, ...world.hearts, ...world.slashes]) p.m.visible = false; for (const m of world.projMeshes) m.visible = false;
   world.render();
-  app.thumb1 = snapThumb();
   if (document.fonts && document.fonts.ready) await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 1500))]);
   app.bootMs = Math.round(performance.now() - t0);
   showTitle();
@@ -280,14 +284,6 @@ async function boot() {
     if (Q.has('level')) startLevel(+Q.get('level'));
   }
   if (Q.has('diag')) $('#diag').hidden = false;
-}
-// level-select thumbnail for Level 1: a real frame of the forest from the overview camera
-function snapThumb() {
-  const prev = world.camName; world.setCam('overview'); world.sync(app.G, 0); world.render();
-  const c = document.createElement('canvas'); c.width = 320; c.height = 180; const g = c.getContext('2d');
-  const src = world.renderer.domElement; const sw = src.width, sh = src.height, ar = 320 / 180; let w = sw, h = sw / ar; if (h > sh) { h = sh; w = sh * ar; }
-  g.drawImage(src, (sw - w) / 2, (sh - h) / 2, w, h, 0, 0, 320, 180);
-  world.setCam(prev); return c.toDataURL('image/jpeg', 0.8);
 }
 boot().catch((e) => { console.error(e); const d = $('#loading'); if (d) d.querySelector('.lt').textContent = 'Could not start: ' + e.message; });
 export { app, PX, THREE };

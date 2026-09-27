@@ -3,10 +3,11 @@
 //   biped: body, head, armL, armR, legL, legR, weapon (child of armR), shield (child of armL)
 //   blob:  body          bird: body, wingL, wingR, legL, legR          bug: body, head, legL, legR
 import { Kit, G, PAT, THREE } from './kit.js';
+import { CATALOG2 } from './models2.js';
 
 const SKIN = 0xffdcbc, INK = 0x2a1a26, WHITE = 0xffffff;
 
-function eyes(k, part, x, y, z, r = 0.045, { glow = false, color = INK, hi = true } = {}) {
+export function eyes(k, part, x, y, z, r = 0.045, { glow = false, color = INK, hi = true } = {}) {
   k.add(part, G.sphere(r, 12, 10), { c: color, p: [x, y, -z], s: [0.6, 1.25, 1], glow });
   k.add(part, G.sphere(r, 12, 10), { c: color, p: [x, y, z], s: [0.6, 1.25, 1], glow });
   if (hi) {
@@ -14,14 +15,14 @@ function eyes(k, part, x, y, z, r = 0.045, { glow = false, color = INK, hi = tru
     k.add(part, G.sphere(r * 0.34, 8, 6), { c: WHITE, p: [x + r * 0.5, y + r * 0.45, z + r * 0.2], glow: true });
   }
 }
-function redEyes(k, part, x, y, z, r) {
+export function redEyes(k, part, x, y, z, r) {
   for (const s of [-1, 1]) {
     k.add(part, G.sphere(r, 14, 10), { c: 0xff2b3d, p: [x, y, s * z], s: [0.55, 1, 1], glow: true });
     k.add(part, G.sphere(r * 0.38, 8, 6), { c: 0xffd6d6, p: [x + r * 0.35, y + r * 0.3, s * z - r * 0.15], glow: true });
   }
 }
 // jagged grin: a dark lens with little white fangs
-function grin(k, part, x, y, w, { color = 0x1b0d14, teeth = 4 } = {}) {
+export function grin(k, part, x, y, w, { color = 0x1b0d14, teeth = 4 } = {}) {
   k.add(part, G.sphere(1, 16, 8), { c: color, p: [x, y, 0], s: [0.05, w * 0.28, w] });
   for (let i = 0; i < teeth; i++) {
     const z = -w * 0.7 + (i / (teeth - 1)) * w * 1.4;
@@ -285,6 +286,7 @@ export const CATALOG = {
 };
 export function catalog(sprite) {
   if (CATALOG[sprite]) return CATALOG[sprite];
+  if (CATALOG2[sprite]) return CATALOG2[sprite];
   let h = 0; for (const ch of sprite || '?') h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return { build: () => fallback((h % 360) / 360), rig: 'blob', h: 1.1, r: 0.6, fallback: true };
 }

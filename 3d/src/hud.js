@@ -4,7 +4,7 @@ import { eff, objective, canCraft, have, REVIVE_T } from './sim.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-export const PLAYABLE_3D = new Set([1]); // levels whose biome + cast are built in 3D (others play in the classic build)
+export const PLAYABLE_3D = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); // every level is built in 3D
 
 export class Hud {
   constructor(icons, act) {

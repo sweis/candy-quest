@@ -64,6 +64,49 @@ export function animate(v, dt, time) {
     if (P.head) P.head.rotation.x = Math.sin(t * 1.3) * 0.08;
     if (att >= 0) { b.position.x += Math.sin(att * Math.PI) * 0.35; b.rotation.z = -Math.sin(att * Math.PI) * 0.2; }
     if (hit > 0) b.rotation.z += hit * 0.25;
+  } else if (v.rig === 'quad') { // diagonal gait: FL+BR together, FR+BL together
+    const a = Math.sin(w) * 0.55 * amp;
+    if (P.legFL) P.legFL.rotation.z = a; if (P.legBR) P.legBR.rotation.z = a;
+    if (P.legFR) P.legFR.rotation.z = -a; if (P.legBL) P.legBL.rotation.z = -a;
+    const b = P.body; b.position.y += Math.abs(Math.sin(w)) * 0.04 * amp + Math.sin(t * 2) * 0.012;
+    if (P.head) P.head.rotation.z = Math.sin(t * 1.6) * 0.04;
+    if (P.tail) P.tail.rotation.y = Math.sin(t * 2.2 + w) * 0.18;
+    if (att >= 0) {
+      const l = Math.sin(att * Math.PI);
+      if (v.tailSwing && P.tail) { P.tail.rotation.y = -Math.sin(att * Math.PI * 2) * 1.1; b.rotation.y = l * 0.3; }
+      else if (P.head) { P.head.position.x += l * 0.25; P.head.rotation.z = -l * 0.3; }
+      else b.position.x += l * 0.3;
+    }
+    if (hit > 0) b.rotation.z += hit * 0.2;
+  } else if (v.rig === 'snake') {
+    const b = P.body; b.scale.set(1, 1 + Math.sin(t * 2.4) * 0.04, 1);
+    if (P.neck) { P.neck.rotation.x = Math.sin(t * 1.8) * 0.12; P.neck.rotation.z = Math.sin(t * 1.3) * 0.08 + (moving ? -0.15 : 0); }
+    if (P.head) P.head.rotation.z = Math.sin(t * 2.6) * 0.1;
+    if (moving) b.rotation.y = Math.sin(w * 1.2) * 0.2;
+    if (att >= 0 && P.neck) P.neck.rotation.z -= Math.sin(att * Math.PI) * 0.7; // strike forward
+    if (hit > 0) b.scale.y *= 1 - hit * 0.2;
+  } else if (v.rig === 'fish') {
+    const b = P.body; b.position.y += Math.sin(t * 2.4) * 0.12; b.rotation.z = Math.sin(t * 1.2) * 0.05;
+    if (P.tail) P.tail.rotation.y = Math.sin(t * (moving ? 14 : 5)) * (moving ? 0.6 : 0.3);
+    if (att >= 0) b.position.x += Math.sin(att * Math.PI) * 0.3;
+    if (hit > 0) b.rotation.z += hit * 0.4;
+  } else if (v.rig === 'worm') {
+    const segs = ['seg0', 'seg1', 'seg2', 'seg3', 'head'];
+    segs.forEach((n, i) => { const o = P[n]; if (!o) return; o.position.y += Math.max(0, Math.sin((moving ? w * 1.4 : t * 2.2) - i * 0.9)) * (moving ? 0.16 : 0.05); o.position.z += Math.sin(t * 1.5 - i * 0.7) * 0.04; });
+    if (att >= 0 && P.head) { P.head.position.x += Math.sin(att * Math.PI) * 0.3; P.head.position.y += Math.sin(att * Math.PI) * 0.15; }
+    if (hit > 0 && P.head) P.head.rotation.z += hit * 0.3;
+  } else if (v.rig === 'serpent') {
+    if (P.neck) { P.neck.rotation.z = Math.sin(t * 1.1) * 0.06; P.neck.rotation.x = Math.sin(t * 0.8) * 0.05; }
+    if (P.head) P.head.rotation.z = Math.sin(t * 1.7) * 0.08;
+    if (P.body) P.body.position.y += Math.sin(t * 1.4) * 0.06;
+    if (att >= 0 && P.neck) P.neck.rotation.z -= Math.sin(att * Math.PI) * 0.45;
+    if (hit > 0 && P.neck) P.neck.rotation.z += hit * 0.15;
+  } else if (v.rig === 'pillar') { // arms swing constantly, faster when attacking
+    const sp = att >= 0 ? 12 : 4.5;
+    if (P.armL) P.armL.rotation.z = Math.sin(t * sp) * 0.9;
+    if (P.armR) P.armR.rotation.z = -Math.sin(t * sp) * 0.9;
+    if (P.body) { P.body.rotation.z = Math.sin(t * 1.3) * 0.03 - 0.05 * amp; P.body.position.y += Math.abs(Math.sin(w)) * 0.05 * amp; }
+    if (hit > 0 && P.body) P.body.rotation.z += hit * 0.15;
   }
   // spawn pop + death squash apply to the whole model
   const root = v.model;

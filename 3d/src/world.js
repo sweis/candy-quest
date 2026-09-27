@@ -14,6 +14,7 @@ const CAMS = {
   'hero-close': { off: [3.4, 2.0, 5.2], fov: 35, look: [0, 1.0, 0] },
   overview: { fixed: true, fov: 45 },
   title: { off: [5.5, 3.2, 9.5], fov: 36, look: [0.8, 1.3, 0] },
+  showcase: { focus: true, fov: 32 },
 };
 
 export class World {
@@ -82,10 +83,21 @@ export class World {
     const model = k.build(mat, this.M.glow);
     const parts = model.userData.parts; bindRest(parts);
     const group = new THREE.Group(); group.add(model);
+    // distance LOD: the same kit merged into one mesh (+ one glow mesh) — 3 draws instead of ~19 for far creatures
+    // Shadows for creatures come from one merged mesh whose colour-pass material writes nothing (three.js culls shadow
+    // casters by the main camera's layers, so a layer trick can't hide it). 1 shadow draw per creature instead of one
+    // per part; the shadow keeps the bind pose while contact blobs ground the feet.
+    let lod = null;
+    if (e.faction !== 'player') {
+      const merged = k.static();
+      lod = new THREE.Mesh(merged, mat); lod.castShadow = false; const gl = k.staticGlow(); if (gl) lod.add(new THREE.Mesh(gl, this.M.glow)); lod.visible = false; group.add(lod);
+      const sh = new THREE.Mesh(merged, this.shadowOnlyMat); sh.castShadow = true; group.add(sh); lod.userData.shadow = sh;
+      model.traverse((o) => { if (o.isMesh) o.castShadow = false; });
+    }
     const scale = (cat.scale || 1) * (e.scale || 1);
     const shadow = new THREE.Mesh(this.blobGeo, this.blobMat); shadow.scale.setScalar(cat.r * 2.3 * scale); shadow.renderOrder = 1; group.add(shadow);
-    const v = { id: e.id, e, faction: e.faction, sprite: e.sprite, group, model, parts, mat, rig: cat.rig, h: cat.h * scale, r: cat.r * scale, baseScale: scale,
-      yaw: e.facing >= 0 ? 0 : Math.PI, walk: 0, speed: 0, seed: Math.random() * 10, attackT: 0, attackDur: 0.3, hitT: 0, spawnT: e.faction === 'ally' ? 1 : 0, dieT: -1, stride: 0.9 * scale,
+    const v = { id: e.id, e, faction: e.faction, sprite: e.sprite, group, model, lod, far: false, parts, mat, rig: cat.rig, h: cat.h * scale, r: cat.r * scale, baseScale: scale,
+      yaw: e.facing >= 0 ? 0 : Math.PI, walk: 0, speed: 0, seed: Math.random() * 10, attackT: 0, attackDur: 0.3, hitT: 0, spawnT: e.faction === 'ally' ? 1 : 0, dieT: -1, stride: (cat.stride || 0.9) * scale, tailSwing: !!cat.tailSwing,
       ranged: e.akind === 'ranged', flash: 0, rim: 0, fallback: !!cat.fallback };
     group.position.set(e.x * PX, 0, e.y * PX);
     this.scene.add(group);
@@ -184,6 +196,14 @@ export class World {
       v.mat.emissive.setRGB(v.flash + rim * rc[0] * 0.35, v.flash + rim * rc[1] * 0.35, v.flash + rim * rc[2] * 0.35);
     }
     animate(v, dt, this.time);
+    if (v.lod) { // hysteresis so creatures don't flicker between LODs at the boundary
+      const d = Math.hypot(v.group.position.x - this.camTarget.x, v.group.position.z - this.camTarget.z);
+      const near = this.q.lodNear || 11;
+      if (!v.far && d > near + 1.5 && this.camName !== 'showcase') v.far = true; else if (v.far && (d < near || this.camName === 'showcase')) v.far = false;
+      v.model.visible = !v.far; v.lod.visible = v.far;
+      v.lod.scale.copy(v.model.scale); v.lod.position.y = v.parts.body ? v.parts.body.position.y - v.parts.body.userData.rest.y : 0;
+      const sh = v.lod.userData.shadow; sh.scale.copy(v.lod.scale); sh.position.y = v.lod.position.y; sh.visible = v.dieT < 0;
+    }
     // bars
     if (v.bar) {
       const pct = e.faction === 'wild' ? e.trust : Math.max(0, (100 * e.hp) / e.maxhp);
@@ -240,6 +260,7 @@ export class World {
     this.ringGeo = new THREE.RingGeometry(0.34, 0.42, 32);
     const mk = (c) => { const m = new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.7, depthWrite: false }); m.name = 'ring'; return m; };
     this.ringMats = { common: mk(0xffffff), rare: mk(0xb79bff), epic: mk(0xffb84d) };
+    this.shadowOnlyMat = mk(0xffffff); this.shadowOnlyMat.colorWrite = false; this.shadowOnlyMat.opacity = 0; this.shadowOnlyMat.name = 'shadowOnly'; // shares the ring program
   }
   buildPools() {
     const glow = this.M.glow;
@@ -360,6 +381,11 @@ export class World {
     const fog = this.scene.fog, pal = this.biome && this.biome.pal;
     if (fog && pal) { const k = C.fixed ? 2.2 : 1; fog.near = (pal.fogNear || 46) * k; fog.far = (pal.fogFar || 150) * k; } // the overview sits far above the fog band
     if (C.fixed) { const hgt = Math.max(W, H * 1.6) * 1.15; cam.position.set(W / 2, hgt, H + hgt * 0.27); cam.lookAt(W / 2, 0, H / 2 + 2); this.fitSun(new THREE.Vector3(W / 2, 0, H / 2), Math.max(W, H) * 0.7); return; }
+    if (C.focus) { // frame one entity by its height (bestiary / hero shots)
+      const v = this.views.get(this.focusId); if (!v) return;
+      const d = v.h * 1.5 + 2.6, p = v.group.position;
+      cam.position.set(p.x + d * 0.42, v.h * 0.55 + d * 0.28, p.z + d); cam.lookAt(p.x, v.h * 0.45, p.z); this.fitSun(p, 10); return;
+    }
     const pv = this.views.get(G.player.id);
     const target = tmpV.set(G.player.x * PX, 0, G.player.y * PX);
     if (this.camName === 'play' || this.camName === 'hud-check') { // keep the view mostly inside the map, like the classic camera

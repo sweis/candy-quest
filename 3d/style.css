@@ -191,6 +191,8 @@ button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
 .lvl .cl{display:block;margin-top:.3em;font:600 .72em var(--round);color:var(--purple-d)}
 .scr.win{background:radial-gradient(130% 100% at 50% 0%,rgba(255,230,190,.92),rgba(255,184,77,.85) 60%,rgba(245,147,36,.9))}
 .scr.win h1{margin:0;font:800 4em/0.9 var(--display);color:#fff}
+.scr.win.purple{background:radial-gradient(130% 100% at 50% 0%,rgba(216,201,255,.94),rgba(169,140,255,.9) 60%,rgba(124,92,240,.92))}
+.scr.win.purple .tagline{color:rgba(255,255,255,.92)}
 .scr.win .tagline{color:rgba(80,40,0,.8);text-align:center}
 .rewards{display:flex;gap:.8em;flex-wrap:wrap;justify-content:center}
 .reward{display:flex;align-items:center;gap:.4em;padding:.5em 1em;border-radius:99px;background:rgba(255,255,255,.8);font:600 1em var(--round)}
