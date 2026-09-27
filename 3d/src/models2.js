@@ -182,8 +182,8 @@ export function tailBeast({ boss = false } = {}) {
   k.add('head', G.sphere(0.5, 18, 14), { c: skin, p: [1.3, 1.45, 0], s: [1.2, 0.9, 0.9] });
   k.add('head', G.sphere(0.3, 14, 10), { c: skin, p: [1.75, 1.3, 0], s: [1.3, 0.7, 0.8] });
   grin(k, 'head', 1.95, 1.22, 0.18, { teeth: 5 });
-  if (boss) { redEyes(k, 'head', 1.6, 1.6, 0.2, 0.08); for (const s of [-1, 1]) k.add('head', G.cone(0.1, 0.4, 6), { c: 0x2a0d4e, p: [1.25, 1.95, s * 0.2], r: [s * -15, 0, -20] }); }
-  else k.add('head', G.sphere(0.08, 10, 8), { c: 0xff2b3d, p: [1.65, 1.6, 0.25], glow: true });
+  if (boss) { redEyes(k, 'head', 1.78, 1.62, 0.19, 0.09); brows(k, 'head', 1.8, 1.74, 0.19, 0.2, 0x2a0d4e); for (const s of [-1, 1]) k.add('head', G.cone(0.1, 0.4, 6), { c: 0x2a0d4e, p: [1.25, 1.95, s * 0.2], r: [s * -15, 0, -20] }); }
+  else redEyes(k, 'head', 1.76, 1.62, 0.2, 0.085);
   k.add('tail', G.tube([[-1.0, 1.1, 0], [-1.7, 0.95, 0], [-2.4, 0.75, 0]], 0.26, 16, 10), { c: skin });
   k.add('tail', G.sphere(0.36, 16, 12), { c: 0x8fbf5f, p: [-2.6, 0.72, 0] });
   spikes(k, 'tail', [-2.6, 0.72, 0], [0.36, 0.36, 0.36], 7, { color: 0x211a24, len: 0.3, w: 0.08, minY: -0.8 }, rng(11));

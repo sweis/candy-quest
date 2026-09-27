@@ -16,7 +16,7 @@ export const CAMP = { x: 240, y: 760 };
 const D = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
-export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = false, onSavePets = null } = {}) {
+export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = false, onSavePets = null, solids = [], radiusOf = null } = {}) {
   const CFG = LEVELS[level] || LEVELS[1];
   const W = CFG.allPets ? 3000 : 2200, H = CFG.allPets ? 2000 : 1500;
   const rng = makeRng(seed);
@@ -73,8 +73,60 @@ export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = fals
     input: { up: false, down: false, left: false, right: false }, autoHit: !!autoHit,
     tick: 0, time: 0, events: [], onSavePets, _nid: () => nid++, _mk: mk,
     stats: { kills: 0, damageDealt: 0, damageTaken: 0, knockouts: 0, tamed: 0, collected: 0 },
+    solids, radiusOf,
   };
+  // nothing starts inside a rock: push every spawned creature and pickup out of solids
+  G.ents.forEach((e) => { if (e.faction !== 'gate') pushOutOfSolids(G, e, e.faction === 'item' ? 16 : radius(G, e)); if (e.home) { e.home.x = e.x; e.home.y = e.y; } });
   return G;
+}
+
+// ---------------------------------------------------------------- collision (3D port addition; the classic had none)
+// Creatures are circles. Same-side bodies push apart (Pip + pets, enemies, wild animals); opposite sides don't, so
+// melee reach is unchanged. Everything is pushed out of solid scenery; blocked movers sidestep for a moment.
+const GROUP = { player: 0, ally: 0, enemy: 1, wild: 2 };
+function radius(G, e) { if (e._rad == null) e._rad = G.radiusOf ? G.radiusOf(e.sprite, e) : e.faction === 'player' ? 16 : 20; return e._rad; }
+function pushOutOfSolids(G, e, r) { // iterate: a body wedged between two solids needs a few rounds to settle
+  for (let it = 0; it < 4; it++) {
+    let moved = false;
+    for (const o of G.solids) {
+      const dx = e.x - o.x, dy = e.y - o.y, d = Math.hypot(dx, dy), min = o.r + r;
+      if (d < min - 0.01) { moved = true; if (d < 0.01) { e.x = o.x + min; continue; } e.x = o.x + (dx / d) * min; e.y = o.y + (dy / d) * min; }
+    }
+    if (!moved) return;
+  }
+}
+function mv(e, ux, uy, dist) {
+  if (e.detourT > 0) { const a = e.detourSign * 1.1, c = Math.cos(a), s = Math.sin(a); const nx = ux * c - uy * s; uy = ux * s + uy * c; ux = nx; }
+  e.x += ux * dist; e.y += uy * dist; e._want = (e._want || 0) + dist;
+}
+function resolveCollisions(G, dt) {
+  const mob = [];
+  G.ents.forEach((e) => { if (!e.dead && GROUP[e.faction] != null) mob.push(e); });
+  const mass = (e) => (e.faction === 'player' ? 4 : e.boss ? 6 : 1);
+  for (let pass = 0; pass < 2; pass++) {
+    for (let i = 0; i < mob.length; i++) {
+      const a = mob[i], ra = radius(G, a), ga = GROUP[a.faction];
+      for (let j = i + 1; j < mob.length; j++) {
+        const b = mob[j]; if (GROUP[b.faction] !== ga) continue;
+        const min = ra + radius(G, b); let dx = b.x - a.x, dy = b.y - a.y;
+        if (Math.abs(dx) >= min || Math.abs(dy) >= min) continue;
+        let d = Math.hypot(dx, dy); if (d >= min) continue;
+        if (d < 0.01) { dx = j % 2 ? 1 : -1; dy = 0.5; d = Math.hypot(dx, dy); }
+        const push = min - d, ma = mass(a), mb = mass(b), ka = mb / (ma + mb), kb = ma / (ma + mb);
+        a.x -= (dx / d) * push * ka; a.y -= (dy / d) * push * ka; b.x += (dx / d) * push * kb; b.y += (dy / d) * push * kb;
+      }
+    }
+    for (const e of mob) { e.x = clamp(e.x, 40, G.W - 40); e.y = clamp(e.y, 60, G.H - 30); pushOutOfSolids(G, e, radius(G, e)); }
+  }
+  // blocked movers (moved < 35% of what they wanted for a while) sidestep around the obstacle for ~0.75 s
+  for (const e of mob) {
+    if (e.detourT > 0) e.detourT -= dt;
+    const want = e._want || 0; e._want = 0;
+    if (want < 0.3 * dt || e._px == null) continue;
+    const moved = Math.hypot(e.x - e._px, e.y - e._py);
+    if (moved < want * 0.35) e.stuckN = (e.stuckN || 0) + 1; else e.stuckN = Math.max(0, (e.stuckN || 0) - 1);
+    if (e.stuckN > 8) { e.stuckN = 0; e.detourT = 45; e.detourSign = e.detourSign === 1 ? -1 : 1; }
+  }
 }
 
 // ---------------------------------------------------------------- helpers
@@ -120,7 +172,7 @@ function grantXP(G, amt) {
   savePets(G); emit(G, { t: 'ui' });
 }
 function dropLoot(G, e) {
-  const here = (id, qty = 1) => { const ix = (G.rng() - 0.5) * 60, iy = (G.rng() - 0.5) * 40; G._mk({ faction: 'item', item: id, qty, sprite: null, x: e.x + ix, y: e.y + iy, spawnedAt: G.time }); };
+  const here = (id, qty = 1) => { const ix = (G.rng() - 0.5) * 60, iy = (G.rng() - 0.5) * 40; const it = G._mk({ faction: 'item', item: id, qty, sprite: null, x: e.x + ix, y: e.y + iy, spawnedAt: G.time }); pushOutOfSolids(G, it, 16); };
   const k = e.mkey, r = G.rng();
   if (e.boss) { here('jawbreaker_mace'); here('peppermint_plate'); here('crystal', 3); here('alien_goo', 2); here('star_sprinkle', 2); here('rainbow_brittle'); }
   else if ((k && k.includes('gloop')) || (k && k.includes('lump'))) { here('alien_goo'); here('sour_dust'); if (r < 0.4) here('glowberry'); if (r < 0.3) here('gummy_worm'); if (r < 0.16) here('sugar_vest'); if (r < 0.1) here('star_sprinkle'); }
@@ -262,7 +314,7 @@ export function step(G, dt = 1) {
   const p = G.player, S = SPD * dt, I = G.input;
   G.dashCd -= dt / 60; G.iframe -= dt; p.cd -= dt / 60;
   G.buffs.forEach((b) => { if (b.t != null) b.t -= dt / 60; }); G.buffs = G.buffs.filter((b) => b.t == null || b.t > 0);
-  const allies = []; G.ents.forEach((x) => { if (x.faction === 'ally') allies.push(x); });
+  const allies = []; G.ents.forEach((x) => { x._px = x.x; x._py = x.y; if (x.faction === 'ally') allies.push(x); });
   // keep party HP in sync with the fielded ally
   allies.forEach((e) => { const m = G.party.find((pm) => pm.uid === e.puid); if (m) m.hp = e.hp; });
   // fainted allies recover over time
@@ -295,9 +347,11 @@ export function step(G, dt = 1) {
   const L = Math.hypot(mx, my) || 1; let sp = p.speed * S;
   G.buffs.forEach((b) => { if (b.effect === 'speed') sp *= 1.5; });
   if (p.dash > 0) { sp *= 2.4; p.dash -= dt; }
-  const ox = p.x, oy = p.y;
-  p.x = clamp(p.x + (mx / L) * (mx || my ? sp : 0), 40, G.W - 40); p.y = clamp(p.y + (my / L) * (mx || my ? sp : 0), 60, G.H - 30);
-  p.vx = (p.x - ox) / (dt || 1); p.vy = (p.y - oy) / (dt || 1);
+  if (mx || my) {
+    if (p.moveT && !(I.up || I.down || I.left || I.right)) mv(p, mx / L, my / L, sp); // click-to-move may sidestep a rock
+    else { p.x += (mx / L) * sp; p.y += (my / L) * sp; } // keys: slide along obstacles, never auto-steer
+  }
+  p.x = clamp(p.x, 40, G.W - 40); p.y = clamp(p.y, 60, G.H - 30);
   if (mx) p.facing = mx > 0 ? 1 : -1;
   // auto-hit
   if (G.autoHit && p.cd <= 0) {
@@ -307,7 +361,6 @@ export function step(G, dt = 1) {
   // entities AI
   G.ents.forEach((e) => {
     if (e.dead) return;
-    const ex = e.x, ey = e.y;
     if (e.cd > 0) e.cd -= dt / 60;
     if (e.faction === 'ally') {
       let foe = null, fdv = 440; G.ents.forEach((t) => { if (t.faction === 'enemy') { const d = D(e, t); if (d < fdv) { fdv = d; foe = t; } } });
@@ -316,15 +369,15 @@ export function step(G, dt = 1) {
         [p, ...allies].forEach((f) => { if (!f.dead && f.hp / f.maxhp < lr && D(e, f) < 300) { lr = f.hp / f.maxhp; low = f; } });
         if (low && lr < 0.95 && e.cd <= 0) { e.cd = 1.8; low.hp = Math.min(low.maxhp, low.hp + 10); emit(G, { t: 'heal', id: low.id, from: e.id, x: low.x, y: low.y, n: 10 }); }
         const tx = p.x - 50, ty = p.y - 40, dx = tx - e.x, dy = ty - e.y, dl = Math.hypot(dx, dy); // hover near player
-        if (dl > 10) { e.x += (dx / dl) * e.speed * S; e.y += (dy / dl) * e.speed * S; }
+        if (dl > 10) { mv(e, dx / dl, dy / dl, e.speed * S); }
       } else if (foe) {
         const d = D(e, foe); e.facing = foe.x > e.x ? 1 : -1;
-        if (d > e.range * 0.9) { const dx = foe.x - e.x, dy = foe.y - e.y, dl = Math.hypot(dx, dy); e.x += (dx / dl) * e.speed * S; e.y += (dy / dl) * e.speed * S; }
+        if (d > e.range * 0.9) { const dx = foe.x - e.x, dy = foe.y - e.y, dl = Math.hypot(dx, dy); mv(e, dx / dl, dy / dl, e.speed * S); }
         else if (e.cd <= 0) { e.cd = e.akind === 'ranged' ? 1.4 : 0.8; emit(G, { t: 'swing', id: e.id }); if (e.akind === 'ranged') spawnProj(G, e, foe, 'ally', '#a98cff'); else dealDmg(G, e, foe); }
       } else { // follow player formation
         const idx = allies.indexOf(e);
-        const tx = p.x - 60 - idx * 30, ty = p.y + 40 + (idx % 2) * 20, dx = tx - e.x, dy = ty - e.y, dl = Math.hypot(dx, dy);
-        if (dl > 14) { e.x += (dx / dl) * e.speed * S; e.y += (dy / dl) * e.speed * S; e.facing = dx > 0 ? 1 : -1; }
+        const tx = p.x - 62 - Math.floor(idx / 2) * 56, ty = p.y + 22 + (idx % 2) * 48, dx = tx - e.x, dy = ty - e.y, dl = Math.hypot(dx, dy); // 3D: two rows, bodies need room
+        if (dl > 14) { mv(e, dx / dl, dy / dl, e.speed * S); e.facing = dx > 0 ? 1 : -1; }
       }
     } else if (e.faction === 'enemy') {
       let tgt = null, td = 380;
@@ -338,21 +391,22 @@ export function step(G, dt = 1) {
       if (e.dead) return;
       if (tgt) {
         e.facing = tgt.x > e.x ? 1 : -1; const d = td;
-        if (d > e.range * 0.85) { const dx = tgt.x - e.x, dy = tgt.y - e.y, dl = Math.hypot(dx, dy); e.x += (dx / dl) * e.speed * S; e.y += (dy / dl) * e.speed * S; }
+        if (d > e.range * 0.85) { const dx = tgt.x - e.x, dy = tgt.y - e.y, dl = Math.hypot(dx, dy); mv(e, dx / dl, dy / dl, e.speed * S); }
         else if (e.cd <= 0) {
           e.cd = e.akind === 'ranged' ? 1.6 : 1.2; emit(G, { t: 'swing', id: e.id });
           if (e.akind === 'ranged') { const pc = e.proj || (e.sprite === 'corn_box' ? '#ff9124' : '#ff5d6c'); spawnProj(G, e, tgt, 'enemy', pc); }
           else dealDmg(G, e, tgt);
         }
       } else { // wander near home
-        const dx = e.home.x - e.x, dy = e.home.y - e.y, dl = Math.hypot(dx, dy); if (dl > 20) { e.x += (dx / dl) * e.speed * S * 0.5; e.y += (dy / dl) * e.speed * S * 0.5; }
+        const dx = e.home.x - e.x, dy = e.home.y - e.y, dl = Math.hypot(dx, dy); if (dl > 20) { mv(e, dx / dl, dy / dl, e.speed * S * 0.5); }
       }
     } else if (e.faction === 'wild') {
       const dx = e.home.x - e.x, dy = e.home.y - e.y, dl = Math.hypot(dx, dy);
-      if (dl > 26) { e.x += (dx / dl) * e.speed * S * 0.4; e.y += (dy / dl) * e.speed * S * 0.4; e.facing = dx > 0 ? 1 : -1; }
+      if (dl > 26) { mv(e, dx / dl, dy / dl, e.speed * S * 0.4); e.facing = dx > 0 ? 1 : -1; }
     } else if (e.faction === 'item') { if (D(p, e) < 48) collect(G, e); }
-    if (!e.dead && e !== p) { e.vx = (e.x - ex) / (dt || 1); e.vy = (e.y - ey) / (dt || 1); }
   });
+  resolveCollisions(G, dt);
+  G.ents.forEach((e) => { if (!e.dead && e._px != null && e.faction !== 'item') { e.vx = (e.x - e._px) / (dt || 1); e.vy = (e.y - e._py) / (dt || 1); } });
   // projectiles (fly at chest height, 44 px above the ground anchor)
   for (let i = G.projs.length - 1; i >= 0; i--) {
     const pr = G.projs[i]; pr.x += pr.vx * dt; pr.y += pr.vy * dt; pr.life -= dt;

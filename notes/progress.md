@@ -39,10 +39,16 @@ Level-select thumbnails are engine frames in `3d/thumbs/` — regenerate with `n
 | `campaign.mjs [from] [to]` | levels 1→10 via real clicks (Pip dev-boosted): win screen, next unlock, pets carry, L10 fields all pets |
 | `programs-all.mjs` | no shader compile after the title frame across all 10 levels in one session |
 | `perf.mjs [levels]` / `drawcensus.mjs <lvl>` | draw calls / tris per spot; per-category draw tally |
+| `collide.mjs` | node, all 10 levels: pets/Pip never overlap, nothing inside a solid, no pickup spawned in one, keys slide around rocks |
 | `biomes.mjs`, `bestiary.mjs`, `thumbs.mjs` | environment stills, creature close-ups (cq.showcase), level thumbnails |
 
 Last run (2026-09-26, Apple M4 Pro via ANGLE/Metal, headless Chrome): all pass except the novice-bot
 "0 knockouts" gate — bot clears L1 in ~60 s sim time but takes 1 KO (classic balance: Captain 340 HP / 20 ATK).
+
+## Collision (3d-0.2.1 — not in the classic)
+`src/solids.js` turns each level's scenery into solid circles sized to the 3D props (ponds/decals stay walkable). The sim
+pushes Pip + pets apart, enemies apart, wild apart (opposite sides don't collide, so melee reach is unchanged), pushes
+everyone out of solids, and blocked movers sidestep briefly. Pet formation is two rows so bodies fit.
 
 ## Numbers (1280×720, high tier; 2026-09-26 after levels 2–10)
 L1: 138–178 draws, ~0.4–0.5M tris. L10 (111 enemies): 173–400 draws, 1.2–1.9M tris (medium tier: 352 max).

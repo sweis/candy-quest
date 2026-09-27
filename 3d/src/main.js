@@ -6,6 +6,8 @@ import { bakeIcons } from './icons.js';
 import { Hud, PLAYABLE_3D, helpSheet } from './hud.js';
 import { randomSeed } from './rng.js';
 import { THREE } from './kit.js';
+import { solidsFor } from './solids.js';
+import { catalog } from './models.js';
 
 const Q = new URLSearchParams(location.search);
 const DEV = Q.has('dev');
@@ -31,9 +33,12 @@ let world, hud, icons;
 const $ = (s) => document.querySelector(s);
 const screenEl = $('#screen');
 
+// collision radius (world px) from the 3D model's footprint; slightly under the visual radius so crowds read as touching
+export function bodyRadius(sprite, e) { if (sprite === 'hero') return 15; const c = catalog(sprite); return Math.round(c.r * (c.scale || 1) * ((e && e.scale) || 1) * 50 * 0.72); }
 function newGame(level, seed) {
   const s = seed ?? app.seed ?? randomSeed();
-  return Sim.createGame(level, { seed: s, savedPets: store.get('pets', []), autoHit: store.get('autohit', false), onSavePets: (p) => store.set('pets', p) });
+  return Sim.createGame(level, { seed: s, savedPets: store.get('pets', []), autoHit: store.get('autohit', false), onSavePets: (p) => store.set('pets', p),
+    solids: solidsFor(level), radiusOf: bodyRadius });
 }
 
 // ------------------------------------------------------------------ screens
@@ -244,7 +249,9 @@ const hooks = {
   // spawn a passive creature beside Pip and frame it (bestiary checks); returns its entity id
   showcase(sprite) {
     const G = app.G; for (const e of [...G.ents.values()]) if (e.showcase) { e.dead = true; G.ents.delete(e.id); }
-    const e = G._mk({ faction: 'wild', sprite, name: sprite, x: G.player.x + 170, y: G.player.y, trust: 0, speed: 0, home: { x: G.player.x + 170, y: G.player.y }, showcase: true, facing: 1 });
+    let x = G.player.x + 170, y = G.player.y; const r = bodyRadius(sprite);
+    while (G.solids.some((o) => Math.hypot(x - o.x, y - o.y) < o.r + r) && x < G.W - 100) x += 20; // clear spot, so collision never nudges it
+    const e = G._mk({ faction: 'wild', sprite, name: sprite, x, y, trust: 0, speed: 0, home: { x, y }, showcase: true, facing: 1 });
     world.focusId = e.id; world.setCam('showcase'); return e.id;
   },
   // screen position (CSS px) of an entity's chest, or of a world px point, for driving real mouse input in tests
