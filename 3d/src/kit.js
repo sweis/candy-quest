@@ -137,7 +137,7 @@ function roundedBox(w, h, d, r, seg) {
 
 // ------------------------------------------------------------------ builder
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _s = new THREE.Vector3(), _p = new THREE.Vector3();
-const _col = new THREE.Color();
+const _col = new THREE.Color(), _UP = new THREE.Vector3(0, 1, 0);
 const DEG = Math.PI / 180;
 
 export class Kit {
@@ -150,7 +150,8 @@ export class Kit {
     if (o.pat != null || o.uv) remapUV(geo, o.pat ?? 0, o.uv); else remapUV(geo, PAT.white);
     const s = o.s == null ? [1, 1, 1] : typeof o.s === 'number' ? [o.s, o.s, o.s] : o.s;
     const r = o.r || [0, 0, 0];
-    _e.set(r[0] * DEG, r[1] * DEG, r[2] * DEG, o.order || 'XYZ'); _q.setFromEuler(_e);
+    if (o.dir) { _p.set(...o.dir).normalize(); _q.setFromUnitVectors(_UP, _p); } // point local +Y along dir
+    else { _e.set(r[0] * DEG, r[1] * DEG, r[2] * DEG, o.order || 'XYZ'); _q.setFromEuler(_e); }
     _m.compose(_p.set(...(o.p || [0, 0, 0])), _q, _s.set(...s));
     geo.applyMatrix4(_m);
     const n = geo.attributes.position.count, col = new Float32Array(n * 3);
@@ -236,6 +237,7 @@ export function materials() {
     water: new THREE.MeshStandardMaterial({ color: 0x3fa6e6, roughness: 0.08, metalness: 0, transparent: true, opacity: 0.88 }),
   };
   mats.water.name = 'water';
+  mats.sea = mats.water.clone(); mats.sea.opacity = 1; mats.sea.roughness = 0.25; mats.sea.name = 'sea'; // same program as water
   mats.candy.name = 'candy'; mats.matte.name = 'matte'; mats.glow.name = 'glow';
   return mats;
 }

@@ -63,7 +63,8 @@ export class World {
     const b = buildBiome(G.CFG.scenery, G.W, G.H); this.biome = b; this.scene.add(b.group);
     this.scene.background = null; if (this.sky) this.scene.remove(this.sky);
     this.sky = makeSky(b.pal); this.sky.material.uniforms.sunDir.value.copy(this.sunDir); this.scene.add(this.sky);
-    this.scene.fog = new THREE.Fog(b.pal.fog, 46, 150);
+    this.scene.fog = new THREE.Fog(b.pal.fog, b.pal.fogNear || 46, b.pal.fogFar || 150);
+    this.renderer.toneMappingExposure = b.pal.exposure || 1;
     this.hemi.color.set(b.pal.hemiSky); this.hemi.groundColor.set(b.pal.hemiGround); this.hemi.intensity = b.pal.hemiI;
     this.sun.color.set(b.pal.sun); this.sun.intensity = b.pal.sunI;
     // gate
@@ -356,7 +357,9 @@ export class World {
     cam.fov = C.fov * (cam.aspect < 1.3 ? 1.18 : 1);
     cam.updateProjectionMatrix();
     const W = G.W * PX, H = G.H * PX;
-    if (C.fixed) { cam.position.set(W / 2, 52, H + 14); cam.lookAt(W / 2, 0, H / 2 + 2); this.fitSun(new THREE.Vector3(W / 2, 0, H / 2), 30); return; }
+    const fog = this.scene.fog, pal = this.biome && this.biome.pal;
+    if (fog && pal) { const k = C.fixed ? 2.2 : 1; fog.near = (pal.fogNear || 46) * k; fog.far = (pal.fogFar || 150) * k; } // the overview sits far above the fog band
+    if (C.fixed) { const hgt = Math.max(W, H * 1.6) * 1.15; cam.position.set(W / 2, hgt, H + hgt * 0.27); cam.lookAt(W / 2, 0, H / 2 + 2); this.fitSun(new THREE.Vector3(W / 2, 0, H / 2), Math.max(W, H) * 0.7); return; }
     const pv = this.views.get(G.player.id);
     const target = tmpV.set(G.player.x * PX, 0, G.player.y * PX);
     if (this.camName === 'play' || this.camName === 'hud-check') { // keep the view mostly inside the map, like the classic camera
