@@ -224,7 +224,134 @@ export function cabbageArmadillo() {
   return k;
 }
 
+// ------------------------------------------------------------------ Tomato Shores
+const TOM = 0xe8312a, TOM_L = 0xff6a4d, VINE = 0x4f9a3a;
+function tomato(k, part, c, R, seed = 1) { // glossy squashed tomato with a green star calyx + stem on top
+  const r = rng(seed);
+  k.add(part, G.sphere(R, 22, 16), { c: TOM, p: c, s: [1, 0.86, 1] });
+  k.add(part, G.sphere(R * 0.3, 10, 8), { c: 0xffb3a0, p: [c[0] - R * 0.35, c[1] + R * 0.45, c[2] + R * 0.35], s: [1, 0.5, 1] });
+  for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2 + r() * 0.2; k.add(part, G.sphere(R * 0.2, 8, 6), { c: VINE, p: [c[0] + Math.cos(a) * R * 0.22, c[1] + R * 0.84, c[2] + Math.sin(a) * R * 0.22], s: [1.8, 0.3, 0.6], r: [0, (-a * 180) / Math.PI, 0] }); }
+  k.add(part, G.cyl(R * 0.05, R * 0.06, R * 0.25, 6), { c: 0x3d7a2a, p: [c[0], c[1] + R * 0.95, c[2]] });
+}
+export function tomatoSoldier({ archer = false } = {}) {
+  const k = new Kit();
+  k.part('legL', 'root', [0, 0.75, -0.2]).part('legR', 'root', [0, 0.75, 0.2]).part('body', 'root', [0, 0.75, 0])
+   .part('head', 'body', [0, 1.9, 0]).part('armL', 'body', [0, 1.55, -0.62]).part('armR', 'body', [0, 1.55, 0.62])
+   .part('weapon', 'armR', [0.12, 1.0, 0.7]).part('shield', 'armL', [0.14, 1.1, -0.72]);
+  for (const [p, z] of [['legL', -0.2], ['legR', 0.2]]) { k.add(p, G.capsule(0.08, 0.5, 4, 8), { c: VINE, p: [0, 0.45, z] }); k.add(p, G.sphere(0.14, 10, 8), { c: 0x3d7a2a, p: [0.06, 0.08, z], s: [1.5, 0.6, 1] }); }
+  tomato(k, 'body', [0, 1.5, 0], 0.72, archer ? 5 : 3);
+  redEyes(k, 'head', 0.62, 1.72, 0.2, 0.1); brows(k, 'head', 0.66, 1.88, 0.2);
+  grin(k, 'head', 0.66, 1.3, 0.24, { color: 0x6e0a0a, teeth: 5 });
+  for (const [p, z] of [['armL', -0.64], ['armR', 0.64]]) k.add(p, G.limb([0, 1.55, z], [0.12, 1.0, z * 1.1], 0.07), { c: VINE });
+  const W = (g, o) => k.add('weapon', g, o), steel = 0xe3e8ef;
+  if (archer) { // a vine bow with a tomato-tipped arrow
+    const z = 0.7, y = 1.05;
+    W(G.tube([[0.1, y - 0.6, z], [0.26, y - 0.3, z], [0.32, y, z], [0.26, y + 0.3, z], [0.1, y + 0.6, z]], 0.035, 24, 8), { c: 0x3d7a2a });
+    W(G.limb([0.1, y - 0.6, z], [-0.02, y, z], 0.007, 4), { c: 0xffffff }); W(G.limb([-0.02, y, z], [0.1, y + 0.6, z], 0.007, 4), { c: 0xffffff });
+    W(G.limb([-0.02, y, z], [0.6, y, z], 0.014, 6), { c: 0xd9b2a0 }); W(G.sphere(0.07, 10, 8), { c: TOM, p: [0.66, y, z] });
+  } else {
+    W(G.rbox(0.06, 0.95, 0.14, 0.03), { c: steel, p: [0.12, 1.6, 0.7] }); W(G.cone(0.07, 0.18, 4), { c: steel, p: [0.12, 2.16, 0.7], s: [0.45, 1, 1] });
+    W(G.rbox(0.1, 0.07, 0.4, 0.03), { c: 0xffc93c, p: [0.12, 1.1, 0.7] });
+    k.add('shield', G.cyl(0.36, 0.36, 0.08, 28), { c: TOM, p: [0.16, 1.15, -0.8], r: [90, 0, 0] });   // a tomato-slice shield
+    k.add('shield', G.cyl(0.28, 0.28, 0.09, 24), { c: 0xff8a6a, p: [0.16, 1.15, -0.8], r: [90, 0, 0] });
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; k.add('shield', G.sphere(0.03, 6, 4), { c: 0xfff0c8, p: [0.16 + Math.cos(a) * 0.15, 1.15 + Math.sin(a) * 0.15, -0.86] }); }
+  }
+  return k;
+}
+export function tomatoStingray() {
+  const k = new Kit(); k.part('body', 'root', [0, 0.8, 0]).part('wingL', 'body', [0, 0.8, -0.3]).part('wingR', 'body', [0, 0.8, 0.3]).part('tail', 'body', [-0.55, 0.8, 0]);
+  k.add('body', G.sphere(0.5, 22, 12), { c: TOM, p: [0.05, 0.8, 0], s: [1.25, 0.28, 0.75] });
+  for (const [p, sd] of [['wingL', -1], ['wingR', 1]]) k.add(p, G.sphere(0.42, 16, 10), { c: TOM_L, p: [-0.05, 0.79, sd * 0.55], s: [0.9, 0.12, 1.1], r: [0, sd * 25, 0] });
+  k.add('body', G.sphere(0.38, 16, 8), { c: 0xffd2c4, p: [0.05, 0.74, 0], s: [1.2, 0.2, 0.9] });
+  for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; k.add('body', G.sphere(0.07, 8, 6), { c: VINE, p: [-0.05 + Math.cos(a) * 0.09, 0.93, Math.sin(a) * 0.09], s: [1.8, 0.3, 0.6], r: [0, (-a * 180) / Math.PI, 0] }); }
+  eyes(k, 'body', 0.48, 0.9, 0.14, 0.045);
+  k.add('body', G.torus(0.06, 0.012, 6, 12, Math.PI), { c: 0x8a1a10, p: [0.58, 0.78, 0], r: [0, 90, 180] });
+  k.add('tail', G.tube([[-0.5, 0.8, 0], [-0.9, 0.78, 0.04], [-1.3, 0.72, -0.04]], 0.03, 16, 6), { c: VINE });
+  k.add('tail', G.sphere(0.08, 10, 8), { c: TOM, p: [-1.32, 0.72, -0.04] });
+  return k;
+}
+export function tomatoShark() {
+  const k = new Kit(); k.part('body', 'root', [0, 0.6, 0]).part('tail', 'body', [-1.5, 0.8, 0]).part('head', 'body', [1.0, 0.8, 0]);
+  k.add('body', G.sphere(1.0, 26, 18), { c: TOM, p: [0, 0.8, 0], s: [1.8, 0.75, 0.85] });
+  k.add('body', G.sphere(0.8, 20, 12), { c: 0xffd2c4, p: [0.3, 0.45, 0], s: [1.8, 0.4, 0.8] });
+  const fin = new THREE.Shape(); fin.moveTo(0.5, 0); fin.quadraticCurveTo(0.1, 0.5, -0.35, 0.95); fin.quadraticCurveTo(-0.2, 0.4, -0.5, 0); fin.closePath();
+  k.add('body', G.extrude(fin, 0.14, 0.04), { c: TOM, p: [-0.1, 1.45, 0] });
+  for (const sd of [-1, 1]) k.add('body', G.extrude(fin, 0.08, 0.03), { c: TOM_L, p: [0.5, 0.45, sd * 0.72], r: [sd * 70, 0, 20], s: 0.55 });
+  for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; k.add('body', G.sphere(0.16, 8, 6), { c: VINE, p: [0.2 + Math.cos(a) * 0.2, 1.42, Math.sin(a) * 0.2], s: [1.8, 0.3, 0.6], r: [0, (-a * 180) / Math.PI, 0] }); }
+  const tf = new THREE.Shape(); tf.moveTo(0, 0); tf.lineTo(-0.7, 0.75); tf.lineTo(-0.5, 0); tf.lineTo(-0.7, -0.6); tf.closePath();
+  k.add('tail', G.extrude(tf, 0.12, 0.04), { c: TOM, p: [-1.6, 0.85, 0] });
+  // jaws + teeth, mean red eyes
+  k.add('head', G.sphere(1, 20, 10), { c: 0x3a0a0a, p: [1.62, 0.55, 0], s: [0.25, 0.2, 0.5] });
+  for (let i = 0; i < 7; i++) { const z = -0.4 + i * 0.13; k.add('head', G.cone(0.05, 0.16, 5), { c: 0xffffff, p: [1.7, 0.68, z], r: [180, 0, 0] }); k.add('head', G.cone(0.045, 0.13, 5), { c: 0xffffff, p: [1.68, 0.44, z + 0.06] }); }
+  redEyes(k, 'head', 1.45, 1.05, 0.38, 0.1); brows(k, 'head', 1.5, 1.2, 0.38);
+  // splash ring: it swims through the shallows
+  k.add('body', G.torus(1.6, 0.12, 8, 36), { c: 0xd6f4ff, p: [0, 0.05, 0], r: [90, 0, 0], s: [1.2, 0.7, 1] });
+  return k;
+}
+// ------------------------------------------------------------------ Pea Savannah
+const PEA = [0x8fdc4a, 0x7bc83a, 0xa6e866, 0x6fb52f], POD = 0x5aa83a;
+export function peaPip() {
+  const k = new Kit();
+  k.part('legL', 'root', [0, 0.35, -0.12]).part('legR', 'root', [0, 0.35, 0.12]).part('body', 'root', [0, 0.35, 0])
+   .part('head', 'body', [0, 0.95, 0]).part('armL', 'body', [0, 0.72, -0.3]).part('armR', 'body', [0, 0.72, 0.3]);
+  for (const [p, z] of [['legL', -0.12], ['legR', 0.12]]) { k.add(p, G.sphere(0.1, 10, 8), { c: PEA[1], p: [0, 0.22, z] }); k.add(p, G.sphere(0.11, 10, 8), { c: PEA[3], p: [0.04, 0.08, z], s: [1.3, 0.7, 1] }); }
+  for (const [x, y, z, r, i] of [[0, 0.52, 0, 0.26, 0], [0.05, 0.72, 0.14, 0.18, 2], [0.02, 0.74, -0.15, 0.18, 1]]) k.add('body', G.sphere(r, 14, 12), { c: PEA[i], p: [x, y, z] });
+  k.add('head', G.sphere(0.3, 18, 14), { c: PEA[2], p: [0.02, 1.08, 0] });
+  redEyes(k, 'head', 0.26, 1.14, 0.1, 0.065); grin(k, 'head', 0.29, 0.98, 0.1, { color: 0x1e3a0e, teeth: 3 });
+  for (const [p, s] of [['armL', -1], ['armR', 1]]) { k.add(p, G.sphere(0.09, 8, 6), { c: PEA[0], p: [0.02, 0.62, s * 0.34] }); k.add(p, G.sphere(0.08, 8, 6), { c: PEA[3], p: [0.06, 0.48, s * 0.36] }); }
+  return k;
+}
+export function peaLauncher() {
+  const k = new Kit(); k.part('body', 'root', [0, 0, 0]);
+  for (const [x, z] of [[0.35, -0.35], [0.35, 0.35], [-0.45, 0]]) k.add('body', G.limb([x * 0.5, 0.7, z * 0.5], [x, 0.05, z], 0.07), { c: 0x3d7a2a });
+  k.add('body', G.sphere(0.6, 22, 14), { c: POD, p: [0, 0.95, 0], s: [1.7, 0.55, 0.62] });   // the pod barrel
+  for (let i = 0; i < 5; i++) k.add('body', G.sphere(0.17, 12, 10), { c: PEA[i % 4], p: [-0.7 + i * 0.3, 1.2, 0] });       // peas along the open seam
+  k.add('body', G.cyl(0.24, 0.3, 0.3, 16), { c: 0x3d7a2a, p: [1.02, 0.95, 0], r: [0, 0, -90] });
+  k.add('body', G.cyl(0.18, 0.18, 0.02, 14), { c: 0x10200a, p: [1.18, 0.95, 0], r: [0, 0, -90] });
+  redEyes(k, 'body', 0.62, 1.3, 0.2, 0.08); brows(k, 'body', 0.64, 1.42, 0.2);
+  return k;
+}
+export function podzilla() {
+  const k = new Kit();
+  k.part('legL', 'root', [0, 0.8, -0.28]).part('legR', 'root', [0, 0.8, 0.28]).part('body', 'root', [0, 0.8, 0])
+   .part('head', 'body', [0, 2.6, 0]).part('armL', 'body', [0, 2.0, -0.62]).part('armR', 'body', [0, 2.0, 0.62]);
+  for (const [p, z] of [['legL', -0.28], ['legR', 0.28]]) { k.add(p, G.capsule(0.14, 0.55, 4, 10), { c: 0x3d7a2a, p: [0, 0.5, z] }); k.add(p, G.sphere(0.2, 10, 8), { c: PEA[3], p: [0.08, 0.1, z], s: [1.5, 0.6, 1.1] }); }
+  k.add('body', G.sphere(0.8, 24, 18), { c: POD, p: [0, 1.9, 0], s: [0.72, 1.55, 0.85] });  // an upright pea pod
+  k.add('body', G.tube([[0.52, 0.8, 0], [0.62, 1.9, 0], [0.52, 3.0, 0]], 0.04, 20, 6), { c: 0x3d7a2a });
+  for (let i = 0; i < 5; i++) k.add('body', G.sphere(0.2, 12, 10), { c: PEA[i % 4], p: [0.5, 1.2 + i * 0.3, 0] });           // a row of peas down its belly
+  k.add('head', G.cone(0.2, 0.5, 10), { c: 0x3d7a2a, p: [0, 3.35, 0], r: [0, 0, -10] });
+  redEyes(k, 'head', 0.5, 2.85, 0.2, 0.11); brows(k, 'head', 0.54, 3.0, 0.2); grin(k, 'head', 0.58, 2.55, 0.26, { color: 0x10200a, teeth: 5 });
+  for (const [p, s] of [['armL', -1], ['armR', 1]]) { k.add(p, G.limb([0, 2.0, s * 0.6], [0.2, 1.3, s * 0.85], 0.1), { c: 0x3d7a2a }); k.add(p, G.sphere(0.2, 12, 10), { c: PEA[0], p: [0.22, 1.2, s * 0.88] }); }
+  return k;
+}
+export function peaCheetah() {
+  const k = new Kit(); const hip = 0.62;
+  k.part('body', 'root', [0, hip, 0]).part('head', 'body', [0.7, 0.8, 0]).part('tail', 'body', [-0.7, 0.75, 0]);
+  for (const [n, x, s] of [['legFL', 0.45, -1], ['legFR', 0.45, 1], ['legBL', -0.45, -1], ['legBR', -0.45, 1]]) {
+    const z = s * 0.2; k.part(n, 'root', [x, hip, z]); k.add(n, G.limb([x, hip + 0.05, z], [x + 0.03, 0.05, z], 0.06), { c: 0xb8e87a });
+    k.add(n, G.sphere(0.07, 8, 6), { c: 0x7bc83a, p: [x + 0.05, 0.04, z], s: [1.4, 0.6, 1] });
+  }
+  k.add('body', G.capsule(0.26, 0.9, 6, 14), { c: 0xb8e87a, p: [0, 0.75, 0], r: [0, 0, 90], s: [1, 0.92, 0.88] });
+  const r = rng(21);
+  for (let i = 0; i < 18; i++) { const x = -0.55 + r() * 1.1, a = r() * Math.PI * 2; k.add('body', G.sphere(0.055, 8, 6), { c: PEA[3], p: [x, 0.75 + Math.sin(a) * 0.22, Math.cos(a) * 0.21] }); }   // pea spots
+  k.add('head', G.sphere(0.24, 18, 14), { c: 0xb8e87a, p: [0.82, 0.88, 0], s: [1.2, 0.95, 0.95] });
+  k.add('head', G.sphere(0.035, 6, 4), { c: 0x2a1a26, p: [1.1, 0.86, 0] });
+  eyes(k, 'head', 0.98, 0.95, 0.1, 0.04);
+  for (const s of [-1, 1]) { k.add('head', G.capsule(0.012, 0.12, 2, 4), { c: 0x3d6b2a, p: [1.02, 0.84, s * 0.1], r: [0, 0, 20] }); k.add('head', G.cone(0.06, 0.12, 6), { c: 0xb8e87a, p: [0.76, 1.1, s * 0.12] }); }
+  k.add('tail', G.tube([[-0.7, 0.78, 0], [-1.05, 0.72, 0], [-1.3, 0.85, 0.05], [-1.38, 1.05, 0]], 0.05, 20, 8), { c: 0xb8e87a });
+  for (const t of [0.3, 0.6, 0.9]) k.add('tail', G.sphere(0.055, 6, 4), { c: PEA[3], p: [-0.7 - t * 0.6, 0.76 + t * 0.12, 0] });
+  return k;
+}
+
 export const CATALOG3 = {
+  tomato_sword: { build: () => tomatoSoldier(), rig: 'biped', h: 2.5, r: 0.8 },
+  tomato_archer: { build: () => tomatoSoldier({ archer: true }), rig: 'biped', h: 2.5, r: 0.8 },
+  tomato_shark: { build: tomatoShark, rig: 'fish', h: 2.4, r: 1.6, scale: 1.3 },
+  tomato_stingray: { build: tomatoStingray, rig: 'ray', h: 1.2, r: 0.7 },
+  pea_pip: { build: peaPip, rig: 'biped', h: 1.4, r: 0.4, stride: 0.6 },
+  pea_launcher: { build: peaLauncher, rig: 'blob', h: 1.6, r: 0.75 },
+  podzilla: { build: podzilla, rig: 'biped', h: 3.6, r: 0.9, scale: 1.4 },
+  pea_cheetah: { build: peaCheetah, rig: 'quad', h: 1.2, r: 0.6, stride: 1.4 },
   cabbage_roller: { build: () => cabbageRoller(), rig: 'roller', h: 1.6, r: 0.8, rollR: 0.75 },
   cabbage_king: { build: () => cabbageRoller({ king: true }), rig: 'roller', h: 1.6, r: 0.8, rollR: 0.75, scale: 1.8 },
   cabbage_lobber: { build: cabbageLobber, rig: 'biped', h: 2.5, r: 0.6 },

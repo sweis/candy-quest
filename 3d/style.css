@@ -180,7 +180,6 @@ button{font-family:inherit;font-size:inherit;color:inherit;cursor:pointer}
 .qtitle{margin:0;font:800 2.4em/1.1 var(--display);color:var(--ink)}
 .quest.q2 .qtitle{font-size:2.8em;letter-spacing:.02em;text-transform:uppercase;color:#2f7a3a}
 .quest.q2 .qtitle b{font-weight:800}
-.quest.q2 .lvls{grid-template-columns:repeat(1,minmax(0,13em))}
 .backlink{position:absolute;left:1.2em;top:1.2em;border:0;border-radius:99px;padding:.45em 1em;background:rgba(255,255,255,.7);font:600 .9em var(--round)}
 .lvls{display:grid;grid-template-columns:repeat(5,minmax(0,11em));gap:.9em;margin-top:.6em}
 @media (max-aspect-ratio:4/3){ .lvls{grid-template-columns:repeat(3,minmax(0,11em))} }

@@ -15,6 +15,7 @@ const R = {
   brocctree: (s) => 22 * s, brocbush: () => 30, caulirock: (s) => 40 * s,
   carrotpeak: (s) => 46 * s, crag: (s) => 38 * s,
   cabbageboulder: (s) => 62 * s, spire: (s) => 34 * s,
+  tomatopalm: (s) => 12 * s, bigtomato: (s) => 46 * s, peatree: (s) => 12 * s, peaboulder: (s) => 38 * s, podbush: () => 22,
   tower: (s) => 74 * s, banner: () => 7, chewblock: (s) => 48 * s, brazier: () => 14,
 };
 

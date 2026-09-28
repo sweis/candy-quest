@@ -143,6 +143,15 @@ const B = {
     for (const [x, y, z] of [[0.08, 0.36, 0.1], [-0.12, 0.3, 0.08], [0.1, 0.2, -0.14]]) k.add('root', G.sphere(0.03, 6, 4), { c: 0xffffff, p: [x, y, z] });
     k.add('root', G.sphere(0.05, 8, 6), { c: 0xffffff, p: [-0.07, 0.33, 0.12], glow: true });
   },
+  cherry_taffy(k) {
+    k.add('root', G.capsule(0.1, 0.3, 6, 12), { c: 0xe8312a, p: [0, 0.2, 0], r: [0, 0, 90] });
+    k.add('root', G.torus(0.09, 0.025, 6, 16), { c: 0xffd6d0, p: [0, 0.2, 0], r: [0, 90, 0] });
+    for (const s of [-1, 1]) k.add('root', G.cone(0.08, 0.12, 8), { c: 0xfff0f0, p: [s * 0.3, 0.2, 0], r: [0, 0, s * 90] });
+  },
+  peanut_brittle(k) {
+    k.add('root', G.rbox(0.36, 0.08, 0.26, 0.03), { c: 0xe0a84a, p: [0, 0.12, 0], r: [0, 12, 6] });
+    for (const [x, z] of [[-0.1, -0.05], [0.05, 0.06], [0.12, -0.07], [-0.03, 0.08]]) k.add('root', G.sphere(0.045, 8, 6), { c: 0x8fdc4a, p: [x, 0.18, z] });
+  },
   star_pop(k) {
     k.add('root', G.cyl(0.018, 0.018, 0.26, 8), { c: 0xf4ece0, p: [0, 0.13, 0] });
     k.add('root', G.extrude(G.star(0.17, 0.08), 0.06, 0.02), { c: 0xffa53c, p: [0, 0.38, 0] });

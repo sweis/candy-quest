@@ -116,6 +116,13 @@ export function animate(v, dt, time) {
     const b = P.body; b.position.y += Math.abs(Math.sin(t * 2.2)) * 0.03;
     if (att >= 0) { const l = Math.sin(att * Math.PI); b.position.y += l * 0.9; b.position.x += l * 0.35; if (att > 0.8) b.scale.set(1.15, 0.8, 1.15); }
     if (hit > 0) b.scale.y *= 1 - hit * 0.2;
+  } else if (v.rig === 'ray') { // gliding stingray: wing tips ripple, tail trails, hovers
+    const b = P.body; b.position.y += Math.sin(t * 2.2) * 0.1; b.rotation.x = Math.sin(t * 1.6) * 0.06;
+    const f = Math.sin(t * (moving ? 9 : 4)) * (moving ? 0.45 : 0.22);
+    if (P.wingL) P.wingL.rotation.x = f; if (P.wingR) P.wingR.rotation.x = -f;
+    if (P.tail) P.tail.rotation.y = Math.sin(t * 3) * 0.25;
+    if (att >= 0) { b.position.x += Math.sin(att * Math.PI) * 0.25; b.rotation.z = -Math.sin(att * Math.PI) * 0.2; }
+    if (hit > 0) b.rotation.z += hit * 0.3;
   } else if (v.rig === 'serpent') {
     if (P.neck) { P.neck.rotation.z = Math.sin(t * 1.1) * 0.06; P.neck.rotation.x = Math.sin(t * 0.8) * 0.05; }
     if (P.head) P.head.rotation.z = Math.sin(t * 1.7) * 0.08;
