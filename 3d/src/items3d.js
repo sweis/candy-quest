@@ -126,6 +126,23 @@ const B = {
     const s = new THREE.Shape(); s.moveTo(0, 0.22); s.lineTo(0.18, 0.15); s.lineTo(0.16, -0.05); s.quadraticCurveTo(0.08, -0.18, 0, -0.22); s.quadraticCurveTo(-0.08, -0.18, -0.16, -0.05); s.lineTo(-0.18, 0.15); s.closePath();
     k.add('root', G.extrude(s, 0.07, 0.03), { c: 0x6fd3a4, p: [0, 0.26, 0] });
   },
+  sour_apple(k) { // a green hard candy in a twist wrapper
+    k.add('root', G.sphere(0.17, 20, 14), { c: 0x8fdc4a, p: [0, 0.22, 0], s: [1.25, 1, 1] });
+    for (const s of [-1, 1]) k.add('root', G.cone(0.1, 0.18, 10), { c: 0xe8fff0, p: [s * 0.28, 0.22, 0], r: [0, 0, s * 90] });
+    k.add('root', G.sphere(0.05, 8, 6), { c: 0xffffff, p: [-0.06, 0.32, 0.1], glow: true });
+  },
+  carrot_pop(k) { // carrot-cake pop: cake ball, cream-cheese frosting, a tiny carrot on top
+    k.add('root', G.cyl(0.018, 0.018, 0.26, 8), { c: 0xf4ece0, p: [0, 0.13, 0] });
+    k.add('root', G.sphere(0.15, 16, 12), { c: 0xc98a4a, p: [0, 0.36, 0] });
+    k.add('root', G.sphere(0.152, 16, 8, ), { c: 0xfff4e6, p: [0, 0.4, 0], s: [1, 0.6, 1] });
+    k.add('root', G.cone(0.035, 0.12, 8), { c: 0xff8a2b, p: [0, 0.54, 0], r: [0, 0, 180] });
+    k.add('root', G.sphere(0.025, 6, 4), { c: 0x6fc24f, p: [0, 0.6, 0] });
+  },
+  lime_gumball(k) {
+    k.add('root', G.sphere(0.2, 20, 16), { c: 0x9be15d, p: [0, 0.22, 0] });
+    for (const [x, y, z] of [[0.08, 0.36, 0.1], [-0.12, 0.3, 0.08], [0.1, 0.2, -0.14]]) k.add('root', G.sphere(0.03, 6, 4), { c: 0xffffff, p: [x, y, z] });
+    k.add('root', G.sphere(0.05, 8, 6), { c: 0xffffff, p: [-0.07, 0.33, 0.12], glow: true });
+  },
   star_pop(k) {
     k.add('root', G.cyl(0.018, 0.018, 0.26, 8), { c: 0xf4ece0, p: [0, 0.13, 0] });
     k.add('root', G.extrude(G.star(0.17, 0.08), 0.06, 0.02), { c: 0xffa53c, p: [0, 0.38, 0] });

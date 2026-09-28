@@ -3,7 +3,7 @@
 // inside one, and keyboard-walking into a rock slides instead of passing through.
 import { createGame, step, aimAt } from '../src/sim.js';
 import { solidsFor } from '../src/solids.js';
-import { LEVELS, ALLIES } from '../src/data.js';
+import { LEVELS, ALLIES } from '../src/content.js';
 import { catalog } from '../src/models.js';
 const bodyRadius = (sprite, e) => { if (sprite === 'hero') return 15; const c = catalog(sprite); return Math.round(c.r * (c.scale || 1) * ((e && e.scale) || 1) * 50 * 0.72); };
 let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };

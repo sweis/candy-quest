@@ -1,7 +1,7 @@
 // Biome assembly: sky, fog, ground, props and the Candy Gate. Static props are merged into a few chunked meshes
 // that share the one candy shader, so a whole biome costs a handful of draw calls. Definitions live in biomes.js.
 import { Kit, G, PAT, THREE, mergeGeos, materials } from './kit.js';
-import { makeScenery } from './data.js';
+import { sceneryFor } from './content.js';
 import { PROPS, POOLS, PAINT, OCCLUDERS, FLAT, BIOMES, biome } from './biomes.js';
 
 export const PX = 1 / 50; // world px -> metres
@@ -95,7 +95,7 @@ export function buildGate() {
 export function buildBiome(kind, W_px, H_px) {
   const pal = biome(kind), W = W_px * PX, H = H_px * PX, M = materials();
   const group = new THREE.Group(); group.name = 'biome:' + kind;
-  const items = makeScenery(kind);
+  const items = sceneryFor(kind);
   const rnd = rngFrom(1234 + kind.length * 97);
   group.add(buildGround(W, H, pal, items));
 

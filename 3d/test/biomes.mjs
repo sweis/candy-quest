@@ -1,6 +1,6 @@
 // Environment-only stills for every biome: overview + play cam, enemies cleared so the dressing reads.
 import { serve, launch, watchErrors, pollUntil, OUT } from './lib.mjs';
-import { LEVELS } from '../src/data.js';
+import { LEVELS } from '../src/content.js';
 const only = process.argv.slice(2).map(Number);
 const { srv, base } = await serve(); const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } }); const errors = watchErrors(page);

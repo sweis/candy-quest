@@ -5,7 +5,7 @@
 //
 // The renderer and HUD never mutate this state directly; they call the action functions below and
 // drain G.events (toasts, damage numbers, slashes, hearts…) once per rendered frame.
-import { ALLIES, MONSTERS, ITEMS, RECIPES, LEVELS } from './data.js';
+import { ALLIES, MONSTERS, ITEMS, RECIPES, LEVELS, PET_MAX } from './content.js';
 import { makeRng } from './rng.js';
 
 export const SPD = 2.6;
@@ -40,7 +40,7 @@ export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = fals
   mk({ faction: 'enemy', mkey: CFG.boss, sprite: bk.sprite, name: bk.name, x: 1860, y: by, maxhp: bk.hp, hp: bk.hp, atk: bk.atk, def: bk.def, speed: bk.speed,
     range: bk.range, akind: bk.kind, xp: bk.xp, spike: bk.spike, boss: true, scale: 1, home: { x: 1860, y: by } });
   // wild tameable — kept near the start so you can build a party early (skip species you already own)
-  const pets = (Array.isArray(savedPets) ? savedPets : []).filter((s) => s && ALLIES[s.key]).slice(0, 11);
+  const pets = (Array.isArray(savedPets) ? savedPets : []).filter((s) => s && ALLIES[s.key]).slice(0, PET_MAX);
   const owned = new Set(pets.map((s) => s.key));
   CFG.wild.filter((k) => !owned.has(k)).forEach((k, i) => {
     const a = ALLIES[k]; const sp = i < 2 ? { x: rnd(300, 560), y: rnd(560, 980) } : spot(140, 360);
@@ -228,7 +228,7 @@ export function doTame(G) {
   G.ents.forEach((w) => { if (w.faction === 'wild') { const d = D(p, w); if (d < bd) { bd = d; best = w; } } });
   if (!best) { toast(G, 'No wild animal nearby to tame.'); return; }
   if (G.party.some((m) => m.key === best.wkey)) { toast(G, `You already have a ${best.name} — 1 of each pet!`); return; }
-  if (G.party.length >= 11) { toast(G, 'Pet limit reached — 11 pets max!'); return; }
+  if (G.party.length >= PET_MAX) { toast(G, `Pet limit reached — ${PET_MAX} pets max!`); return; }
   if ((G.inv[BAIT] || 0) <= 0) { toast(G, `Need a ${ITEMS[BAIT].name} to tame — search the map for some!`); return; }
   G.inv[BAIT]--; best.trust = Math.min(100, best.trust + 34);
   emit(G, { t: 'heart', id: best.id, x: best.x, y: best.y, trust: best.trust });

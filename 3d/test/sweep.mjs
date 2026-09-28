@@ -1,7 +1,7 @@
 // Stills sweep over EVERY level in the game's own registry (LEVELS), play + overview cams, plus a phone-landscape
 // pass driven by touch taps. Fails on blank frames (mean luma ~0 or <2% pixel variance) or any console error.
 import { serve, launch, watchErrors, pollUntil, OUT } from './lib.mjs';
-import { LEVELS } from '../src/data.js';
+import { LEVELS } from '../src/content.js';
 
 const { srv, base } = await serve(); const browser = await launch();
 let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };

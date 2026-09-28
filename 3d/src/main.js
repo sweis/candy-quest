@@ -1,9 +1,10 @@
 // Candy Quest 3D — boot, screens, input, fixed-step loop, persistence and dev hooks.
 import * as Sim from './sim.js';
-import { LEVELS, ITEMS, MONSTERS } from './data.js';
+import { LEVELS, ITEMS, MONSTERS } from './content.js';
 import { World, PX } from './world.js';
 import { bakeIcons } from './icons.js';
-import { Hud, PLAYABLE_3D, helpSheet } from './hud.js';
+import { Hud, helpSheet } from './hud.js';
+import { QUESTS, questOf } from './content.js';
 import { randomSeed } from './rng.js';
 import { THREE } from './kit.js';
 import { solidsFor } from './solids.js';
@@ -57,16 +58,21 @@ function showTitle() {
 function levelThumb(id) { return `background:url(thumbs/L${id}.jpg?v=${encodeURIComponent(window.CQ3D_BUILD)}) center/cover, ${LEVELS[id].sky}`; }
 function showSelect() {
   app.screen = 'select'; hud.unmount(); document.body.classList.remove('on-title');
-  const cards = Object.values(LEVELS).map((L) => {
-    const in3d = PLAYABLE_3D.has(L.id), open = !!app.unlocked[L.id];
-    const cls = !in3d ? 'soon' : open ? 'open' : 'locked';
-    const badge = !in3d ? 'Classic only' : open ? '▶ Play' : '🔒 Clear Level ' + (L.id - 1);
-    return `<button class="lvl ${cls}" data-lvl="${L.id}"><div class="th" style="${levelThumb(L.id)}"></div><span class="badge">${badge}</span>
-      <div class="mt"><div class="n">LEVEL ${L.id}</div><h3>${L.name}</h3>${!in3d ? '<span class="cl">Coming to 3D — play it in Classic ↗</span>' : ''}</div></button>`;
+  const card = (L) => {
+    const open = isOpen(L.id), qn = L.qn || L.id;
+    const prev = Object.values(LEVELS).find((x) => (x.quest || 1) === (L.quest || 1) && (x.qn || x.id) === qn - 1);
+    const badge = open ? '▶ Play' : '🔒 Clear ' + (prev ? prev.name : 'Level ' + (qn - 1));
+    return `<button class="lvl ${open ? 'open' : 'locked'}" data-lvl="${L.id}"><div class="th" style="${levelThumb(L.id)}"></div><span class="badge">${badge}</span>
+      <div class="mt"><div class="n">LEVEL ${qn}</div><h3>${L.name}</h3></div></button>`;
+  };
+  const sections = QUESTS.map((Q) => {
+    const ls = Object.values(LEVELS).filter((L) => questOf(L) === Q.n); if (!ls.length) return '';
+    return `<section class="quest q${Q.n}"><h2 class="qtitle">${Q.n === 1 ? 'Quest 1' : '<b>' + Q.title + '</b>'}</h2><div class="muted">${Q.blurb}</div><div class="lvls">${ls.map(card).join('')}</div></section>`;
   }).join('');
-  screenEl.innerHTML = `<div class="scr select"><button class="backlink" data-go="title">← Title</button><h1>Quest 1</h1>
-    <div class="muted">Stop the Hichew King. Clear a level to unlock the next.</div><div class="lvls">${cards}</div></div>`;
+  screenEl.innerHTML = `<div class="scr select"><button class="backlink" data-go="title">← Title</button>${sections}</div>`;
 }
+// the first level of every quest is open from the start; later ones unlock when you clear the one before
+function isOpen(id) { const L = LEVELS[id]; return !!app.unlocked[id] || (L.qn || L.id) === 1 || DEV; }
 function startLevel(level) {
   app.level = level; app.G = newGame(level); app.paused = false;
   world.setLevel(app.G); world.setCam(DEV && Q.get('cam') ? Q.get('cam') : 'play');
@@ -74,12 +80,13 @@ function startLevel(level) {
 }
 function showWin() {
   const G = app.G; app.screen = 'win'; hud.closePanel();
-  if (G.level < 10) { app.unlocked = { ...app.unlocked, [G.level + 1]: true }; store.set('unlocked', app.unlocked); }
+  if (LEVELS[G.level + 1]) { app.unlocked = { ...app.unlocked, [G.level + 1]: true }; store.set('unlocked', app.unlocked); }
   app.lastWin = { level: G.level, crystals: G.crystals };
-  const next = LEVELS[G.level + 1];
+  const next = LEVELS[G.level + 1], L = LEVELS[G.level];
+  const nextNote = next ? `🔓 ${(next.quest || 1) !== (L.quest || 1) ? 'Candy Quest 2: ' : ''}${next.name} unlocked!` : '🍭 More Candy Quest 2 levels coming soon!';
   const purple = G.level === 2 || G.level === 4 || G.level === 5;
-  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>Level ${G.level}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
-    <div class="rewards"><div class="reward">${hud.img('crystal')}${G.crystals} crystals</div>${next ? `<div class="reward">🔓 ${next.name} unlocked!</div>` : '<div class="reward">🏆 Quest 1 complete!</div>'}</div>
+  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>${L.quest === 2 ? 'Quest 2 · ' : ''}Level ${L.qn || L.id}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
+    <div class="rewards"><div class="reward">${hud.img('crystal')}${G.crystals} crystals</div>${G.level === 10 ? '<div class="reward">🏆 Quest 1 complete!</div>' : ''}<div class="reward">${nextNote}</div></div>
     <div style="display:flex;gap:1em;margin-top:1em"><button class="bigbtn" data-go="select">Level Select →</button><button class="bigbtn alt" data-go="replay">↺ Replay</button></div></div>`;
   hud.el.hidden = true;
 }
@@ -94,7 +101,7 @@ function showPause(on) {
 screenEl.addEventListener('click', (ev) => {
   const b = ev.target.closest('[data-go],[data-lvl]'); if (!b) return;
   const go = b.dataset.go;
-  if (b.dataset.lvl) { const id = +b.dataset.lvl; if (!PLAYABLE_3D.has(id)) { location.href = '../'; return; } if (app.unlocked[id] || DEV) startLevel(id); return; }
+  if (b.dataset.lvl) { const id = +b.dataset.lvl; if (LEVELS[id] && isOpen(id)) startLevel(id); return; }
   if (go === 'select') showSelect(); else if (go === 'title') showTitle(); else if (go === 'replay') startLevel(app.lastWin.level);
   else if (go === 'resume') showPause(false); else if (go === 'help') { showPause(false); app.paused = true; hud.openPanel('help'); }
   else if (go === 'gfx') { const order = ['high', 'medium', 'low']; store.set('gfx', order[(order.indexOf(quality.name) + 1) % 3]); location.reload(); }

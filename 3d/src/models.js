@@ -4,6 +4,7 @@
 //   blob:  body          bird: body, wingL, wingR, legL, legR          bug: body, head, legL, legR
 import { Kit, G, PAT, THREE } from './kit.js';
 import { CATALOG2 } from './models2.js';
+import { CATALOG3 } from './models3.js';
 
 const SKIN = 0xffdcbc, INK = 0x2a1a26, WHITE = 0xffffff;
 
@@ -287,6 +288,7 @@ export const CATALOG = {
 export function catalog(sprite) {
   if (CATALOG[sprite]) return CATALOG[sprite];
   if (CATALOG2[sprite]) return CATALOG2[sprite];
+  if (CATALOG3[sprite]) return CATALOG3[sprite];
   let h = 0; for (const ch of sprite || '?') h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return { build: () => fallback((h % 360) / 360), rig: 'blob', h: 1.1, r: 0.6, fallback: true };
 }

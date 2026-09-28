@@ -2,7 +2,7 @@
 // verifies level plumbing (boss → gate → win screen → next level unlocked, taming carries pets forward, L10's
 // all-pets field), not balance. Captures a mid-fight frame per level.
 import { serve, launch, watchErrors, pollUntil, OUT } from './lib.mjs';
-import { LEVELS } from '../src/data.js';
+import { LEVELS } from '../src/content.js';
 const from = +(process.argv[2] || 1), to = +(process.argv[3] || 10);
 const { srv, base } = await serve(); const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } }); const errors = watchErrors(page);
@@ -12,7 +12,7 @@ await page.goto(base + '/3d/?dev&seed=17'); await page.evaluate(() => localStora
 await page.goto(base + '/3d/?dev&seed=17');
 await pollUntil(page, () => window.cq && window.cq.getState().screen === 'title', null, { timeout: 30000 });
 // title → select via real clicks
-const clickSel = async (sel) => { const b = await (await page.$(sel)).boundingBox(); await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2); };
+const clickSel = async (sel) => { const h = await page.$(sel); await h.scrollIntoViewIfNeeded(); const b = await h.boundingBox(); await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2); };
 await clickSel('.bigbtn'); await page.waitForSelector('.lvl');
 for (let lvl = from; lvl <= to; lvl++) {
   if (lvl > 1 && from === lvl) { // starting mid-campaign: unlock up to here and bring the pets you'd have tamed so far
@@ -23,7 +23,8 @@ for (let lvl = from; lvl <= to; lvl++) {
   }
   if (!(await page.$(`.lvl[data-lvl="${lvl}"]`))) { await page.evaluate(() => window.cq.select()); await page.waitForSelector('.lvl'); }
   await clickSel(`.lvl[data-lvl="${lvl}"]`);
-  await pollUntil(page, () => window.cq.getState().screen === 'play', null, { timeout: 30000 });
+  try { await pollUntil(page, () => window.cq.getState().screen === 'play', null, { timeout: 30000 }); }
+  catch (e) { await page.screenshot({ path: `${OUT}/campaign-stuck-L${lvl}.png` }); console.log('stuck:', await page.evaluate(() => { try { return JSON.stringify({ s: window.cq.getState().screen }); } catch (err) { return 'getState threw: ' + err.message; } }), errors); throw e; }
   const t0 = Date.now();
   if (lvl === 10) { const s0 = (await page.evaluate(() => window.cq.getState())).sim; ok(s0.party.length > 0 && s0.counts.ally === s0.party.length, `L10 fields every pet at the start (${s0.counts.ally}/${s0.party.length}) — allPets`); await sleep(600); await page.screenshot({ path: OUT + '/campaign-L10-allpets.png' }); }
   await page.evaluate(() => { const G = window.cq.G; G.player.baseatk = 90; G.player.maxhp = G.player.hp = 900; G.autoHit = true; });
@@ -36,7 +37,7 @@ for (let lvl = from; lvl <= to; lvl++) {
     const p = st.player, wild = st.entities.find((e) => e.faction === 'wild');
     const boss = st.entities.find((e) => e.boss);
     let tgt = null;
-    if (wild && st.party.length < 11) tgt = { id: wild.id, x: wild.x, y: wild.y };
+    if (wild && st.party.length < 99) tgt = { id: wild.id, x: wild.x, y: wild.y };
     else if (boss) tgt = { id: boss.id, x: boss.x, y: boss.y };
     else tgt = { x: st.gate.x, y: st.gate.y };
     const sp = tgt.id ? await page.evaluate((id) => window.cq.screenOf(id), tgt.id) : await page.evaluate(([x, y]) => window.cq.screenOf(x, y), [tgt.x, tgt.y]);
@@ -49,6 +50,7 @@ for (let lvl = from; lvl <= to; lvl++) {
   const st = await page.evaluate(() => window.cq.getState());
   ok(st.screen === 'win', `L${lvl} ${LEVELS[lvl].name}: cleared via real clicks in ${((Date.now() - t0) / 1000).toFixed(0)} s (party ${st.sim.party.map((m) => m.key).join(',') || '—'}, KOs ${st.sim.stats.knockouts})`);
   if (lvl < 10) ok(JSON.parse(await page.evaluate(() => localStorage.getItem('cq3d_unlocked')))[lvl + 1] === true, `L${lvl + 1} unlocked`);
+  await page.screenshot({ path: `${OUT}/campaign-win-L${lvl}.png` });
   await clickSel('[data-go=select]'); await page.waitForSelector('.lvl');
 }
 await page.screenshot({ path: OUT + '/campaign-select-end.png' });

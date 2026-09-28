@@ -1,6 +1,6 @@
 // Per-level render cost from the real play camera at 3 spots (start, map centre, boss) + frame times over 5 s.
 import { serve, launch, pollUntil, watchErrors } from './lib.mjs';
-import { LEVELS } from '../src/data.js';
+import { LEVELS } from '../src/content.js';
 const only = process.argv.slice(2).map(Number);
 const { srv, base } = await serve(); const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } }); const errors = watchErrors(page);

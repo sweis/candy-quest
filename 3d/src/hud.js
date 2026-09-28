@@ -1,10 +1,9 @@
 // DOM HUD, panels and screens. Reads the sim; every button calls a sim action passed in via `act`.
-import { ITEMS, ALLIES, RECIPES, LEVELS } from './data.js';
+import { ITEMS, ALLIES, RECIPES, LEVELS, PET_MAX } from './content.js';
 import { eff, objective, canCraft, have, REVIVE_T } from './sim.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-export const PLAYABLE_3D = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); // every level is built in 3D
 
 export class Hud {
   constructor(icons, act) {
@@ -115,7 +114,7 @@ export class Hud {
           : `<div class="meter"><i style="width:${(100 * m.hp) / m.maxhp}%"></i></div><div class="sts"><span>ATK ${a.atk + (m.level - 1) * 2}</span><span>DEF ${a.def}</span><span>XP ${m.xp}/${m.level * 40}</span></div>
             <button class="btn ${bench ? 'alt' : 'ghost'}" data-a="toggle" data-uid="${m.uid}">${bench ? 'Send in →' : 'Bench'}</button>`}</div>`; };
       const act = G.party.filter((m) => m.active), ben = G.party.filter((m) => !m.active);
-      set(shell('👥', 'Party', `<span class="muted">${act.length}/3 in the field · ${G.party.length}/11 pets</span>`,
+      set(shell('👥', 'Party', `<span class="muted">${act.length}/3 in the field · ${G.party.length}/${PET_MAX} pets</span>`,
         `<b style="font:800 .9em var(--display)">In the field</b><div class="pcards" style="margin:.5em 0 1em">${act.length ? act.map((m) => card(m, false)).join('') : '<div class="muted">No active allies — tame some wild animals!</div>'}</div>` +
         (ben.length ? `<b style="font:800 .9em var(--display)">On the bench</b><div class="pcards" style="margin-top:.5em">${ben.map((m) => card(m, true)).join('')}</div>` : '')));
     } else if (this.panel === 'help') {
@@ -146,7 +145,7 @@ export function helpSheet(G, hud) {
       <tr><td><kbd>Shift</kbd></td><td>Dash (brief invulnerability)</td></tr>
       <tr><td><kbd>I</kbd> · <kbd>C</kbd> · <kbd>P</kbd></td><td>Bag · Craft · Party (the world pauses while open)</td></tr>
       <tr><td><kbd>?</kbd> · <kbd>Esc</kbd></td><td>This help · Pause menu</td></tr></table>
-    <h3>Taming</h3><div>Offer ${img(L.bait)} <b>${esc(ITEMS[L.bait].name)}</b> to wild animals (🍬 name tags). Each treat adds 34% trust; at 100% they join you. Up to 3 fight beside you, 11 pets total, one of each kind.
+    <h3>Taming</h3><div>Offer ${img(L.bait)} <b>${esc(ITEMS[L.bait].name)}</b> to wild animals (🍬 name tags). Each treat adds 34% trust; at 100% they join you. Up to 3 fight beside you, ${PET_MAX} pets total, one of each kind.
       Wild here: ${L.wild.length ? L.wild.map((k) => `<b>${esc(ALLIES[k].name)}</b> (${ALLIES[k].role})`).join(', ') : 'none'}.</div>
     <h3>Food</h3><ul>${food.map(([id, it]) => `<li>${esc(it.name)} — ${esc(it.desc.replace('Cooked alien food. ', ''))}</li>`).join('')}</ul>
     <h3>Tips</h3><ul><li>Fainted pets recover on their own after ${REVIVE_T}s, or revive them now from the Party panel.</li>

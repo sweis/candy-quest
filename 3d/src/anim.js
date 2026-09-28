@@ -95,6 +95,27 @@ export function animate(v, dt, time) {
     segs.forEach((n, i) => { const o = P[n]; if (!o) return; o.position.y += Math.max(0, Math.sin((moving ? w * 1.4 : t * 2.2) - i * 0.9)) * (moving ? 0.16 : 0.05); o.position.z += Math.sin(t * 1.5 - i * 0.7) * 0.04; });
     if (att >= 0 && P.head) { P.head.position.x += Math.sin(att * Math.PI) * 0.3; P.head.position.y += Math.sin(att * Math.PI) * 0.15; }
     if (hit > 0 && P.head) P.head.rotation.z += hit * 0.3;
+  } else if (v.rig === 'slither') { // travelling side-to-side wave down the body; head rears to strike
+    const segs = ['seg0', 'seg1', 'seg2', 'seg3', 'seg4', 'head'], ph = moving ? w * 1.3 : t * 1.6, ampZ = moving ? 0.22 : 0.08;
+    segs.forEach((n, i) => { const o = P[n]; if (o) o.position.z += Math.sin(ph - (segs.length - i) * 0.95) * ampZ * (0.5 + i * 0.12); });
+    if (P.head) { P.head.rotation.y = Math.sin(ph) * 0.2; P.head.position.y += Math.sin(t * 2.3) * 0.03; }
+    if (att >= 0 && P.head) { const l = Math.sin(att * Math.PI); P.head.position.x += l * 0.4; P.head.position.y += l * 0.35; P.head.rotation.z = -l * 0.3; }
+    if (hit > 0 && P.head) P.head.rotation.z += hit * 0.4;
+  } else if (v.rig === 'chopper') { // two big carrot arms: sway at rest, raise overhead and chop down on attack
+    const b = P.body, hop = moving ? Math.abs(Math.sin(w * 0.8)) : 0;
+    b.position.y += hop * 0.12; b.rotation.z = Math.sin(t * 1.4) * 0.03 - 0.06 * amp;
+    let a = Math.sin(t * 1.8) * 0.12 + Math.sin(w) * 0.25 * amp;
+    if (att >= 0) a = att < 0.45 ? THREE.MathUtils.lerp(0, 2.6, ease(att / 0.45)) : att < 0.62 ? THREE.MathUtils.lerp(2.6, -0.35, ease((att - 0.45) / 0.17)) : THREE.MathUtils.lerp(-0.35, 0, (att - 0.62) / 0.38);
+    if (P.armL) P.armL.rotation.z = a + Math.sin(t * 1.8 + 1) * 0.05;
+    if (P.armR) P.armR.rotation.z = a;
+    if (att >= 0 && att > 0.5 && att < 0.7) b.position.y -= 0.08; // body dips on impact
+    if (hit > 0) b.rotation.z += hit * 0.2;
+  } else if (v.rig === 'roller') { // leaf shell rolls with distance travelled; face stays upright; hops to mush
+    v.roll = (v.roll || 0) - (s * dt) / (v.rollR || 0.75);
+    if (P.shell) P.shell.rotation.z = v.roll;
+    const b = P.body; b.position.y += Math.abs(Math.sin(t * 2.2)) * 0.03;
+    if (att >= 0) { const l = Math.sin(att * Math.PI); b.position.y += l * 0.9; b.position.x += l * 0.35; if (att > 0.8) b.scale.set(1.15, 0.8, 1.15); }
+    if (hit > 0) b.scale.y *= 1 - hit * 0.2;
   } else if (v.rig === 'serpent') {
     if (P.neck) { P.neck.rotation.z = Math.sin(t * 1.1) * 0.06; P.neck.rotation.x = Math.sin(t * 0.8) * 0.05; }
     if (P.head) P.head.rotation.z = Math.sin(t * 1.7) * 0.08;

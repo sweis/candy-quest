@@ -3,7 +3,7 @@
 import { THREE, materials } from './kit.js';
 import { itemKit, ITEM_IDS } from './items3d.js';
 import { catalog } from './models.js';
-import { ALLIES } from './data.js';
+import { ALLIES } from './content.js';
 
 export function bakeIcons(renderer, size = 96) {
   const M = materials();

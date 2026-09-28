@@ -208,15 +208,67 @@ export const PROPS = {
     k.add('root', G.lathe([[0.1, 0], [0.42, 0.1], [0.5, 0.35], [0.46, 0.38], [0, 0.2]], 18), { c: 0x8a6a48, p: [0, 0.78, 0] });
     flame(k, 0, 1.05, 0, 1.4);
   },
+  // ---------- broccoli forest (Candy Quest 2)
+  brocctree(k, o, r) {
+    const s = 1.4 * (o.s || 1);
+    k.add('root', G.cyl(0.24 * s, 0.34 * s, 1.5 * s, 14), { c: 0x9cc86a, p: [0, 0.75 * s, 0] });
+    for (const [x, z, rz, rx] of [[-0.35, 0, 30, 0], [0.35, 0.05, -28, 0], [0.02, 0.35, 0, -30], [0, -0.32, 0, 32]]) { const b = G.cyl(0.1 * s, 0.16 * s, 0.8 * s, 8); b.translate(0, 0.4 * s, 0); k.add('root', b, { c: 0x8fbf5c, p: [x * 0.3 * s, 1.35 * s, z * 0.3 * s], r: [rx, 0, rz] }); }
+    floretDome(k, [0, 2.15 * s, 0], 1.05 * s, r, undefined, !!o.lite);
+  },
+  brocbush(k, o, r) { floretDome(k, [0, 0.42, 0], 0.62, r); k.add('root', G.cyl(0.12, 0.16, 0.3, 8), { c: 0x9cc86a, p: [0, 0.15, 0] }); },
+  caulirock(k, o, r) { // a cauliflower boulder: creamy florets
+    const s = 1.1 * (o.s || 1);
+    floretDome(k, [0, 0.35 * s, 0], 0.72 * s, r, [0xf6f1dc, 0xece5c6, 0xfffbea, 0xe3dab6]);
+    k.add('root', G.sphere(0.5 * s, 14, 10), { c: 0xd9e6b0, p: [0, 0.12 * s, 0], s: [1.1, 0.4, 1.1] });
+  },
+  peapod(k, o, r) {
+    k.add('root', G.capsule(0.12, 0.55, 6, 12), { c: 0x7bc24f, p: [0, 0.1, 0], r: [0, r() * 180, 90], s: [1, 1, 0.8] });
+    for (const x of [-0.18, 0, 0.18]) k.add('root', G.sphere(0.085, 10, 8), { c: 0xa6e070, p: [x, 0.18, 0] });
+  },
+  sprouts(k, o, r) { for (let i = 0; i < 4; i++) { const a = (i / 4) * Math.PI * 2 + r(); const x = Math.cos(a) * 0.18, z = Math.sin(a) * 0.18; k.add('root', G.cyl(0.03, 0.04, 0.3, 6), { c: 0x9cc86a, p: [x, 0.15, z] }); floretDome(k, [x, 0.36, z], 0.12, r); } },
+  // ---------- carrot mountains (Candy Quest 2)
+  carrotpeak(k, o, r) { // a giant carrot planted in the ground: the orange shoulder + a tall leafy crown
+    const s = 1.5 * (o.s || 1);
+    k.add('root', G.lathe([[0, 0], [0.62, 0], [0.64, 0.45], [0.55, 0.85], [0.3, 1.0], [0, 1.02]].map(([a, b]) => [a * s, b * s]), 20), { c: 0xff8a2b });
+    for (let i = 1; i < 3; i++) k.add('root', G.torus((0.63 - i * 0.03) * s, 0.03 * s, 6, 20), { c: 0xe0661a, p: [0, i * 0.3 * s, 0], r: [90, 0, 0] });
+    for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2 + r() * 0.3, h = (1.8 + r() * 0.8) * s, tip = [Math.cos(a) * 0.55 * s, 1.0 * s + h, Math.sin(a) * 0.55 * s];
+      k.add('root', G.limb([0, 0.95 * s, 0], tip, 0.07 * s), { c: [0x4fa83a, 0x6fc24f, 0x3d8f2e][i % 3] });
+      for (let j = 1; j <= 3; j++) k.add('root', G.sphere(0.2 * s, 8, 6), { c: [0x6fc24f, 0x4fa83a, 0x8fd46a][j % 3], p: [tip[0] * (0.45 + j * 0.18), 0.95 * s + (tip[1] - 0.95 * s) * (0.45 + j * 0.18), tip[2] * (0.45 + j * 0.18)], s: [1.2, 0.5, 1] }); }
+  },
+  crag(k, o, r) { const s = 1.25 * (o.s || 1); k.add('root', G.ico(0.6 * s, 0), { c: 0x9a7a5e, p: [0, 0.3 * s, 0], s: [1.1, 0.8, 0.9], r: [0, r() * 90, 0] }); k.add('root', G.ico(0.35 * s, 0), { c: 0xb08f70, p: [0.45 * s, 0.18 * s, 0.2 * s], r: [r() * 60, 0, 0] }); },
+  carrottop(k, o, r) { for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; const tip = [Math.cos(a) * 0.35, 0.75, Math.sin(a) * 0.35]; k.add('root', G.limb([0, 0.05, 0], tip, 0.03), { c: 0x4fa83a }); k.add('root', G.sphere(0.16, 8, 6), { c: 0x6fc24f, p: tip, s: [1.2, 0.5, 1] }); } k.add('root', G.cyl(0.14, 0.16, 0.08, 10), { c: 0xff8a2b, p: [0, 0.04, 0] }); },
+  babycarrots(k, o, r) { for (let i = 0; i < 3; i++) { const x = (i - 1) * 0.2, z = (r() - 0.5) * 0.2; const g = G.cone(0.06, 0.32, 8); k.add('root', g, { c: 0xff8a2b, p: [x, 0.05, z], r: [0, 0, 80 + r() * 20] }); k.add('root', G.sphere(0.05, 6, 4), { c: 0x6fc24f, p: [x - 0.16, 0.05, z] }); } },
+  // ---------- cabbage boulder pass (Candy Quest 2)
+  cabbageboulder(k, o, r) { // a giant cabbage head half-sunk into the pass
+    const s = 1.5 * (o.s || 1), cols = [0x8fcf6a, 0x6fb24f, 0xb7e08f, 0x5a9a42];
+    k.add('root', G.sphere(0.9 * s, 22, 16), { c: 0xd8f0b8, p: [0, 0.55 * s, 0] });
+    for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2 + r() * 0.3, e = -0.1 + r() * 0.8, d = new THREE.Vector3(Math.cos(a) * Math.cos(e), Math.sin(e), Math.sin(a) * Math.cos(e));
+      k.add('root', G.sphere(0.62 * s, 14, 10), { c: cols[i % 4], p: [d.x * 0.42 * s, 0.55 * s + d.y * 0.42 * s, d.z * 0.42 * s], s: [1, 1, 0.55], dir: [d.x, d.y, d.z] });
+      k.add('root', G.capsule(0.025 * s, 0.5 * s, 2, 4), { c: 0xeaf8d6, p: [d.x * 0.72 * s, 0.55 * s + d.y * 0.72 * s, d.z * 0.72 * s], dir: [d.x, d.y, d.z] }); }
+  },
+  spire(k, o, r) { const s = 1.3 * (o.s || 1); k.add('root', G.lathe([[0, 2.4], [0.18, 2.0], [0.34, 1.2], [0.5, 0.4], [0.6, 0], [0, 0]].map(([a, b]) => [a * s, b * s]), 7), { c: 0x8a8578, r: [0, r() * 360, 0] }); k.add('root', G.ico(0.3 * s, 0), { c: 0x9a958a, p: [0.45 * s, 0.15 * s, 0.2 * s] }); },
+  cabbagesprout(k, o, r) { for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; k.add('root', G.sphere(0.2, 10, 8), { c: [0x8fcf6a, 0x6fb24f, 0xb7e08f][i % 3], p: [Math.cos(a) * 0.14, 0.14, Math.sin(a) * 0.14], s: [1, 1, 0.5], dir: [Math.cos(a), 0.8, Math.sin(a)] }); } k.add('root', G.sphere(0.13, 10, 8), { c: 0xd8f0b8, p: [0, 0.18, 0] }); },
 };
+// a broccoli floret dome (shared by trees, bushes, sprouts; cauliflower passes cream colours)
+function floretDome(k, c, R, r, cols = [0x2f7a3a, 0x3f8f45, 0x4a9e4c, 0x2a6a34], lite = false) {
+  k.add('root', G.sphere(R * 0.8, 12, 9), { c: cols[0], p: c, s: [1, 0.7, 1] });
+  const n = R > 0.3 ? 11 : 5, bumps = R > 0.3 && !lite;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + r() * 0.4, e = i % 3 === 0 ? 0.9 : 0.3 + r() * 0.35, rr = R * (0.34 + r() * 0.12);
+    const x = c[0] + Math.cos(a) * Math.cos(e) * R * 0.64, y = c[1] + Math.sin(e) * R * 0.44, z = c[2] + Math.sin(a) * Math.cos(e) * R * 0.64;
+    k.add('root', G.sphere(rr, 9, 7), { c: cols[i % cols.length], p: [x, y, z] });
+    if (bumps) for (let j = 0; j < 3; j++) k.add('root', G.sphere(rr * 0.42, 6, 4), { c: cols[(i + j + 1) % cols.length], p: [x + (r() - 0.5) * rr, y + rr * 0.55, z + (r() - 0.5) * rr] });
+  }
+  k.add('root', G.sphere(R * 0.42, 9, 7), { c: cols[2], p: [c[0], c[1] + R * 0.44, c[2]] });
+}
 // pools: water discs in carved basins
 export const POOLS = { pond: { color: 0x3fa6e6 }, cpool: { color: 0x8f6bf5, glow: 0x4a2ab0 }, gpool: { color: 0xe0489e, opacity: 0.92 }, swamp: { color: 0x2c5a3a, opacity: 0.95 },
-  chocpool: { color: 0x6b4427, opacity: 1, rough: 0.2 }, tidepool: { color: 0x56b8e8 }, oasis: { color: 0x56b8e8, ring: 0xfff0dc } };
+  chocpool: { color: 0x6b4427, opacity: 1, rough: 0.2 }, tidepool: { color: 0x56b8e8 }, bog: { color: 0x5aa86a, opacity: 0.9 }, spring: { color: 0x5cc4ec }, brook: { color: 0x5ab8d8 }, oasis: { color: 0x56b8e8, ring: 0xfff0dc } };
 // painted into the ground's vertex colours (flat decals never z-fight)
 export const PAINT = { dirt: { color: 0xd9b27c, rx: 1.5, rz: 0.92 }, foam: { color: 0xf4fbff, rx: 1.1, rz: 0.45 }, drift: { color: 0xffffff, rx: 1.8, rz: 0.8 }, dune: { color: 0xf6d0a0, rx: 2.8, rz: 1.0 } };
 // tall props that fade when they stand between the camera and Pip
-export const OCCLUDERS = new Set(['lolli', 'cane', 'rcrystal', 'stala', 'pine', 'gmound', 'vinetree', 'choctree', 'canecoral', 'beam', 'bigcane', 'tower', 'wall', 'banner', 'ccboulder', 'chewblock', 'mintrock', 'orerock', 'fudge', 'stone', 'cart']);
-export const FLAT = new Set(['pebble', 'tuft', 'flower', 'rail', 'snowlump', 'deserttuft', 'caneshards', 'shard', 'fern', 'coil', 'drift', 'dune', 'nerdpile']);
+export const OCCLUDERS = new Set(['lolli', 'cane', 'rcrystal', 'stala', 'pine', 'gmound', 'vinetree', 'choctree', 'canecoral', 'beam', 'bigcane', 'tower', 'wall', 'banner', 'ccboulder', 'chewblock', 'mintrock', 'orerock', 'fudge', 'stone', 'cart', 'brocctree', 'carrotpeak', 'crag', 'cabbageboulder', 'spire']);
+export const FLAT = new Set(['pebble', 'tuft', 'flower', 'rail', 'snowlump', 'deserttuft', 'caneshards', 'shard', 'fern', 'coil', 'drift', 'dune', 'nerdpile', 'peapod', 'sprouts', 'babycarrots', 'carrottop', 'cabbagesprout']);
 
 // ---------------------------------------------------------------------- biome palettes + dressing
 const hedgeGum = (k, r) => { const cs = [0xff5da8, 0x7ad9c4, 0xffb84d, 0xa98cff, 0x9be15d, 0x5ab8ff]; gumdrop(k, 0, 0, 0.8 + r() * 0.4, cs[Math.floor(r() * cs.length)]); };
@@ -261,4 +313,16 @@ export const BIOMES = {
     scatter: [['caneshards', 0.3], ['pebble', 0.7]], hedge: (k, r) => k.add('root', G.rbox(1.1, 0.7, 0.6, 0.08), { c: 0xe884ab, p: [0, 0.35, 0] }),
     backdrop: (k, r, i) => PROPS.tower(k, { s: 1.4 + r() }, r) },
 };
+BIOMES.broccoli = { sky: [0x7fc6ea, 0xd4f0e0, 0xf4fbe6], fog: 0xdcefd4, ground: [0x6fae4f, 0x5a9a42, 0x86c264, 0xa6d680], hill: 0x5a9a42, hillH: 8,
+  sun: 0xfff2d6, sunI: 3.0, hemiSky: 0xdaf0ff, hemiGround: 0x6fa850, hemiI: 1.15, clouds: true,
+  scatter: [['sprouts', 0.25], ['tuft', 0.75, { c1: 0x4f8f3a, c2: 0x8fcf6a }]], hedge: (k, r) => PROPS.brocbush(k, {}, r),
+  backdrop: (k, r) => PROPS.brocctree(k, { s: 2.2 + r() * 1.4, lite: true }, r) };
+BIOMES.carrot = { sky: [0x7ab8e8, 0xffe6c4, 0xffd09a], fog: 0xf6d8b4, ground: [0xb07a4a, 0x9a6a3e, 0xc9905a, 0x8fbf5a], hill: 0xc97a3a, hillH: 16,
+  sun: 0xffe4c0, sunI: 3.2, hemiSky: 0xfff0dc, hemiGround: 0x8a5a36, hemiI: 1.15, clouds: true,
+  scatter: [['babycarrots', 0.3], ['tuft', 0.7, { c1: 0x4fa83a, c2: 0x8fcf6a }]], hedge: (k, r) => PROPS.crag(k, { s: 0.45 + r() * 0.2 }, r),
+  backdrop: (k, r) => { const s = 5 + r() * 4; k.add('root', G.cone(1.5 * s, 3.2 * s, 9), { c: 0xff8a2b, p: [0, 1.6 * s, 0] }); for (let i = 1; i < 4; i++) k.add('root', G.torus(1.5 * s * (1 - i / 4), 0.05 * s, 6, 18), { c: 0xe0661a, p: [0, i * 0.8 * s, 0], r: [90, 0, 0] }); k.add('root', G.cone(0.5 * s, 0.9 * s, 9), { c: 0xfff6ea, p: [0, 2.85 * s, 0] }); } };
+BIOMES.cabbage = { sky: [0x86b8e0, 0xdcecd8, 0xf2f6e6], fog: 0xd6e2cc, ground: [0x8aa878, 0x7a9468, 0x9fbf88, 0xa8a08a], hill: 0x7a766a, hillH: 20,
+  sun: 0xfff0dc, sunI: 3.0, hemiSky: 0xe0eef8, hemiGround: 0x6a7a5a, hemiI: 1.15, clouds: true,
+  scatter: [['cabbagesprout', 0.25], ['pebble', 0.35], ['tuft', 0.4, { c1: 0x5a8a3a, c2: 0x9fbf6a }]], hedge: (k, r) => lumpyRock(k, 0.5 + r() * 0.3, 0x8a8578, r),
+  backdrop: (k, r, i) => (i % 3 ? PROPS.spire(k, { s: 3 + r() * 3 }, r) : PROPS.cabbageboulder(k, { s: 2 + r() * 1.5 }, r)) };
 export const biome = (kind) => BIOMES[kind] || BIOMES.forest;

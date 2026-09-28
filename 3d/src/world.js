@@ -5,7 +5,7 @@ import { catalog, heroWeapon, heroArmor } from './models.js';
 import { itemKit } from './items3d.js';
 import { buildBiome, buildGate, makeSky, PX } from './scenery.js';
 import { animate, bindRest } from './anim.js';
-import { ITEMS } from './data.js';
+import { ITEMS } from './content.js';
 
 const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3();
 const CAMS = {
@@ -97,7 +97,7 @@ export class World {
     const scale = (cat.scale || 1) * (e.scale || 1);
     const shadow = new THREE.Mesh(this.blobGeo, this.blobMat); shadow.scale.setScalar(cat.r * 2.3 * scale); shadow.renderOrder = 1; group.add(shadow);
     const v = { id: e.id, e, faction: e.faction, sprite: e.sprite, group, model, lod, far: false, parts, mat, rig: cat.rig, h: cat.h * scale, r: cat.r * scale, baseScale: scale,
-      yaw: e.facing >= 0 ? 0 : Math.PI, walk: 0, speed: 0, seed: Math.random() * 10, attackT: 0, attackDur: 0.3, hitT: 0, spawnT: e.faction === 'ally' ? 1 : 0, dieT: -1, stride: (cat.stride || 0.9) * scale, tailSwing: !!cat.tailSwing,
+      yaw: e.facing >= 0 ? 0 : Math.PI, walk: 0, speed: 0, seed: Math.random() * 10, attackT: 0, attackDur: 0.3, hitT: 0, spawnT: e.faction === 'ally' ? 1 : 0, dieT: -1, stride: (cat.stride || 0.9) * scale, tailSwing: !!cat.tailSwing, rollR: (cat.rollR || 0.75) * scale,
       ranged: e.akind === 'ranged', flash: 0, rim: 0, fallback: !!cat.fallback };
     group.position.set(e.x * PX, 0, e.y * PX);
     this.scene.add(group);
@@ -287,6 +287,10 @@ export class World {
     }
     // projectiles
     const qk = new Kit(); qk.add('root', Geo.capsule(0.09, 0.3, 4, 8), { c: 0xffffff, r: [0, 0, 90] }); const qg = qk.static();
+    // cabbage heads for the Cabbage Lobber (lit candy material: same program as everything else)
+    const cb = new Kit(); cb.add('root', Geo.sphere(0.24, 14, 10), { c: 0xb7e08f }); for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; cb.add('root', Geo.sphere(0.17, 10, 8), { c: i % 2 ? 0x6fb24f : 0x8fcf6a, p: [Math.cos(a) * 0.1, (i % 3 - 1) * 0.08, Math.sin(a) * 0.1], s: [1, 1, 0.55], dir: [Math.cos(a), 0.3, Math.sin(a)] }); }
+    const cbg = cb.static(); this.cabbageMeshes = [];
+    for (let i = 0; i < 16; i++) { const m = new THREE.Mesh(cbg, this.M.candy); m.castShadow = true; m.visible = false; this.scene.add(m); this.cabbageMeshes.push(m); }
     this.projMeshes = [];
     for (let i = 0; i < 48; i++) { const m = new THREE.Mesh(qg, new THREE.MeshBasicMaterial({ vertexColors: true, map: glow.map, toneMapped: false })); m.material.name = 'proj'; m.visible = false; this.scene.add(m); this.projMeshes.push(m); }
   }
@@ -329,12 +333,19 @@ export class World {
     }
   }
   updateProjectiles(G, dt) {
-    for (let i = 0; i < this.projMeshes.length; i++) {
-      const m = this.projMeshes[i], pr = G.projs[i];
-      if (!pr) { m.visible = false; continue; }
-      m.visible = true; m.material.color.set(pr.color);
+    let pi = 0, ci = 0;
+    for (const pr of G.projs) {
+      if (pr.src === 'cabbage_lobber' && ci < this.cabbageMeshes.length) { // a lobbed cabbage: arcs up and tumbles
+        const m = this.cabbageMeshes[ci++], k = 1 - pr.life / 120; m.visible = true;
+        m.position.set(pr.x * PX, 1.05 + Math.sin(Math.min(1, k * 2.2) * Math.PI) * 0.9, (pr.y + 44) * PX); m.rotation.x += dt * 9; m.rotation.z += dt * 6;
+        continue;
+      }
+      if (pi >= this.projMeshes.length) continue;
+      const m = this.projMeshes[pi++]; m.visible = true; m.material.color.set(pr.color);
       m.position.set(pr.x * PX, 1.05, (pr.y + 44) * PX); m.rotation.y = Math.atan2(-pr.vy, pr.vx);
     }
+    for (; pi < this.projMeshes.length; pi++) this.projMeshes[pi].visible = false;
+    for (; ci < this.cabbageMeshes.length; ci++) this.cabbageMeshes[ci].visible = false;
   }
   updateGate(G, dt) {
     if (!this.gate) return;
