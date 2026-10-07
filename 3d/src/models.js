@@ -100,6 +100,15 @@ export function heroWeapon(id) {
   }
   return k;
 }
+// Halloween: a witch hat for Pip (attached to the head part)
+export function witchHat() {
+  const k = new Kit();
+  k.add('root', G.cyl(0.42, 0.42, 0.03, 28), { c: 0x2a1a3a, p: [-0.04, 1.47, 0] });
+  k.add('root', G.cone(0.24, 0.62, 20), { c: 0x3a2050, p: [-0.06, 1.78, 0], r: [0, 0, 14] });
+  k.add('root', G.cyl(0.245, 0.25, 0.08, 20), { c: 0xff8a2a, p: [-0.04, 1.52, 0] });
+  k.add('root', G.rbox(0.04, 0.08, 0.1, 0.01), { c: 0xffc93c, p: [0.2, 1.52, 0] });
+  return k;
+}
 export function heroArmor(id) {
   const k = new Kit();
   if (id === 'sugar_vest') {

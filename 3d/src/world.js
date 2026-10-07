@@ -1,7 +1,7 @@
 // three.js presentation layer: renders a sim state G. Reads G, never writes it (except via returned picks that
 // the caller turns into sim actions). Light count and shader programs are fixed at init — FX use pooled meshes.
 import { THREE, materials, Kit, G as Geo, PAT, mergeGeos } from './kit.js';
-import { catalog, heroWeapon, heroArmor } from './models.js';
+import { catalog, heroWeapon, heroArmor, witchHat } from './models.js';
 import { itemKit } from './items3d.js';
 import { buildBiome, buildGate, makeSky, PX } from './scenery.js';
 import { animate, bindRest } from './anim.js';
@@ -61,7 +61,7 @@ export class World {
     for (const d of this.dying) this.destroyAny(d); this.dying = [];
     for (const f of this.floats) f.el.remove(); this.floats = [];
     this.G = G;
-    const b = buildBiome(G.CFG.scenery, G.W, G.H); this.biome = b; this.scene.add(b.group);
+    const b = buildBiome(G.CFG.scenery, G.W, G.H, { halloween: !!this.halloween }); this.biome = b; this.scene.add(b.group);
     this.scene.background = null; if (this.sky) this.scene.remove(this.sky);
     this.sky = makeSky(b.pal); this.sky.material.uniforms.sunDir.value.copy(this.sunDir); this.scene.add(this.sky);
     this.scene.fog = new THREE.Fog(b.pal.fog, b.pal.fogNear || 46, b.pal.fogFar || 150);
@@ -134,6 +134,7 @@ export class World {
       v.weaponMesh = m;
       slot.add(m); v.weaponId = w;
     }
+    if (this.halloween && !v.hat) { const hk = witchHat(); const g = hk.static(); g.translate(0, -0.98, 0); v.hat = new THREE.Mesh(g, v.mat); v.hat.castShadow = true; v.parts.head.add(v.hat); }
     if (v.armorId !== a) {
       const slot = v.parts.armor; while (slot.children.length) { const c = slot.children.pop(); c.traverse((o) => o.geometry && o.geometry.dispose()); }
       if (a) { const k = heroArmor(a); const g = k.static(); g.translate(0, -0.5, 0); const m = new THREE.Mesh(g, v.mat); m.castShadow = true; slot.add(m); }
@@ -241,6 +242,7 @@ export class World {
         case 'ko': this.cut = true; this.burst(G.player.x * PX, 1.2, G.player.y * PX, 0xffe06a, 20, 3, 4); break;
         case 'projhit': this.burst(ev.x * PX, 1.0, (ev.y + 44) * PX, new THREE.Color(ev.color).getHex(), 7, 2.4, 4); break;
         case 'bossdown': this.shake = 0.8; break;
+        case 'coins': { const p = this.views.get(G.player.id); if (p) { this.burst(p.group.position.x, 1.4, p.group.position.z, 0xffc93c, Math.min(30, 6 + ev.n * 2), 2.5, 5, true); if (ev.n > 1) this.floatText(G.player.x, G.player.y, 2.4, '+' + ev.n + ' 🪙', 'dmg lvl', '#ffc93c'); } break; }
         case 'dash': { const p = this.views.get(G.player.id); if (p) this.burst(p.group.position.x, 0.2, p.group.position.z, 0xffffff, 8, 1.5, 2); break; }
         case 'buff': { const p = this.views.get(G.player.id); if (p) this.burst(p.group.position.x, 0.3, p.group.position.z, 0xffd24d, 16, 1.8, -3); break; }
         default: break;

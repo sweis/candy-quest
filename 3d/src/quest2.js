@@ -130,4 +130,3 @@ Object.assign(ALLIES, Q2_ALLIES); Object.assign(MONSTERS, Q2_MONSTERS); Object.a
 export const QUESTS = [{ n: 1, title: 'Quest 1', blurb: 'Stop the Hichew King. Clear a level to unlock the next.' },
   { n: 2, title: 'Candy Quest 2', blurb: 'The veggies strike back. New levels unlock as they’re built.' }];
 export const questOf = (L) => L.quest || 1;
-export const PET_MAX = Object.keys(ALLIES).length - 1; // every tameable species (Prickletreat is never wild)

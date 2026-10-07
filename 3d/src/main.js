@@ -4,7 +4,8 @@ import { LEVELS, ITEMS, MONSTERS } from './content.js';
 import { World, PX } from './world.js';
 import { bakeIcons } from './icons.js';
 import { Hud, helpSheet } from './hud.js';
-import { QUESTS, questOf } from './content.js';
+import { QUESTS, questOf, SHOP, ALLIES, canBuy } from './content.js';
+import { gameDate, halloweenActive, halloweenDaysLeft } from './events.js';
 import { randomSeed } from './rng.js';
 import { THREE } from './kit.js';
 import { solidsFor } from './solids.js';
@@ -19,6 +20,9 @@ const store = {
 
 // ------------------------------------------------------------------ quality ladder (persisted; steps down after a lost context)
 const COARSE = matchMedia('(pointer:coarse)').matches;
+// seasonal: Halloween (Oct 28 – Nov 3) turns everything orange and puts the legendary twins in the Shop. ?date= previews.
+const TODAY = gameDate(), HALLOWEEN = halloweenActive(TODAY);
+if (HALLOWEEN) document.body.classList.add('halloween');
 const TIERS = {
   high: { name: 'high', msaa: true, maxDpr: 2, shadows: true, softShadows: true, shadowMap: 2048, lodNear: 11 },
   medium: { name: 'medium', msaa: false, maxDpr: 2, shadows: true, softShadows: false, shadowMap: 1024, lodNear: 7 },
@@ -39,6 +43,7 @@ export function bodyRadius(sprite, e) { if (sprite === 'hero') return 15; const 
 function newGame(level, seed) {
   const s = seed ?? app.seed ?? randomSeed();
   return Sim.createGame(level, { seed: s, savedPets: store.get('pets', []), autoHit: store.get('autohit', false), onSavePets: (p) => store.set('pets', p),
+    coins: store.get('coins', 0), onCoins: (c) => store.set('coins', c),
     solids: solidsFor(level), radiusOf: bodyRadius });
 }
 
@@ -48,6 +53,7 @@ function showTitle() {
   if (!app.G || app.G.level !== 1 || app.G.tick > 0) { app.G = newGame(1, 1); world.setLevel(app.G); }
   world.setCam('title');
   screenEl.innerHTML = `<div class="scr title">
+    ${HALLOWEEN ? `<div class="evbanner">🎃 Halloween event — ${halloweenDaysLeft(TODAY)} day${halloweenDaysLeft(TODAY) === 1 ? '' : 's'} left! Legendary Pumpkin Pie Twins in the Shop</div>` : ''}
     <div class="logo">CANDY<br><span>QUEST</span><em>3D</em></div>
     <div class="tagline">A real-time candy-world adventure · stop the evil Hichew King</div>
     <button class="bigbtn" data-go="select">▶ Play</button>
@@ -69,7 +75,9 @@ function showSelect() {
     const ls = Object.values(LEVELS).filter((L) => questOf(L) === Q.n); if (!ls.length) return '';
     return `<section class="quest q${Q.n}"><h2 class="qtitle">${Q.n === 1 ? 'Quest 1' : '<b>' + Q.title + '</b>'}</h2><div class="muted">${Q.blurb}</div><div class="lvls">${ls.map(card).join('')}</div></section>`;
   }).join('');
-  screenEl.innerHTML = `<div class="scr select"><button class="backlink" data-go="title">← Title</button>${sections}</div>`;
+  screenEl.innerHTML = `<div class="scr select"><button class="backlink" data-go="title">← Title</button>
+    <button class="shoplink" data-go="shop">🛒 Shop <span class="coins">🪙 ${store.get('coins', 0)}</span></button>
+    ${HALLOWEEN ? '<div class="evbanner">🎃 Halloween event: the Legendary Pumpkin Pie Twins are in the Shop!</div>' : ''}${sections}</div>`;
 }
 // the first level of every quest is open from the start; later ones unlock when you clear the one before
 function isOpen(id) { const L = LEVELS[id]; return !!app.unlocked[id] || (L.qn || L.id) === 1 || DEV; }
@@ -104,11 +112,35 @@ screenEl.addEventListener('click', (ev) => {
   if (b.dataset.lvl) { const id = +b.dataset.lvl; if (LEVELS[id] && isOpen(id)) startLevel(id); return; }
   if (go === 'select') showSelect(); else if (go === 'title') showTitle(); else if (go === 'replay') startLevel(app.lastWin.level);
   else if (go === 'resume') showPause(false); else if (go === 'help') { showPause(false); app.paused = true; hud.openPanel('help'); }
+  else if (go === 'shop') hud.openPanel('shop');
   else if (go === 'gfx') { const order = ['high', 'medium', 'low']; store.set('gfx', order[(order.indexOf(quality.name) + 1) % 3]); location.reload(); }
 });
 
 // ------------------------------------------------------------------ HUD actions → sim
+// Shop: works in a level (coins live in G, items go to the bag) and on Level Select (pets only; wallet in storage)
+function shopInfo() {
+  const inLevel = app.screen === 'play' && app.G && !app.G.won;
+  const coins = inLevel ? app.G.coins : store.get('coins', 0);
+  const ownedPets = (inLevel ? app.G.party.map((m) => m.key) : store.get('pets', []).map((p) => p.key));
+  return { coins, inLevel, ownedPets, date: TODAY };
+}
+function buy(id) {
+  const entry = SHOP.find((e) => e.id === id); if (!entry) return;
+  const info = shopInfo(); const v = canBuy(entry, info);
+  if (!v.ok) return;
+  if (info.inLevel) { if (entry.kind === 'pet') Sim.buyPet(app.G, id, entry.price); else Sim.buyItem(app.G, id, entry.price); drain(); }
+  else if (entry.kind === 'pet') {
+    store.set('coins', info.coins - entry.price);
+    const pets = store.get('pets', []); pets.push({ key: id, level: 1, xp: 0, maxhp: ALLIES[id].hp }); store.set('pets', pets);
+    hud.toast(`✨ ${ALLIES[id].name} joined your party!`);
+    const c = document.querySelector('.shoplink .coins'); if (c) c.textContent = '🪙 ' + store.get('coins', 0);
+  }
+  hud.renderPanel();
+}
 function act(a, arg) {
+  if (a === 'buy') { buy(arg); return; }
+  if (a === 'shop') { hud.openPanel('shop'); return; }
+  if (a === 'close' && app.screen !== 'play') { hud.closePanel(); return; }
   const G = app.G; if (!G) return;
   switch (a) {
     case 'attack': Sim.doAttack(G); break;
@@ -133,7 +165,7 @@ function applyKeys() { const G = app.G; if (!G) return; const I = G.input; I.up 
 addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (DEV && k === '`') { toggleDiag(); return; }
-  if (app.screen !== 'play') return;
+  if (app.screen !== 'play') { if (k === 'escape' && hud.panel) hud.closePanel(); return; }
   if (k === 'escape') { if (hud.panel) { hud.closePanel(); if (!screenEl.innerHTML) app.paused = false; } else showPause(!app.paused); return; }
   if (k === '?' || (k === '/' && e.shiftKey)) { hud.openPanel('help'); return; }
   if (k === 'i') { hud.openPanel('inv'); return; } if (k === 'c') { hud.openPanel('craft'); return; } if (k === 'p') { hud.openPanel('party'); return; }
@@ -274,14 +306,14 @@ const hooks = {
 // ------------------------------------------------------------------ boot
 async function boot() {
   const t0 = performance.now();
-  world = new World(canvas, quality);
+  world = new World(canvas, quality); world.halloween = HALLOWEEN;
   world.onContextLost = () => {
     const order = ['high', 'medium', 'low']; const i = order.indexOf(quality.name); if (i < 2) store.set('gfx', order[i + 1]);
     setTimeout(() => { if (world.contextLost) { const d = document.createElement('div'); d.className = 'graphics-reset'; d.textContent = 'Graphics reset — tap to reload'; d.onclick = () => location.reload(); $('#app').appendChild(d); } }, 2500);
   };
   world.onContextRestored = () => { const d = $('.graphics-reset'); if (d) d.remove(); };
   icons = bakeIcons(world.renderer);
-  hud = new Hud(icons, act);
+  hud = new Hud(icons, act); hud.shopInfo = shopInfo;
   // title scene doubles as the shader warm-up: build level 1, show every FX pool once, compile, draw a real frame
   app.G = newGame(1, 1); world.setLevel(app.G); world.setCam('title');
   for (const p of [...world.parts.slice(0, 3), ...world.hearts.slice(0, 1), ...world.slashes.slice(0, 1), ...world.projMeshes.slice(0, 1)]) p.m ? (p.m.visible = true) : (p.visible = true);

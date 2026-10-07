@@ -343,7 +343,33 @@ export function peaCheetah() {
   return k;
 }
 
+// ------------------------------------------------------------------ Shop · Halloween legendary: the Pumpkin Pie Twins
+function pieRay(k, body, wl, wr, tail, o, manta) { // o = centre; a pumpkin-pie ray: crust rim, orange filling, whipped cream
+  const [x, y, z] = o, W = manta ? 1.35 : 1;
+  k.add(body, G.sphere(0.48, 22, 12), { c: 0xf08a2a, p: [x + 0.05, y, z], s: [1.2, 0.26, 0.72] });
+  k.add(body, G.torus(0.5, 0.06, 8, 28), { c: 0xd9a060, p: [x + 0.05, y - 0.02, z], r: [90, 0, 0], s: [1.2, 0.72, 1] });
+  for (const [dx, dz, r] of [[0, 0, 0.11], [0.08, 0.06, 0.08], [-0.07, -0.05, 0.08]]) k.add(body, G.sphere(r, 10, 8), { c: 0xfff8ee, p: [x + dx, y + 0.12, z + dz] });
+  for (let i = 0; i < 7; i++) { const a = i * 2.4; k.add(body, G.sphere(0.022, 6, 4), { c: 0x8a4a1a, p: [x + Math.cos(a) * 0.3, y + 0.1, z + Math.sin(a) * 0.2] }); }
+  eyes(k, body, x + 0.46, y + 0.08, 0.13, 0.042);
+  k.add(body, G.torus(0.055, 0.012, 6, 12, Math.PI), { c: 0x6a2a0a, p: [x + 0.56, y - 0.03, z], r: [0, 90, 180] });
+  for (const [p, sd] of [[wl, -1], [wr, 1]]) { k.add(p, G.sphere(0.42, 16, 10), { c: 0xffa040, p: [x - 0.05, y - 0.01, z + sd * 0.55 * W], s: [0.9, 0.12, 1.1 * W], r: [0, sd * 25, 0] }); k.add(p, G.torus(0.42, 0.035, 6, 20, Math.PI), { c: 0xd9a060, p: [x - 0.05, y - 0.02, z + sd * 0.55 * W], r: [90, 0, sd > 0 ? 0 : 180], s: [0.9, 1.1 * W, 1] }); }
+  if (manta) for (const sd of [-1, 1]) k.add(body, G.tube([[x + 0.45, y, z + sd * 0.16], [x + 0.62, y - 0.02, z + sd * 0.22], [x + 0.64, y - 0.12, z + sd * 0.14]], 0.035, 10, 6), { c: 0xd9a060 });
+  const tl = manta ? 0.55 : 1.0;
+  k.add(tail, G.tube([[x - 0.5, y, z], [x - 0.5 - tl * 0.45, y - 0.02, z + 0.04], [x - 0.5 - tl, y - 0.06, z - 0.03]], 0.028, 14, 6), { c: 0xb8702a });
+  if (!manta) k.add(tail, G.cone(0.05, 0.18, 6), { c: 0x6a3a1a, p: [x - 0.5 - tl - 0.06, y - 0.06, z - 0.03], r: [0, 0, 90] });
+}
+export function pumpkinTwins() {
+  const k = new Kit();
+  k.part('body', 'root', [0, 0.9, 0.42]).part('wingL', 'body', [0, 0.9, 0.12]).part('wingR', 'body', [0, 0.9, 0.72]).part('tail', 'body', [-0.5, 0.9, 0.42])
+   .part('body2', 'root', [0.25, 1.4, -0.5]).part('wingL2', 'body2', [0.25, 1.4, -0.85]).part('wingR2', 'body2', [0.25, 1.4, -0.15]).part('tail2', 'body2', [-0.25, 1.4, -0.5]);
+  pieRay(k, 'body', 'wingL', 'wingR', 'tail', [0, 0.9, 0.42], false);       // Pumpkin Pie Stingray
+  pieRay(k, 'body2', 'wingL2', 'wingR2', 'tail2', [0.25, 1.4, -0.5], true);  // Pumpkin Pie Manta Ray
+  for (const [x, y, z] of [[0.2, 1.75, 0.3], [-0.4, 1.2, -0.1], [0.6, 0.7, -0.2], [-0.2, 0.55, 0.9]]) k.add('root', G.extrude(G.star(0.07, 0.03), 0.02, 0), { c: 0xffd24d, p: [x, y, z], glow: true }); // legendary sparkle
+  return k;
+}
+
 export const CATALOG3 = {
+  pumpkin_twins: { build: pumpkinTwins, rig: 'ray', h: 1.8, r: 0.85 },
   tomato_sword: { build: () => tomatoSoldier(), rig: 'biped', h: 2.5, r: 0.8 },
   tomato_archer: { build: () => tomatoSoldier({ archer: true }), rig: 'biped', h: 2.5, r: 0.8 },
   tomato_shark: { build: tomatoShark, rig: 'fish', h: 2.4, r: 1.6, scale: 1.3 },

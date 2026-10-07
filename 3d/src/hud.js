@@ -1,5 +1,6 @@
 // DOM HUD, panels and screens. Reads the sim; every button calls a sim action passed in via `act`.
-import { ITEMS, ALLIES, RECIPES, LEVELS, PET_MAX } from './content.js';
+import { ITEMS, ALLIES, RECIPES, LEVELS, PET_MAX, SHOP, canBuy, onSale, BOSS_COINS } from './content.js';
+import { halloweenDaysLeft, nextHalloweenStart } from './events.js';
 import { eff, objective, canCraft, have, REVIVE_T } from './sim.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -26,6 +27,8 @@ export class Hud {
       <div class="h-tr">
         <div class="chip frost" title="Sugar Crystals — candy currency">${this.img('crystal')}<span class="cry"></span></div>
         <div class="chip frost" title="${esc(ITEMS[bait].name)} — feed wild animals to tame them">${this.img(bait)}<span class="bait"></span></div>
+        <div class="chip frost" title="Coins — spend them in the Shop">${this.img('coin')}<span class="coin"></span></div>
+        <button class="ibtn frost shopbtn" data-a="shop" title="Shop">🛒 Shop</button>
         <button class="ibtn frost" data-a="help" title="Help (?)">?</button>
         <button class="ibtn frost" data-a="pause" title="Menu (Esc)">≡</button>
       </div>
@@ -49,14 +52,14 @@ export class Hud {
   hideHint() { if (this.showHint) { this.showHint = false; const h = $('.hint', this.el); if (h) h.remove(); } }
   update(G, force) {
     const p = G.player, ef = eff(G, p);
-    const key = [Math.round(p.hp), G.crystals, G.inv[G.BAIT] || 0, ef.atk, ef.def, G.bossDead, G.buffs.map((b) => b.effect).join(),
+    const key = [Math.round(p.hp), G.crystals, G.coins, G.inv[G.BAIT] || 0, ef.atk, ef.def, G.bossDead, G.buffs.map((b) => b.effect).join(),
       G.party.map((m) => m.uid + m.level + m.fainted + m.active + Math.round(m.hp)).join()].join('|');
     if (!force && key === this.key) return; this.key = key;
     const E = this.el;
     $('.obj', E).textContent = objective(G); $('.h-top', E).classList.toggle('gate', G.bossDead);
     $('.st', E).textContent = `ATK ${ef.atk} · DEF ${ef.def}`;
     const hp = Math.max(0, Math.round(p.hp)); $('.hp i', E).style.width = (100 * hp) / p.maxhp + '%'; $('.hp .num', E).textContent = hp;
-    $('.cry', E).textContent = G.crystals; $('.bait', E).textContent = G.inv[G.BAIT] || 0;
+    $('.cry', E).textContent = G.crystals; $('.coin', E).textContent = G.coins; $('.bait', E).textContent = G.inv[G.BAIT] || 0;
     const bf = $('.buff', E); bf.hidden = !G.buffs.length; bf.textContent = '✨ ' + G.buffs.map((b) => b.effect.toUpperCase()).join(' · ');
     const MAXSHOW = 7; // L10 fields every pet: show the first few, the rest count toward the Party button
     const fielded = G.party.filter((m) => m.active || m.fainted), shown = fielded.slice(0, MAXSHOW), bench = G.party.length - shown.length;
@@ -87,6 +90,7 @@ export class Hud {
       return `<div class="scrim" data-a="close" data-panel="${this.panel}"><div class="pnl" data-stop><div class="pnl-h"><span style="font-size:1.4em">${icon}</span><h2>${title}</h2><span class="pnl-x">${extra || ''}</span><button class="x" data-a="close">✕</button></div><div class="pnl-b">${body}</div></div></div>`;
     };
     const set = (html) => { if (html != null) P.innerHTML = html; };
+    if (this.panel === 'shop') { set(shell('🛒', 'Candy Shop', '', this.shopBody())); this.bindPanel(); return; }
     const inv = { ...G.inv, crystal: G.crystals };
     if (this.panel === 'inv') {
       const ents = Object.entries(inv).filter(([, v]) => v > 0);
@@ -120,6 +124,10 @@ export class Hud {
     } else if (this.panel === 'help') {
       set(shell('❓', 'How to play', '', helpSheet(G, this)));
     }
+    this.bindPanel();
+  }
+  bindPanel() {
+    const P = this.panelEl;
     P.onclick = (ev) => {
       const b = ev.target.closest('[data-a]');
       if (!b) return;
@@ -130,6 +138,28 @@ export class Hud {
     };
   }
 }
+
+// ---------------------------------------------------------------- shop body
+Hud.prototype.shopBody = function () {
+  const info = this.shopInfo ? this.shopInfo() : { coins: 0, inLevel: false, ownedPets: [], date: new Date() };
+  const rows = SHOP.map((e) => {
+    const v = canBuy(e, info), sale = onSale(e, info.date);
+    if (e.kind === 'pet') {
+      const a = ALLIES[e.id], owned = info.ownedPets.includes(e.id), left = halloweenDaysLeft(info.date);
+      const when = sale ? `🎃 On sale now — ${left} day${left === 1 ? '' : 's'} left` : `Back for Halloween · ${nextHalloweenStart(info.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} – Nov 3`;
+      return `<div class="shopcard legendary${sale ? '' : ' off'}"><div class="av">${this.img('pet:' + e.id)}</div><div class="info">
+        <span class="lbadge">${e.badge}</span><div class="nm">${esc(a.name)}</div><div class="muted" style="font-size:.8em">${esc(a.desc)}</div>
+        <div class="sts"><span>HP ${a.hp}</span><span>ATK ${a.atk}</span><span>DEF ${a.def}</span><span>${a.kind === 'ranged' ? 'Ranged' : 'Melee'}</span></div>
+        <div class="when">${when}</div></div>
+        <button class="btn buy" data-a="buy" data-uid="${e.id}" ${v.ok ? '' : 'disabled'}>${owned ? '✓ Owned' : `🪙 ${e.price}`}</button></div>`;
+    }
+    const it = ITEMS[e.id];
+    return `<div class="row${v.ok ? '' : ' no'}"><div class="ico">${this.img(e.id)}</div><div style="flex:1"><div class="nm">${esc(it.name)}</div><div class="muted" style="font-size:.8em">${esc(it.desc)}</div></div>
+      <button class="btn alt" data-a="buy" data-uid="${e.id}" ${v.ok ? '' : 'disabled'} title="${v.ok ? '' : esc(v.why)}">🪙 ${e.price}</button></div>`;
+  }).join('');
+  return `<div class="wallet">${this.img('coin')}<b>${info.coins}</b> coins <span class="muted">· beat a boss for ${BOSS_COINS} · monsters sometimes drop one</span></div>
+    ${rows}${info.inLevel ? '' : '<div class="muted" style="font-size:.8em;margin-top:.6em">Treats go in your bag, so they can only be bought during a level.</div>'}`;
+};
 
 // ---------------------------------------------------------------- help sheet, generated from the game's own tables
 export function helpSheet(G, hud) {
@@ -149,5 +179,5 @@ export function helpSheet(G, hud) {
       Wild here: ${L.wild.length ? L.wild.map((k) => `<b>${esc(ALLIES[k].name)}</b> (${ALLIES[k].role})`).join(', ') : 'none'}.</div>
     <h3>Food</h3><ul>${food.map(([id, it]) => `<li>${esc(it.name)} — ${esc(it.desc.replace('Cooked alien food. ', ''))}</li>`).join('')}</ul>
     <h3>Tips</h3><ul><li>Fainted pets recover on their own after ${REVIVE_T}s, or revive them now from the Party panel.</li>
-      <li>Getting knocked out sends you back to camp and costs 3 crystals.</li><li>Auto-hit swings whenever an enemy is in reach — handy on phones.</li></ul></div>`;
+      <li>Getting knocked out sends you back to camp and costs 3 crystals.</li><li>Coins: beat a boss for ${BOSS_COINS}, and monsters sometimes drop one. Spend them in the 🛒 Shop.</li><li>Auto-hit swings whenever an enemy is in reach — handy on phones.</li></ul></div>`;
 }

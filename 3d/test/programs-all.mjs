@@ -2,7 +2,7 @@
 import { serve, launch, pollUntil } from './lib.mjs';
 const { srv, base } = await serve(); const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
-await page.goto(base + '/3d/?dev&seed=11');
+await page.goto(base + '/3d/?dev&seed=11' + (process.env.DATE ? '&date=' + process.env.DATE : ''));
 await pollUntil(page, () => window.cq && window.cq.getState().screen === 'title');
 const keys = () => page.evaluate(() => window.cq.world.renderer.info.programs.map((p) => p.cacheKey));
 const seen = new Set(await keys()); const fresh = []; let seenLevels = 0;

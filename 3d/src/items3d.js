@@ -152,6 +152,11 @@ const B = {
     k.add('root', G.rbox(0.36, 0.08, 0.26, 0.03), { c: 0xe0a84a, p: [0, 0.12, 0], r: [0, 12, 6] });
     for (const [x, z] of [[-0.1, -0.05], [0.05, 0.06], [0.12, -0.07], [-0.03, 0.08]]) k.add('root', G.sphere(0.045, 8, 6), { c: 0x8fdc4a, p: [x, 0.18, z] });
   },
+  coin(k) {
+    k.add('root', G.cyl(0.2, 0.2, 0.05, 32), { c: 0xffc93c, p: [0, 0.25, 0], r: [90, 0, 0] });
+    k.add('root', G.torus(0.2, 0.022, 8, 32), { c: 0xf0a82a, p: [0, 0.25, 0] });
+    for (const sd of [-1, 1]) k.add('root', G.extrude(G.star(0.09, 0.04), 0.012, 0.004), { c: 0xffe58a, p: [0, 0.25, sd * 0.028] });
+  },
   star_pop(k) {
     k.add('root', G.cyl(0.018, 0.018, 0.26, 8), { c: 0xf4ece0, p: [0, 0.13, 0] });
     k.add('root', G.extrude(G.star(0.17, 0.08), 0.06, 0.02), { c: 0xffa53c, p: [0, 0.38, 0] });

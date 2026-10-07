@@ -3,6 +3,7 @@
 import { Kit, G, PAT, THREE, mergeGeos, materials } from './kit.js';
 import { sceneryFor } from './content.js';
 import { PROPS, POOLS, PAINT, OCCLUDERS, FLAT, BIOMES, biome } from './biomes.js';
+import { halloweenize } from './events.js';
 
 export const PX = 1 / 50; // world px -> metres
 export { BIOMES, biome };
@@ -92,8 +93,8 @@ export function buildGate() {
 }
 
 // ------------------------------------------------------------------ assemble a biome
-export function buildBiome(kind, W_px, H_px) {
-  const pal = biome(kind), W = W_px * PX, H = H_px * PX, M = materials();
+export function buildBiome(kind, W_px, H_px, { halloween = false } = {}) {
+  const pal = halloween ? halloweenize(biome(kind)) : biome(kind), W = W_px * PX, H = H_px * PX, M = materials();
   const group = new THREE.Group(); group.name = 'biome:' + kind;
   const items = sceneryFor(kind);
   const rnd = rngFrom(1234 + kind.length * 97);
@@ -130,6 +131,12 @@ export function buildBiome(kind, W_px, H_px) {
     let u = rnd(), pick = scatter[0]; for (const s of scatter) { if (u < s[1]) { pick = s; break; } u -= s[1]; }
     const k = new Kit(); PROPS[pick[0]](k, { c: ['pink', 'orange', 'purple', '#fff'][i % 4], ...(pick[2] || {}) }, rnd);
     put(x, z, k, false);
+  }
+  // Halloween: jack-o'-lanterns grinning all over the level (decoration — walkable, like flowers)
+  if (pal.halloween) for (let i = 0; i < 24; i++) {
+    const x = 1.5 + rnd() * (W - 3), z = 1.5 + rnd() * (H - 3);
+    if (items.some((o) => POOLS[o.t] && Math.hypot(o.x * PX - x, (o.y * PX - z) * 1.8) < 3.6)) continue;
+    const k = new Kit(); PROPS.jackolantern(k, { s: 0.8 + rnd() * 0.6 }, rnd); put(x, z, k, true);
   }
   // boundary hedge just outside the walkable edge
   const step = 1.25, hedge = pal.hedge;

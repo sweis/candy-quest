@@ -271,6 +271,16 @@ export const PROPS = {
   peaboulder(k, o, r) { const s = 1.2 * (o.s || 1); k.add('root', G.sphere(0.62 * s, 20, 14), { c: 0x9fc86a, p: [0, 0.45 * s, 0], s: [1, 0.85, 1] }); for (let i = 0; i < 3; i++) k.add('root', G.sphere(0.3 * s, 12, 10), { c: 0x8fbf5a, p: [(i - 1) * 0.5 * s, 0.2 * s, 0.35 * s] }); },
   podbush(k, o, r) { for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2; k.add('root', G.capsule(0.09, 0.4, 4, 8), { c: [0x5aa83a, 0x7bc24f][i % 2], p: [Math.cos(a) * 0.25, 0.3, Math.sin(a) * 0.25], dir: [Math.cos(a), 1.4, Math.sin(a)] }); } k.add('root', G.sphere(0.25, 10, 8), { c: 0x6fb84f, p: [0, 0.2, 0] }); },
   savgrass(k, o, r) { for (let i = 0; i < 7; i++) { const a = -0.8 + i * 0.27; k.add('root', G.cone(0.035, 0.6 + (i % 3) * 0.15, 5), { c: i % 2 ? 0xd9b85a : 0xe8cf7a, p: [Math.sin(a) * 0.12, 0.3, (r() - 0.5) * 0.18], r: [0, 0, a * 35] }); } },
+  // ---------- Halloween dressing
+  jackolantern(k, o, r) {
+    const s = 0.9 * (o.s || 1);
+    for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2; k.add('root', G.sphere(0.24 * s, 12, 10), { c: i % 2 ? 0xff7a1a : 0xf06a10, p: [Math.cos(a) * 0.17 * s, 0.32 * s, Math.sin(a) * 0.17 * s], s: [0.75, 1.15, 0.75] }); }
+    k.add('root', G.sphere(0.3 * s, 14, 10), { c: 0xff8a2a, p: [0, 0.32 * s, 0], s: [1, 0.95, 1] });
+    k.add('root', G.cyl(0.035 * s, 0.05 * s, 0.16 * s, 6), { c: 0x4a6a2a, p: [0, 0.66 * s, 0], r: [0, 0, 12] });
+    for (const sd of [-1, 1]) k.add('root', G.cone(0.07 * s, 0.1 * s, 3), { c: 0xffe066, p: [sd * 0.11 * s, 0.4 * s, 0.31 * s], r: [90, 0, 0], s: [1, 1, 0.4], glow: true });
+    k.add('root', G.rbox(0.26 * s, 0.06 * s, 0.04 * s, 0.02), { c: 0xffe066, p: [0, 0.22 * s, 0.33 * s], glow: true });
+    for (const dx of [-0.07, 0.07]) k.add('root', G.rbox(0.05 * s, 0.05 * s, 0.04 * s, 0.01), { c: 0xff8a2a, p: [dx * s, 0.245 * s, 0.35 * s] });
+  },
 };
 // a broccoli floret dome (shared by trees, bushes, sprouts; cauliflower passes cream colours)
 function floretDome(k, c, R, r, cols = [0x2f7a3a, 0x3f8f45, 0x4a9e4c, 0x2a6a34], lite = false) {

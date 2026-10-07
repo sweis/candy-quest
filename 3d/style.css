@@ -215,3 +215,47 @@ body.on-title #tags{opacity:0}
 .party.many .pslot{width:calc(var(--u)*3.2)}
 .party.many .pslot .face{width:calc(var(--u)*3.2);height:calc(var(--u)*3.2);border-radius:.8em}
 .party.many .pslot .pn{display:none}
+
+/* ---------------- shop ---------------- */
+.shopbtn{font-weight:700}
+.shoplink{position:absolute;right:1.2em;top:1.2em;border:0;border-radius:99px;padding:.45em 1.1em;background:linear-gradient(160deg,#ffd98a,#f0a82a);color:#5a3200;font:700 .95em var(--round);box-shadow:0 .25em 0 #c47a10}
+.shoplink .coins{margin-left:.4em;font-weight:600}
+.wallet{display:flex;align-items:center;gap:.4em;margin-bottom:.9em;font:500 1em var(--round)}
+.wallet img{width:1.6em;height:1.6em}
+.wallet b{font:700 1.3em var(--round)}
+.shopcard{display:flex;align-items:center;gap:1em;padding:.9em;border-radius:1.1em;margin-bottom:.8em;background:linear-gradient(135deg,#2a1438,#5a2a4a);color:#fff;box-shadow:inset 0 0 0 2px #ffb347}
+.shopcard.off{filter:saturate(.5) brightness(.85)}
+.shopcard .av{width:7em;height:7em;flex:none;border-radius:1em;background:radial-gradient(circle at 50% 40%,#ffb347,#c2561a 70%);display:grid;place-items:center}
+.shopcard .av img{width:100%;height:100%;object-fit:contain}
+.shopcard .info{flex:1;display:flex;flex-direction:column;gap:.25em}
+.shopcard .nm{font:800 1.2em var(--display)}
+.shopcard .muted{color:#ffe0c0}
+.shopcard .sts{display:flex;gap:.8em;font:600 .75em var(--round);color:#ffd98a}
+.shopcard .when{font:600 .8em var(--round);color:#ffb347}
+.lbadge{align-self:flex-start;font:800 .62em var(--mono);letter-spacing:.12em;padding:.2em .6em;border-radius:99px;background:linear-gradient(90deg,#ffd24d,#ff8a2a);color:#3a1400}
+.btn.buy{background:linear-gradient(160deg,#ffd24d,#ff8a2a);color:#3a1400;font-weight:800;min-width:5.5em}
+.evbanner{padding:.45em 1.1em;border-radius:99px;background:linear-gradient(90deg,#2a1438,#5a2a4a);color:#ffb347;font:700 .95em var(--round);box-shadow:inset 0 0 0 2px #ff8a2a}
+.scr.title .evbanner{align-self:flex-start}
+.scr.select .evbanner{margin-bottom:.6em}
+
+/* ---------------- Halloween (Oct 28 – Nov 3): mostly orange ---------------- */
+body.halloween{--pink:#ff7a1a;--pink-d:#d9560a;--purple:#8a4ad0;--purple-d:#5a2a9a;--teal:#ffb347;--teal-d:#e0891e;--frost:rgba(40,18,40,.82);--frost-d:rgba(30,10,30,.7);--ink:#fff3e0;--ink-soft:#ffcf9a}
+body.halloween .frost{color:#fff3e0}
+body.halloween .act.hit{background:linear-gradient(160deg,#ffa040,#d9560a);box-shadow:0 .35em 0 #8a3000}
+body.halloween .act.tame{background:linear-gradient(160deg,#b98aff,#5a2a9a);box-shadow:0 .35em 0 #3a1868}
+body.halloween .logo span{color:#ff8a2a}
+body.halloween .logo em{background:#ff8a2a;color:#2a1020}
+body.halloween .scr.select{background:radial-gradient(120% 90% at 50% 0%,#ffcf8a,#ff9a4a 50%,#7a2a3a)}
+body.halloween .scr.select h1,body.halloween .qtitle{color:#2a1020}
+body.halloween .quest.q2 .qtitle{color:#3a1430}
+body.halloween .lvl{background:#2a1438;color:#fff3e0}
+body.halloween .lvl .n{color:#ffb347}
+body.halloween .pnl{background:#2a1438;color:#fff3e0}
+body.halloween .row,body.halloween .desc,body.halloween .pcard,body.halloween .eq{background:#3a1e48}
+body.halloween .slot{background:linear-gradient(160deg,#4a2a58,#3a1e48)}
+body.halloween .muted{color:#ffcf9a}
+body.halloween .bigbtn{background:linear-gradient(160deg,#ffa040,#d9560a);box-shadow:0 .3em 0 #8a3000}
+body.halloween .bigbtn.alt{background:linear-gradient(160deg,#b98aff,#5a2a9a);box-shadow:0 .3em 0 #3a1868}
+body.halloween #loading{background:radial-gradient(120% 90% at 50% 30%,#ffb347,#c2561a 60%,#2a1020)}
+body.halloween .tag.nameplate{background:rgba(40,10,20,.7)}
+body.halloween .tag.bar i{background:linear-gradient(90deg,#ffb347,#ff6a1a)}

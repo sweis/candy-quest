@@ -5,7 +5,7 @@
 //
 // The renderer and HUD never mutate this state directly; they call the action functions below and
 // drain G.events (toasts, damage numbers, slashes, hearts…) once per rendered frame.
-import { ALLIES, MONSTERS, ITEMS, RECIPES, LEVELS, PET_MAX } from './content.js';
+import { ALLIES, MONSTERS, ITEMS, RECIPES, LEVELS, PET_MAX, BOSS_COINS, MONSTER_COIN_CHANCE } from './content.js';
 import { makeRng } from './rng.js';
 
 export const SPD = 2.6;
@@ -16,7 +16,7 @@ export const CAMP = { x: 240, y: 760 };
 const D = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
-export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = false, onSavePets = null, solids = [], radiusOf = null } = {}) {
+export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = false, onSavePets = null, solids = [], radiusOf = null, coins = 0, onCoins = null } = {}) {
   const CFG = LEVELS[level] || LEVELS[1];
   const W = CFG.allPets ? 3000 : 2200, H = CFG.allPets ? 2000 : 1500;
   const rng = makeRng(seed);
@@ -73,7 +73,7 @@ export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = fals
     input: { up: false, down: false, left: false, right: false }, autoHit: !!autoHit,
     tick: 0, time: 0, events: [], onSavePets, _nid: () => nid++, _mk: mk,
     stats: { kills: 0, damageDealt: 0, damageTaken: 0, knockouts: 0, tamed: 0, collected: 0 },
-    solids, radiusOf,
+    solids, radiusOf, coins: coins | 0, onCoins,
   };
   // nothing starts inside a rock: push every spawned creature and pickup out of solids
   G.ents.forEach((e) => { if (e.faction !== 'gate') pushOutOfSolids(G, e, e.faction === 'item' ? 16 : radius(G, e)); if (e.home) { e.home.x = e.x; e.home.y = e.y; } });
@@ -174,6 +174,9 @@ function grantXP(G, amt) {
 function dropLoot(G, e) {
   const here = (id, qty = 1) => { const ix = (G.rng() - 0.5) * 60, iy = (G.rng() - 0.5) * 40; const it = G._mk({ faction: 'item', item: id, qty, sprite: null, x: e.x + ix, y: e.y + iy, spawnedAt: G.time }); pushOutOfSolids(G, it, 16); };
   const k = e.mkey, r = G.rng();
+  // coins (3D addition): a boss pays out straight into your wallet; regular monsters sometimes drop one
+  if (e.boss) addCoins(G, BOSS_COINS, `🪙 +${BOSS_COINS} coins!`);
+  else if (G.rng() < MONSTER_COIN_CHANCE) here('coin', 1);
   if (e.boss) { here('jawbreaker_mace'); here('peppermint_plate'); here('crystal', 3); here('alien_goo', 2); here('star_sprinkle', 2); here('rainbow_brittle'); }
   else if ((k && k.includes('gloop')) || (k && k.includes('lump'))) { here('alien_goo'); here('sour_dust'); if (r < 0.4) here('glowberry'); if (r < 0.3) here('gummy_worm'); if (r < 0.16) here('sugar_vest'); if (r < 0.1) here('star_sprinkle'); }
   else { here('crystal', 1 + Math.floor(G.rng() * 2)); if (r < 0.3) here('sugar_vest'); if (r < 0.12) here('cane_sword'); if (r < 0.5) here('honey'); if (r > 0.7) here('mushroom'); if (r < 0.08) here('peppermint_plate'); if (r < 0.06) here('licorice_whip'); }
@@ -207,7 +210,9 @@ function spawnAlly(G, mem) {
   G._mk({ faction: 'ally', puid: mem.uid, sprite: mem.sprite, name: mem.name, x: p.x - 40, y: p.y + 30, maxhp: mem.maxhp, hp: mem.hp,
     atk: a.atk + (mem.level - 1) * 2, def: a.def, speed: a.speed, range: a.range, akind: a.kind });
 }
+function addCoins(G, n, msg) { G.coins += n; if (G.onCoins) G.onCoins(G.coins); emit(G, { t: 'coins', n, x: G.player.x, y: G.player.y }); if (msg) toast(G, msg); emit(G, { t: 'ui' }); }
 function collect(G, e) {
+  if (e.item === 'coin') { addCoins(G, e.qty); G.stats.collected++; emit(G, { t: 'collect', id: e.id, item: e.item, x: e.x, y: e.y }); toast(G, `🪙 +${e.qty} coin`); remove(G, e); return; }
   if (e.item === 'crystal') G.crystals += e.qty; else G.inv[e.item] = (G.inv[e.item] || 0) + e.qty;
   G.stats.collected++;
   emit(G, { t: 'collect', id: e.id, item: e.item, x: e.x, y: e.y });
@@ -245,6 +250,21 @@ function tameComplete(G, w) {
   remove(G, w);
   if (mem.active) spawnAlly(G, mem);
   toast(G, `🎉 Tamed ${a.name}! Joined your party.`); emit(G, { t: 'ui' });
+}
+// Shop purchases made during a level. Pets join the party like a tamed animal; items go in the bag.
+export function buyItem(G, id, price) {
+  if (G.coins < price) return false;
+  G.coins -= price; if (G.onCoins) G.onCoins(G.coins);
+  G.inv[id] = (G.inv[id] || 0) + 1; toast(G, `🛒 Bought ${ITEMS[id].name}`); emit(G, { t: 'ui' }); return true;
+}
+export function buyPet(G, key, price) {
+  if (G.coins < price || G.party.some((m) => m.key === key)) return false;
+  G.coins -= price; if (G.onCoins) G.onCoins(G.coins);
+  const a = ALLIES[key], active = G.party.filter((p) => p.active).length;
+  const mem = { uid: 'p' + G._nid(), key, name: a.name, sprite: a.sprite, level: 1, xp: 0, maxhp: a.hp, hp: a.hp, active: G.CFG.allPets ? true : active < 3, fainted: false };
+  G.party.push(mem); savePets(G);
+  if (mem.active) spawnAlly(G, mem);
+  toast(G, `✨ ${a.name} joined your party!`); emit(G, { t: 'tamed', x: G.player.x, y: G.player.y, key }); emit(G, { t: 'ui' }); return true;
 }
 export function toggleMember(G, uid) {
   const m = G.party.find((p) => p.uid === uid); if (!m || m.fainted) return;
@@ -438,7 +458,7 @@ export function snapshot(G) {
     player: { x: r(G.player.x), y: r(G.player.y), vx: r(G.player.vx || 0), vy: r(G.player.vy || 0), hp: r(G.player.hp), maxhp: G.player.maxhp,
       atk: ef.atk, def: ef.def, facing: G.player.facing, cd: r(Math.max(0, G.player.cd)), iframe: r(Math.max(0, G.iframe)), dashCd: r(Math.max(0, G.dashCd)),
       focus: G.player.focus || null, focusWild: G.player.focusWild || null, moveT: G.player.moveT ? { x: r(G.player.moveT.x), y: r(G.player.moveT.y) } : null },
-    crystals: G.crystals, inv: { ...G.inv }, equip: { ...G.equip }, buffs: G.buffs.map((b) => ({ ...b, t: r(b.t) })), autoHit: G.autoHit,
+    crystals: G.crystals, coins: G.coins, inv: { ...G.inv }, equip: { ...G.equip }, buffs: G.buffs.map((b) => ({ ...b, t: r(b.t) })), autoHit: G.autoHit,
     party: G.party.map((p) => ({ uid: p.uid, key: p.key, level: p.level, xp: p.xp, hp: r(p.hp), maxhp: p.maxhp, active: p.active, fainted: p.fainted })),
     counts: counts(G), stats: { ...G.stats, damageDealt: r(G.stats.damageDealt), damageTaken: r(G.stats.damageTaken) },
     entities: [...G.ents.values()].filter((e) => e.faction !== 'gate').map((e) => ({ id: e.id, faction: e.faction, kind: e.mkey || e.wkey || e.item || e.sprite,

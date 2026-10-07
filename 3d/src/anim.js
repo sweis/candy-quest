@@ -121,6 +121,12 @@ export function animate(v, dt, time) {
     const f = Math.sin(t * (moving ? 9 : 4)) * (moving ? 0.45 : 0.22);
     if (P.wingL) P.wingL.rotation.x = f; if (P.wingR) P.wingR.rotation.x = -f;
     if (P.tail) P.tail.rotation.y = Math.sin(t * 3) * 0.25;
+    if (P.body2) { // the twin glides half a beat behind
+      const f2 = Math.sin(t * (moving ? 9 : 4) - 1.6) * (moving ? 0.5 : 0.25);
+      P.body2.position.y += Math.sin(t * 2.2 - 1.6) * 0.12; P.body2.rotation.x = Math.sin(t * 1.6 - 1) * 0.08;
+      if (P.wingL2) P.wingL2.rotation.x = f2; if (P.wingR2) P.wingR2.rotation.x = -f2; if (P.tail2) P.tail2.rotation.y = Math.sin(t * 3 - 1) * 0.3;
+      if (att >= 0) P.body2.position.x += Math.sin(att * Math.PI) * 0.3;
+    }
     if (att >= 0) { b.position.x += Math.sin(att * Math.PI) * 0.25; b.rotation.z = -Math.sin(att * Math.PI) * 0.2; }
     if (hit > 0) b.rotation.z += hit * 0.3;
   } else if (v.rig === 'serpent') {
