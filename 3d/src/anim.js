@@ -64,11 +64,12 @@ export function animate(v, dt, time) {
     if (P.head) P.head.rotation.x = Math.sin(t * 1.3) * 0.08;
     if (att >= 0) { b.position.x += Math.sin(att * Math.PI) * 0.35; b.rotation.z = -Math.sin(att * Math.PI) * 0.2; }
     if (hit > 0) b.rotation.z += hit * 0.25;
-  } else if (v.rig === 'quad') { // diagonal gait: FL+BR together, FR+BL together
+  } else if (v.rig === 'quad' || v.rig === 'frog') { // diagonal gait: FL+BR together, FR+BL together (frogs hop instead)
     const a = Math.sin(w) * 0.55 * amp;
     if (P.legFL) P.legFL.rotation.z = a; if (P.legBR) P.legBR.rotation.z = a;
     if (P.legFR) P.legFR.rotation.z = -a; if (P.legBL) P.legBL.rotation.z = -a;
     const b = P.body; b.position.y += Math.abs(Math.sin(w)) * 0.04 * amp + Math.sin(t * 2) * 0.012;
+    if (v.rig === 'frog' && moving) { const hop = Math.abs(Math.sin(w * 0.7)); b.position.y += hop * 0.35; for (const n of ['legBL', 'legBR', 'legFL', 'legFR']) if (P[n]) { P[n].position.y += hop * 0.3; P[n].rotation.z = -hop * 0.5; } }
     if (P.head) P.head.rotation.z = Math.sin(t * 1.6) * 0.04;
     if (P.tail) P.tail.rotation.y = Math.sin(t * 2.2 + w) * 0.18;
     if (att >= 0) {

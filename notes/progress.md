@@ -40,10 +40,19 @@ Level-select thumbnails are engine frames in `3d/thumbs/` — regenerate with `n
 | `programs-all.mjs` | no shader compile after the title frame across all 10 levels in one session |
 | `perf.mjs [levels]` / `drawcensus.mjs <lvl>` | draw calls / tris per spot; per-category draw tally |
 | `collide.mjs` | node, all 10 levels: pets/Pip never overlap, nothing inside a solid, no pickup spawned in one, keys slide around rocks |
+| `shop-sim.mjs`, `shop.mjs`, `items.mjs` | calendar/economy/purchases; shop + Halloween via real clicks; keep-your-items across levels |
 | `biomes.mjs`, `bestiary.mjs`, `thumbs.mjs` | environment stills, creature close-ups (cq.showcase), level thumbnails |
 
 Last run (2026-09-26, Apple M4 Pro via ANGLE/Metal, headless Chrome): all pass except the novice-bot
 "0 knockouts" gate — bot clears L1 in ~60 s sim time but takes 1 KO (classic balance: Captain 340 HP / 20 ATK).
+
+## Content beyond the classic (3D only)
+- Candy Quest 2 (`quest2.js`): Broccoli Forest, Carrot Mountains, Cabbage Boulder Pass, Tomato Shores, Pea Savannah,
+  Cauliflower Field, Corn Forest (levels 11–15, 17–18; `qn` = number within the quest). Level order follows `qn`.
+- 🎃 Halloween Special (`halloween.js`): Pumpkin Patch (level 16) — only shown Oct 28 – Nov 3.
+- Coins + Shop (`shop.js`): boss = 10 coins, monsters ~30% drop a coin; Legendary Pumpkin Pie Twins (50 coins) Halloween only.
+- Halloween theme (`events.js`): same dates; preview with `?date=2026-10-31`.
+- Saves (`cq3d_*`): pets, unlocked, coins, bag (inventory + equipped gear + crystals carry between levels).
 
 ## Collision (3d-0.2.1 — not in the classic)
 `src/solids.js` turns each level's scenery into solid circles sized to the 3D props (ponds/decals stay walkable). The sim

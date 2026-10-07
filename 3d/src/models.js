@@ -5,6 +5,7 @@
 import { Kit, G, PAT, THREE } from './kit.js';
 import { CATALOG2 } from './models2.js';
 import { CATALOG3 } from './models3.js';
+import { CATALOG4 } from './models4.js';
 
 const SKIN = 0xffdcbc, INK = 0x2a1a26, WHITE = 0xffffff;
 
@@ -298,6 +299,7 @@ export function catalog(sprite) {
   if (CATALOG[sprite]) return CATALOG[sprite];
   if (CATALOG2[sprite]) return CATALOG2[sprite];
   if (CATALOG3[sprite]) return CATALOG3[sprite];
+  if (CATALOG4[sprite]) return CATALOG4[sprite];
   let h = 0; for (const ch of sprite || '?') h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return { build: () => fallback((h % 360) / 360), rig: 'blob', h: 1.1, r: 0.6, fallback: true };
 }

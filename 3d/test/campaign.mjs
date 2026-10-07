@@ -8,13 +8,17 @@ const { srv, base } = await serve(); const browser = await launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } }); const errors = watchErrors(page);
 let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-await page.goto(base + '/3d/?dev&seed=17'); await page.evaluate(() => localStorage.clear());
-await page.goto(base + '/3d/?dev&seed=17');
+const DQ = process.env.DATE ? '&date=' + process.env.DATE : '';
+await page.goto(base + '/3d/?dev&seed=17' + DQ); await page.evaluate(() => localStorage.clear());
+await page.goto(base + '/3d/?dev&seed=17' + DQ);
 await pollUntil(page, () => window.cq && window.cq.getState().screen === 'title', null, { timeout: 30000 });
 // title → select via real clicks
 const clickSel = async (sel) => { const h = await page.$(sel); await h.scrollIntoViewIfNeeded(); const b = await h.boundingBox(); await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2); };
 await clickSel('.bigbtn'); await page.waitForSelector('.lvl');
+const qOf = (L) => L.quest || 1;
+const nextOf = (L) => L.event ? null : Object.values(LEVELS).find((x) => qOf(x) === qOf(L) && (x.qn || x.id) === (L.qn || L.id) + 1) || (qOf(L) === 1 && L.id === 10 ? Object.values(LEVELS).find((x) => qOf(x) === 2 && x.qn === 1) : null);
 for (let lvl = from; lvl <= to; lvl++) {
+  if (LEVELS[lvl].event && !process.env.DATE) continue; // event levels only appear while their event is on
   if (lvl > 1 && from === lvl) { // starting mid-campaign: unlock up to here and bring the pets you'd have tamed so far
     await page.evaluate((l) => { const u = {}; for (let i = 1; i <= l; i++) u[i] = true; localStorage.setItem('cq3d_unlocked', JSON.stringify(u));
       const keys = ['floss_finch', 'swirlbug', 'geode_jay', 'rock_turtle', 'corn_hog', 'chompgum', 'lico_snake', 'choc_lizard', 'pepp_fish', 'nerd_worm', 'cane_runner'].slice(0, l + 1);
@@ -49,7 +53,7 @@ for (let lvl = from; lvl <= to; lvl++) {
   await pollUntil(page, () => window.cq.getState().screen === 'win', null, { timeout: 8000 }).catch(() => {});
   const st = await page.evaluate(() => window.cq.getState());
   ok(st.screen === 'win', `L${lvl} ${LEVELS[lvl].name}: cleared via real clicks in ${((Date.now() - t0) / 1000).toFixed(0)} s (party ${st.sim.party.map((m) => m.key).join(',') || '—'}, KOs ${st.sim.stats.knockouts})`);
-  if (lvl < 10) ok(JSON.parse(await page.evaluate(() => localStorage.getItem('cq3d_unlocked')))[lvl + 1] === true, `L${lvl + 1} unlocked`);
+  { const nx = nextOf(LEVELS[lvl]); if (nx) ok(JSON.parse(await page.evaluate(() => localStorage.getItem('cq3d_unlocked')))[nx.id] === true, `${nx.name} unlocked`); }
   await page.screenshot({ path: `${OUT}/campaign-win-L${lvl}.png` });
   await clickSel('[data-go=select]'); await page.waitForSelector('.lvl');
 }

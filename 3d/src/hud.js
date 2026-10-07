@@ -158,7 +158,7 @@ Hud.prototype.shopBody = function () {
       <button class="btn alt" data-a="buy" data-uid="${e.id}" ${v.ok ? '' : 'disabled'} title="${v.ok ? '' : esc(v.why)}">🪙 ${e.price}</button></div>`;
   }).join('');
   return `<div class="wallet">${this.img('coin')}<b>${info.coins}</b> coins <span class="muted">· beat a boss for ${BOSS_COINS} · monsters sometimes drop one</span></div>
-    ${rows}${info.inLevel ? '' : '<div class="muted" style="font-size:.8em;margin-top:.6em">Treats go in your bag, so they can only be bought during a level.</div>'}`;
+    ${rows}<div class="muted" style="font-size:.8em;margin-top:.6em">Treats go in your bag — and you keep your bag from level to level.</div>`;
 };
 
 // ---------------------------------------------------------------- help sheet, generated from the game's own tables
@@ -179,5 +179,5 @@ export function helpSheet(G, hud) {
       Wild here: ${L.wild.length ? L.wild.map((k) => `<b>${esc(ALLIES[k].name)}</b> (${ALLIES[k].role})`).join(', ') : 'none'}.</div>
     <h3>Food</h3><ul>${food.map(([id, it]) => `<li>${esc(it.name)} — ${esc(it.desc.replace('Cooked alien food. ', ''))}</li>`).join('')}</ul>
     <h3>Tips</h3><ul><li>Fainted pets recover on their own after ${REVIVE_T}s, or revive them now from the Party panel.</li>
-      <li>Getting knocked out sends you back to camp and costs 3 crystals.</li><li>Coins: beat a boss for ${BOSS_COINS}, and monsters sometimes drop one. Spend them in the 🛒 Shop.</li><li>Auto-hit swings whenever an enemy is in reach — handy on phones.</li></ul></div>`;
+      <li>Getting knocked out sends you back to camp and costs 3 crystals.</li><li>You keep your bag, gear and crystals from level to level.</li><li>Coins: beat a boss for ${BOSS_COINS}, and monsters sometimes drop one. Spend them in the 🛒 Shop.</li><li>Auto-hit swings whenever an enemy is in reach — handy on phones.</li></ul></div>`;
 }

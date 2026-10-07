@@ -16,7 +16,7 @@ export const CAMP = { x: 240, y: 760 };
 const D = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const clamp = (v, a, b) => (v < a ? a : v > b ? b : v);
 
-export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = false, onSavePets = null, solids = [], radiusOf = null, coins = 0, onCoins = null } = {}) {
+export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = false, onSavePets = null, solids = [], radiusOf = null, coins = 0, onCoins = null, bag = null } = {}) {
   const CFG = LEVELS[level] || LEVELS[1];
   const W = CFG.allPets ? 3000 : 2200, H = CFG.allPets ? 2000 : 1500;
   const rng = makeRng(seed);
@@ -68,8 +68,8 @@ export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = fals
 
   const G = {
     level, CFG, W, H, BAIT, rng, seed, ents, player, gate, projs: [], nextProj: 1,
-    inv: { ...(freeBait ? { [BAIT]: 3 } : {}), mushroom: 1 }, equip: { weapon: null, armor: null },
-    party, crystals: 0, bossDead: false, won: false, dashCd: 0, iframe: 0, buffs: [],
+    inv: startingBag(bag, freeBait ? { [BAIT]: 3, mushroom: 1 } : { mushroom: 1 }), equip: savedEquip(bag),
+    party, crystals: bag && bag.crystals > 0 ? bag.crystals | 0 : 0, bossDead: false, won: false, dashCd: 0, iframe: 0, buffs: [],
     input: { up: false, down: false, left: false, right: false }, autoHit: !!autoHit,
     tick: 0, time: 0, events: [], onSavePets, _nid: () => nid++, _mk: mk,
     stats: { kills: 0, damageDealt: 0, damageTaken: 0, knockouts: 0, tamed: 0, collected: 0 },
@@ -79,6 +79,21 @@ export function createGame(level = 1, { seed = 1, savedPets = [], autoHit = fals
   G.ents.forEach((e) => { if (e.faction !== 'gate') pushOutOfSolids(G, e, e.faction === 'item' ? 16 : radius(G, e)); if (e.home) { e.home.x = e.x; e.home.y = e.y; } });
   return G;
 }
+
+// ---------------------------------------------------------------- persistent bag (3D addition: you keep your items)
+// Each level starts from the saved bag + that level's usual starting supplies; equipped gear carries over if you still own it.
+function startingBag(bag, supplies) {
+  const inv = {};
+  if (bag && bag.inv) for (const [k, n] of Object.entries(bag.inv)) if (ITEMS[k] && n > 0) inv[k] = n | 0;
+  for (const [k, n] of Object.entries(supplies)) inv[k] = (inv[k] || 0) + n;
+  return inv;
+}
+function savedEquip(bag) {
+  const e = { weapon: null, armor: null };
+  if (bag && bag.equip) for (const slot of ['weapon', 'armor']) { const id = bag.equip[slot]; if (id && ITEMS[id] && ITEMS[id].kind === slot && bag.inv && bag.inv[id] > 0) e[slot] = id; }
+  return e;
+}
+export const bagOf = (G) => ({ inv: Object.fromEntries(Object.entries(G.inv).filter(([, n]) => n > 0)), equip: { ...G.equip }, crystals: G.crystals });
 
 // ---------------------------------------------------------------- collision (3D port addition; the classic had none)
 // Creatures are circles. Same-side bodies push apart (Pip + pets, enemies, wild animals); opposite sides don't, so

@@ -43,7 +43,7 @@ export function bodyRadius(sprite, e) { if (sprite === 'hero') return 15; const 
 function newGame(level, seed) {
   const s = seed ?? app.seed ?? randomSeed();
   return Sim.createGame(level, { seed: s, savedPets: store.get('pets', []), autoHit: store.get('autohit', false), onSavePets: (p) => store.set('pets', p),
-    coins: store.get('coins', 0), onCoins: (c) => store.set('coins', c),
+    coins: store.get('coins', 0), onCoins: (c) => store.set('coins', c), bag: store.get('bag', null),
     solids: solidsFor(level), radiusOf: bodyRadius });
 }
 
@@ -69,18 +69,24 @@ function showSelect() {
     const prev = Object.values(LEVELS).find((x) => (x.quest || 1) === (L.quest || 1) && (x.qn || x.id) === qn - 1);
     const badge = open ? '▶ Play' : '🔒 Clear ' + (prev ? prev.name : 'Level ' + (qn - 1));
     return `<button class="lvl ${open ? 'open' : 'locked'}" data-lvl="${L.id}"><div class="th" style="${levelThumb(L.id)}"></div><span class="badge">${badge}</span>
-      <div class="mt"><div class="n">LEVEL ${qn}</div><h3>${L.name}</h3></div></button>`;
+      <div class="mt"><div class="n">${L.event ? 'HALLOWEEN' : 'LEVEL ' + qn}</div><h3>${L.name}</h3></div></button>`;
   };
-  const sections = QUESTS.map((Q) => {
-    const ls = Object.values(LEVELS).filter((L) => questOf(L) === Q.n); if (!ls.length) return '';
+  const sections = QUESTS.filter((Q) => !Q.event || (Q.event === 'halloween' && HALLOWEEN)).map((Q) => {
+    const ls = Object.values(LEVELS).filter((L) => questOf(L) === Q.n).sort((a, b) => (a.qn || a.id) - (b.qn || b.id)); if (!ls.length) return '';
     return `<section class="quest q${Q.n}"><h2 class="qtitle">${Q.n === 1 ? 'Quest 1' : '<b>' + Q.title + '</b>'}</h2><div class="muted">${Q.blurb}</div><div class="lvls">${ls.map(card).join('')}</div></section>`;
   }).join('');
   screenEl.innerHTML = `<div class="scr select"><button class="backlink" data-go="title">← Title</button>
     <button class="shoplink" data-go="shop">🛒 Shop <span class="coins">🪙 ${store.get('coins', 0)}</span></button>
     ${HALLOWEEN ? '<div class="evbanner">🎃 Halloween event: the Legendary Pumpkin Pie Twins are in the Shop!</div>' : ''}${sections}</div>`;
 }
+// next level within the same quest (by its number in the quest); Quest 1's finale leads into Candy Quest 2
+function nextLevel(L) {
+  const all = Object.values(LEVELS), q = questOf(L);
+  if (L.event) return null;
+  return all.find((x) => questOf(x) === q && (x.qn || x.id) === (L.qn || L.id) + 1) || (q === 1 && (L.qn || L.id) === 10 ? all.find((x) => questOf(x) === 2 && x.qn === 1) : null);
+}
 // the first level of every quest is open from the start; later ones unlock when you clear the one before
-function isOpen(id) { const L = LEVELS[id]; return !!app.unlocked[id] || (L.qn || L.id) === 1 || DEV; }
+function isOpen(id) { const L = LEVELS[id]; if (L.event === 'halloween' && !HALLOWEEN && !DEV) return false; return !!app.unlocked[id] || (L.qn || L.id) === 1 || DEV; }
 function startLevel(level) {
   app.level = level; app.G = newGame(level); app.paused = false;
   world.setLevel(app.G); world.setCam(DEV && Q.get('cam') ? Q.get('cam') : 'play');
@@ -88,12 +94,12 @@ function startLevel(level) {
 }
 function showWin() {
   const G = app.G; app.screen = 'win'; hud.closePanel();
-  if (LEVELS[G.level + 1]) { app.unlocked = { ...app.unlocked, [G.level + 1]: true }; store.set('unlocked', app.unlocked); }
+  const L = LEVELS[G.level], next = nextLevel(L);
+  if (next) { app.unlocked = { ...app.unlocked, [next.id]: true }; store.set('unlocked', app.unlocked); }
   app.lastWin = { level: G.level, crystals: G.crystals };
-  const next = LEVELS[G.level + 1], L = LEVELS[G.level];
-  const nextNote = next ? `🔓 ${(next.quest || 1) !== (L.quest || 1) ? 'Candy Quest 2: ' : ''}${next.name} unlocked!` : '🍭 More Candy Quest 2 levels coming soon!';
+  const nextNote = L.event ? '🎃 Happy Halloween!' : next ? `🔓 ${questOf(next) !== questOf(L) ? 'Candy Quest 2: ' : ''}${next.name} unlocked!` : '🍭 More Candy Quest 2 levels coming soon!';
   const purple = G.level === 2 || G.level === 4 || G.level === 5;
-  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>${L.quest === 2 ? 'Quest 2 · ' : ''}Level ${L.qn || L.id}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
+  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>${L.event ? '🎃 ' + L.name : (L.quest === 2 ? 'Quest 2 · ' : '') + 'Level ' + (L.qn || L.id)}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
     <div class="rewards"><div class="reward">${hud.img('crystal')}${G.crystals} crystals</div>${G.level === 10 ? '<div class="reward">🏆 Quest 1 complete!</div>' : ''}<div class="reward">${nextNote}</div></div>
     <div style="display:flex;gap:1em;margin-top:1em"><button class="bigbtn" data-go="select">Level Select →</button><button class="bigbtn alt" data-go="replay">↺ Replay</button></div></div>`;
   hud.el.hidden = true;
@@ -129,6 +135,12 @@ function buy(id) {
   const info = shopInfo(); const v = canBuy(entry, info);
   if (!v.ok) return;
   if (info.inLevel) { if (entry.kind === 'pet') Sim.buyPet(app.G, id, entry.price); else Sim.buyItem(app.G, id, entry.price); drain(); }
+  else if (entry.kind === 'item') {
+    store.set('coins', info.coins - entry.price);
+    const bag = store.get('bag', { inv: {}, equip: {}, crystals: 0 }); bag.inv = bag.inv || {}; bag.inv[id] = (bag.inv[id] || 0) + 1; store.set('bag', bag);
+    hud.toast(`🛒 Bought ${ITEMS[id].name} — it's in your bag`);
+    const c = document.querySelector('.shoplink .coins'); if (c) c.textContent = '🪙 ' + store.get('coins', 0);
+  }
   else if (entry.kind === 'pet') {
     store.set('coins', info.coins - entry.price);
     const pets = store.get('pets', []); pets.push({ key: id, level: 1, xp: 0, maxhp: ALLIES[id].hp }); store.set('pets', pets);
@@ -206,6 +218,7 @@ function drain() {
   const evs = G.events.splice(0);
   world.onEvents(G, evs);
   let ui = false;
+  if (app.screen === 'play' && evs.some((e) => e.t === 'ui' || e.t === 'ko' || e.t === 'win')) store.set('bag', Sim.bagOf(G)); // keep your items
   for (const ev of evs) {
     if (ev.t === 'toast') hud.toast(ev.msg);
     if (ev.t === 'ui') ui = true;

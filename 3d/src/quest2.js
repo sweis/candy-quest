@@ -7,6 +7,8 @@ export const Q2_ALLIES = {
   carrot_porcupine: { name: 'Carrot Porcupine', sprite: 'carrot_porcupine', role: 'Quill Shooter', hp: 112, atk: 22, def: 13, speed: 1.1, range: 220, kind: 'ranged' },
   tomato_stingray: { name: 'Tomato Stingray', sprite: 'tomato_stingray', role: 'Zapper', hp: 118, atk: 24, def: 12, speed: 1.3, range: 200, kind: 'ranged' },
   pea_cheetah: { name: 'Pea Cheetah', sprite: 'pea_cheetah', role: 'Sprinter', hp: 120, atk: 28, def: 12, speed: 1.6, range: 64, kind: 'melee' },
+  cauli_frog: { name: 'Cauliflower Frog', sprite: 'cauli_frog', role: 'Hopper', hp: 125, atk: 26, def: 14, speed: 1.35, range: 64, kind: 'melee' },
+  corn_bull: { name: 'Corn Bull', sprite: 'corn_bull', role: 'Charger', hp: 160, atk: 30, def: 18, speed: 1.15, range: 66, kind: 'melee' },
   cabbage_armadillo: { name: 'Cabbage Armadillo', sprite: 'cabbage_armadillo', role: 'Roller Tank', hp: 150, atk: 20, def: 18, speed: 0.95, range: 60, kind: 'melee' },
 };
 export const Q2_MONSTERS = {
@@ -24,6 +26,12 @@ export const Q2_MONSTERS = {
   pea_pip: { name: 'Pea Pip', sprite: 'pea_pip', hp: 160, atk: 38, def: 20, speed: 1.05, range: 50, kind: 'melee', xp: 72 },
   pea_launcher: { name: 'Pea Launcher', sprite: 'pea_launcher', hp: 250, atk: 48, def: 28, speed: 0.5, range: 340, kind: 'ranged', xp: 125, proj: '#8fdc4a' },
   podzilla: { name: 'Podzilla', sprite: 'podzilla', hp: 2400, atk: 72, def: 44, speed: 0.62, range: 130, kind: 'melee', xp: 1900, boss: true },
+  cauli_roller: { name: 'Cauliflower Roller', sprite: 'cauli_roller', hp: 320, atk: 52, def: 32, speed: 0.9, range: 58, kind: 'melee', xp: 130 },
+  cauli_launcher: { name: 'Cauliflower Launcher', sprite: 'cauli_launcher', hp: 260, atk: 50, def: 28, speed: 0.5, range: 340, kind: 'ranged', xp: 128, proj: '#f6f1dc' },
+  cauli_king: { name: 'King Cauliflower', sprite: 'cauli_king', hp: 2600, atk: 76, def: 46, speed: 0.66, range: 125, kind: 'melee', xp: 2000, boss: true },
+  corn_basher: { name: 'Corn Basher', sprite: 'corn_basher', hp: 340, atk: 55, def: 34, speed: 0.8, range: 70, kind: 'melee', xp: 135 },
+  corn_colonel: { name: 'Corn Colonel', sprite: 'corn_colonel', hp: 270, atk: 52, def: 30, speed: 0.6, range: 340, kind: 'ranged', xp: 132, proj: '#ffe06a' },
+  cob_crusher: { name: 'Cob Crusher', sprite: 'cob_crusher', hp: 2800, atk: 80, def: 48, speed: 0.64, range: 135, kind: 'melee', xp: 2100, boss: true },
   cabbage_king: { name: 'King Coleslaw', sprite: 'cabbage_king', hp: 2100, atk: 66, def: 40, speed: 0.66, range: 120, kind: 'melee', xp: 1700, boss: true },
 };
 export const Q2_ITEMS = {
@@ -31,6 +39,8 @@ export const Q2_ITEMS = {
   lime_gumball: { name: 'Lime Gumball', kind: 'bait', rarity: 'common', desc: 'A zingy green gumball. Pass critters roll right over for it — offer it to tame them.' },
   cherry_taffy: { name: 'Cherry Taffy', kind: 'bait', rarity: 'common', desc: 'A chewy red taffy twist. Shore critters glide right up for it — offer it to tame them.' },
   peanut_brittle: { name: 'Pea-nut Brittle', kind: 'bait', rarity: 'common', desc: 'Crunchy brittle studded with sweet peas. Savannah critters sprint for it — offer it to tame them.' },
+  marshmallow: { name: 'Vanilla Marshmallow', kind: 'bait', rarity: 'common', desc: 'A pillowy white marshmallow. Field critters hop right over — offer it to tame them.' },
+  popcorn_ball: { name: 'Caramel Popcorn Ball', kind: 'bait', rarity: 'common', desc: 'A sticky caramel popcorn ball. Corn Forest critters stampede for it — offer it to tame them.' },
   carrot_pop: { name: 'Carrot Cake Pop', kind: 'bait', rarity: 'common', desc: 'A frosted carrot-cake pop on a stick. Mountain critters come running — offer it to tame them.' },
 };
 export const Q2_LEVELS = {
@@ -64,6 +74,18 @@ export const Q2_LEVELS = {
     enemyPool: ['pea_pip', 'pea_pip', 'pea_launcher', 'pea_pip', 'pea_pip', 'pea_launcher', 'pea_pip', 'pea_pip', 'pea_launcher', 'pea_pip', 'pea_pip', 'pea_launcher'],
     boss: 'podzilla', wild: ['pea_cheetah'],
     forage: ['peanut_brittle', 'peanut_brittle', 'peanut_brittle', 'peanut_brittle', 'honey', 'honey', 'acorn', 'glowberry', 'mushroom', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'star_sprinkle'] },
+  17: { id: 17, quest: 2, qn: 6, name: 'Cauliflower Field', scenery: 'cauli', bait: 'marshmallow',
+    sky: 'radial-gradient(circle at 26% 18%, #fffbea, transparent 44%), linear-gradient(165deg, #e8f0d0, #a8c06a 55%, #7a9a4a)',
+    bossName: 'King Cauliflower',
+    enemyPool: ['cauli_roller', 'cauli_launcher', 'cauli_roller', 'cauli_launcher', 'cauli_roller', 'cauli_roller', 'cauli_launcher', 'cauli_roller', 'cauli_launcher', 'cauli_roller'],
+    boss: 'cauli_king', wild: ['cauli_frog'],
+    forage: ['marshmallow', 'marshmallow', 'marshmallow', 'marshmallow', 'honey', 'glowberry', 'glowberry', 'mushroom', 'mushroom', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'star_sprinkle'] },
+  18: { id: 18, quest: 2, qn: 7, name: 'Corn Forest', scenery: 'corn', bait: 'popcorn_ball',
+    sky: 'radial-gradient(circle at 26% 18%, #fff4c8, transparent 44%), linear-gradient(165deg, #ffe8a0, #c8aa62 55%, #8a7a3a)',
+    bossName: 'Cob Crusher',
+    enemyPool: ['corn_basher', 'corn_colonel', 'corn_basher', 'corn_colonel', 'corn_basher', 'corn_basher', 'corn_colonel', 'corn_basher', 'corn_colonel', 'corn_basher'],
+    boss: 'cob_crusher', wild: ['corn_bull'],
+    forage: ['popcorn_ball', 'popcorn_ball', 'popcorn_ball', 'popcorn_ball', 'honey', 'honey', 'acorn', 'glowberry', 'mushroom', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'star_sprinkle'] },
 };
 
 // Broccoli Forest layout (world px), in the same style as the classic makeScenery()
@@ -122,7 +144,27 @@ function peaScenery() {
   add('waterhole', 560, 900);
   return s;
 }
-const SCENERY = { broccoli: broccoliScenery, carrot: carrotScenery, cabbage: cabbageScenery, tomato: tomatoScenery, pea: peaScenery };
+// Cauliflower Field: furrowed farmland with rows of cauliflowers, creamy boulders and scarecrows
+function cauliScenery() {
+  const s = []; const add = (t, x, y, o = {}) => s.push({ t, x, y, ...o });
+  [[320, 380], [1120, 440], [1900, 320], [980, 1240], [2000, 1060]].forEach(([x, y]) => add('scarecrow', x, y));
+  [[700, 320], [1520, 340], [520, 1180], [1600, 1160], [640, 520], [1240, 660], [1820, 840]].forEach(([x, y], i) => add('caulirock', x, y, { s: 0.9 + (i % 3) * 0.25 }));
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 7; c++) { if ((r + c) % 3 === 0) continue; add('cauliplant', 420 + c * 220 + (r % 2) * 90, 560 + r * 150); }
+  [[600, 520], [1000, 820], [1400, 600], [800, 1100], [1700, 980]].forEach(([x, y], i) => add('dirt', x, y, { s: 1.0 + (i % 3) * 0.3 }));
+  add('pond', 560, 900);
+  return s;
+}
+// Corn Forest: towering cornstalk clusters, hay bales, scarecrows
+function cornScenery() {
+  const s = []; const add = (t, x, y, o = {}) => s.push({ t, x, y, ...o });
+  [[320, 380], [700, 320], [1120, 440], [1520, 340], [1900, 320], [520, 1180], [980, 1240], [1600, 1160], [2000, 1060], [860, 700], [1380, 820], [1760, 620]].forEach(([x, y], i) => add('cornstalk', x, y, { s: 0.9 + (i % 3) * 0.2 }));
+  [[640, 520], [1240, 640], [1820, 840], [420, 1060]].forEach(([x, y]) => add('haybale', x, y));
+  [[360, 640], [1300, 1020]].forEach(([x, y]) => add('scarecrow', x, y));
+  [[480, 760], [1180, 540], [1700, 720], [900, 1120], [1500, 480]].forEach(([x, y]) => add('savgrass', x, y));
+  [[600, 560], [1300, 700], [1860, 900], [400, 1000], [1100, 1060]].forEach(([x, y], i) => add('dirt', x, y, { s: 0.9 + (i % 3) * 0.3 }));
+  return s;
+}
+const SCENERY = { broccoli: broccoliScenery, carrot: carrotScenery, cabbage: cabbageScenery, tomato: tomatoScenery, pea: peaScenery, cauli: cauliScenery, corn: cornScenery };
 export const sceneryFor = (kind) => (SCENERY[kind] ? SCENERY[kind]() : makeScenery(kind));
 
 Object.assign(ALLIES, Q2_ALLIES); Object.assign(MONSTERS, Q2_MONSTERS); Object.assign(ITEMS, Q2_ITEMS); Object.assign(LEVELS, Q2_LEVELS);

@@ -295,7 +295,10 @@ export class World {
     const pk2 = new Kit(); pk2.add('root', Geo.sphere(0.13, 12, 10), { c: 0x8fdc4a }); pk2.add('root', Geo.sphere(0.04, 6, 4), { c: 0xeaffd0, p: [-0.05, 0.07, 0.07] });
     const peag = pk2.static();
     const pool = (g, n) => { const a = []; for (let i = 0; i < n; i++) { const m = new THREE.Mesh(g, this.M.candy); m.castShadow = true; m.visible = false; this.scene.add(m); a.push(m); } return a; };
-    this.special = { cabbage_lobber: { meshes: pool(cbg, 16), arc: 0.9, spin: true }, pea_launcher: { meshes: pool(peag, 24), arc: 0.15, spin: false } };
+    const fk = new Kit(); for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; fk.add('root', Geo.sphere(0.09, 8, 6), { c: [0xf6f1dc, 0xece5c6, 0xfffbea][i % 3], p: [Math.cos(a) * 0.08, 0.04, Math.sin(a) * 0.08] }); } fk.add('root', Geo.cyl(0.05, 0.07, 0.12, 6), { c: 0x8fbf5a, p: [0, -0.06, 0] });
+    const kk = new Kit(); kk.add('root', Geo.sphere(0.08, 8, 6), { c: 0xffd84a, s: [1, 1.2, 0.8] });
+    this.special = { cabbage_lobber: { meshes: pool(cbg, 16), arc: 0.9, spin: true }, pea_launcher: { meshes: pool(peag, 24), arc: 0.15, spin: false },
+      cauli_launcher: { meshes: pool(fk.static(), 16), arc: 0.6, spin: true }, corn_colonel: { meshes: pool(kk.static(), 24), arc: 0.1, spin: true } };
     this.projMeshes = [];
     for (let i = 0; i < 48; i++) { const m = new THREE.Mesh(qg, new THREE.MeshBasicMaterial({ vertexColors: true, map: glow.map, toneMapped: false })); m.material.name = 'proj'; m.visible = false; this.scene.add(m); this.projMeshes.push(m); }
   }

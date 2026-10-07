@@ -157,6 +157,8 @@ const B = {
     k.add('root', G.torus(0.2, 0.022, 8, 32), { c: 0xf0a82a, p: [0, 0.25, 0] });
     for (const sd of [-1, 1]) k.add('root', G.extrude(G.star(0.09, 0.04), 0.012, 0.004), { c: 0xffe58a, p: [0, 0.25, sd * 0.028] });
   },
+  marshmallow(k) { k.add('root', G.cyl(0.15, 0.15, 0.24, 20), { c: 0xfffaf2, p: [0, 0.14, 0] }); k.add('root', G.torus(0.13, 0.03, 8, 20), { c: 0xffffff, p: [0, 0.26, 0], r: [90, 0, 0] }); },
+  popcorn_ball(k) { k.add('root', G.sphere(0.18, 14, 10), { c: 0xe8a84a, p: [0, 0.22, 0] }); for (let i = 0; i < 14; i++) { const a = i * 2.4, y = 1 - (i / 14) * 2, rr = Math.sqrt(1 - y * y); k.add('root', G.sphere(0.06, 6, 4), { c: i % 3 ? 0xfff4d6 : 0xffd27a, p: [Math.cos(a) * rr * 0.17, 0.22 + y * 0.17, Math.sin(a) * rr * 0.17] }); } k.add('root', G.cyl(0.015, 0.015, 0.2, 6), { c: 0xf4ece0, p: [0, 0.05, 0] }); },
   star_pop(k) {
     k.add('root', G.cyl(0.018, 0.018, 0.26, 8), { c: 0xf4ece0, p: [0, 0.13, 0] });
     k.add('root', G.extrude(G.star(0.17, 0.08), 0.06, 0.02), { c: 0xffa53c, p: [0, 0.38, 0] });

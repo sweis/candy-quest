@@ -14,7 +14,7 @@ Object.assign(ALLIES, SHOP_ALLIES); Object.assign(ITEMS, SHOP_ITEMS);
 
 export const BOSS_COINS = 10, MONSTER_COIN_CHANCE = 0.3;
 
-// catalogue: kind 'pet' (persists, bought anywhere) or 'item' (goes in your bag — only while you're in a level)
+// catalogue: kind 'pet' or 'item' (goes in your bag, which you keep between levels) — both can be bought anywhere
 export const SHOP = [
   { id: 'pumpkin_twins', kind: 'pet', price: 50, event: 'halloween', badge: 'LEGENDARY · HALLOWEEN' },
   { id: 'mallow_mend', kind: 'item', price: 4 },
@@ -28,7 +28,6 @@ export function onSale(entry, date = new Date()) { return entry.event === 'hallo
 export function canBuy(entry, { coins, inLevel, ownedPets, date }) {
   if (!onSale(entry, date)) return { ok: false, why: 'Halloween only (Oct 28 – Nov 3)' };
   if (entry.kind === 'pet' && ownedPets.includes(entry.id)) return { ok: false, why: 'Owned' };
-  if (entry.kind === 'item' && !inLevel) return { ok: false, why: 'Buy during a level' };
   if (coins < entry.price) return { ok: false, why: `Need ${entry.price - coins} more coins` };
   return { ok: true };
 }
