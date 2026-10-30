@@ -49,6 +49,9 @@ Last run (2026-09-26, Apple M4 Pro via ANGLE/Metal, headless Chrome): all pass e
 ## Content beyond the classic (3D only)
 - Candy Quest 2 (`quest2.js`): Broccoli Forest, Carrot Mountains, Cabbage Boulder Pass, Tomato Shores, Pea Savannah,
   Cauliflower Field, Corn Forest (levels 11–15, 17–18; `qn` = number within the quest). Level order follows `qn`.
+  Then Pepper Forest (19), Mushroom Grounds (20) and the finale Mixed Veggie Mountain (21: allPets, 5 of every Quest 2
+  monster, boss Veggie King). Every quest after Quest 1 is scaled level-for-level to Quest 1's difficulty curve
+  (content.js, DIFFICULTY_SCALED) — each new quest starts back easy.
 - 🎃 Halloween Special (`halloween.js`): Pumpkin Patch (level 16) — only shown Oct 28 – Nov 3.
 - Coins + Shop (`shop.js`): boss = 10 coins, monsters ~30% drop a coin; Legendary Pumpkin Pie Twins (50 coins) Halloween only.
 - Halloween theme (`events.js`): same dates; preview with `?date=2026-10-31`.
@@ -67,6 +70,14 @@ Creature LOD: merged mesh beyond 11 m (high) / 7 m (medium); creature shadows fr
 ### Earlier (L1 only)
 frame p50 16.7 / p99 16.8 ms (vsync-bound) · draws 120–170 in play (352 overview) · ~260–500k tris · 21 programs · 2 lights · boot ≈ 0.3–1 s after load.
 Level 10 via dev path: ~1000 draws (111 enemies × ~7 part meshes) — needs instancing before L10 gets a 3D pass.
+
+## Testing without Node (2026-10-29: Homebrew node broke — simdjson dylib missing; fix with `brew reinstall node`)
+- Pure tests run under macOS JavaScriptCore with a console/process shim: `jsc -m run-<test>.mjs` (content, collide, sim-smoke, shop-sim).
+- In-engine: headless Chrome for Testing CLI (cached Playwright build) against `python3 -m http.server`:
+  `?dev&level=N&selftest` plays the level itself and writes JSON into `<pre id="selftest">` (use `--dump-dom`);
+  `?dev&level=N&thumb[&showcase=sprite]` frames a thumbnail / creature close-up (use `--screenshot`).
+- GL warning found this way: PCFSoftShadowMap → GL_INVALID_OPERATION every frame on ANGLE/Metal; high tier now uses
+  PCFShadowMap + shadow.radius 3 (0 warnings).
 
 ## Not verified
 Real phones (only desktop Chrome phone emulation), Safari/Firefox, context-loss recovery on a real device, real-network deploy.

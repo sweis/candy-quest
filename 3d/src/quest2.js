@@ -9,6 +9,8 @@ export const Q2_ALLIES = {
   pea_cheetah: { name: 'Pea Cheetah', sprite: 'pea_cheetah', role: 'Sprinter', hp: 120, atk: 28, def: 12, speed: 1.6, range: 64, kind: 'melee' },
   cauli_frog: { name: 'Cauliflower Frog', sprite: 'cauli_frog', role: 'Hopper', hp: 125, atk: 26, def: 14, speed: 1.35, range: 64, kind: 'melee' },
   corn_bull: { name: 'Corn Bull', sprite: 'corn_bull', role: 'Charger', hp: 160, atk: 30, def: 18, speed: 1.15, range: 66, kind: 'melee' },
+  pepper_lobster: { name: 'Pepper Lobster', sprite: 'pepper_lobster', role: 'Pincher', hp: 135, atk: 30, def: 16, speed: 1.2, range: 64, kind: 'melee' },
+  mushroom_bunny: { name: 'Mushroom Bunny', sprite: 'mushroom_bunny', role: 'Bouncer', hp: 130, atk: 26, def: 15, speed: 1.4, range: 64, kind: 'melee' },
   cabbage_armadillo: { name: 'Cabbage Armadillo', sprite: 'cabbage_armadillo', role: 'Roller Tank', hp: 150, atk: 20, def: 18, speed: 0.95, range: 60, kind: 'melee' },
 };
 export const Q2_MONSTERS = {
@@ -32,6 +34,13 @@ export const Q2_MONSTERS = {
   corn_basher: { name: 'Corn Basher', sprite: 'corn_basher', hp: 340, atk: 55, def: 34, speed: 0.8, range: 70, kind: 'melee', xp: 135 },
   corn_colonel: { name: 'Corn Colonel', sprite: 'corn_colonel', hp: 270, atk: 52, def: 30, speed: 0.6, range: 340, kind: 'ranged', xp: 132, proj: '#ffe06a' },
   cob_crusher: { name: 'Cob Crusher', sprite: 'cob_crusher', hp: 2800, atk: 80, def: 48, speed: 0.64, range: 135, kind: 'melee', xp: 2100, boss: true },
+  pepper_swinger: { name: 'Pepper Swinger', sprite: 'pepper_swinger', hp: 360, atk: 58, def: 36, speed: 0.75, range: 90, kind: 'melee', xp: 140 },
+  pepper_thrower: { name: 'Pepper Thrower', sprite: 'pepper_thrower', hp: 280, atk: 54, def: 30, speed: 0.6, range: 330, kind: 'ranged', xp: 136, proj: '#e8301e' },
+  pepper_wizard: { name: 'Habanero Sorcerer', sprite: 'pepper_wizard', hp: 2600, atk: 70, def: 44, speed: 0.55, range: 360, kind: 'ranged', xp: 2200, boss: true, proj: '#ff6a1a' },
+  mush_rammer: { name: 'Mushroom Rammer', sprite: 'mush_rammer', hp: 300, atk: 55, def: 30, speed: 0.9, range: 60, kind: 'melee', xp: 140 },
+  mush_hopper: { name: 'Mushroom Hopper', sprite: 'mush_hopper', hp: 220, atk: 48, def: 24, speed: 1.1, range: 52, kind: 'melee', xp: 130 },
+  mush_boss: { name: 'Mushroom Monarch', sprite: 'mush_boss', hp: 2000, atk: 60, def: 40, speed: 0.66, range: 125, kind: 'melee', xp: 2000, boss: true },
+  veggie_king: { name: 'Veggie King', sprite: 'veggie_king', hp: 2400, atk: 62, def: 40, speed: 0.68, range: 120, kind: 'melee', xp: 2500, boss: true },
   cabbage_king: { name: 'King Coleslaw', sprite: 'cabbage_king', hp: 2100, atk: 66, def: 40, speed: 0.66, range: 120, kind: 'melee', xp: 1700, boss: true },
 };
 export const Q2_ITEMS = {
@@ -41,6 +50,8 @@ export const Q2_ITEMS = {
   peanut_brittle: { name: 'Pea-nut Brittle', kind: 'bait', rarity: 'common', desc: 'Crunchy brittle studded with sweet peas. Savannah critters sprint for it — offer it to tame them.' },
   marshmallow: { name: 'Vanilla Marshmallow', kind: 'bait', rarity: 'common', desc: 'A pillowy white marshmallow. Field critters hop right over — offer it to tame them.' },
   popcorn_ball: { name: 'Caramel Popcorn Ball', kind: 'bait', rarity: 'common', desc: 'A sticky caramel popcorn ball. Corn Forest critters stampede for it — offer it to tame them.' },
+  fireball: { name: 'Cinnamon Fireball', kind: 'bait', rarity: 'common', desc: 'A red-hot cinnamon candy. Pepper Forest critters love the heat — offer it to tame them.' },
+  truffle: { name: 'Chocolate Truffle', kind: 'bait', rarity: 'common', desc: 'A cocoa-dusted chocolate truffle. Mushroom Grounds critters sniff it out — offer it to tame them.' },
   carrot_pop: { name: 'Carrot Cake Pop', kind: 'bait', rarity: 'common', desc: 'A frosted carrot-cake pop on a stick. Mountain critters come running — offer it to tame them.' },
 };
 export const Q2_LEVELS = {
@@ -86,6 +97,23 @@ export const Q2_LEVELS = {
     enemyPool: ['corn_basher', 'corn_colonel', 'corn_basher', 'corn_colonel', 'corn_basher', 'corn_basher', 'corn_colonel', 'corn_basher', 'corn_colonel', 'corn_basher'],
     boss: 'cob_crusher', wild: ['corn_bull'],
     forage: ['popcorn_ball', 'popcorn_ball', 'popcorn_ball', 'popcorn_ball', 'honey', 'honey', 'acorn', 'glowberry', 'mushroom', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'star_sprinkle'] },
+  19: { id: 19, quest: 2, qn: 8, name: 'Pepper Forest', scenery: 'pepper', bait: 'fireball',
+    sky: 'radial-gradient(circle at 26% 18%, #ffe0c0, transparent 44%), linear-gradient(165deg, #ffb08a, #d9502a 55%, #6a8a2a)',
+    bossName: 'Habanero Sorcerer',
+    enemyPool: ['pepper_swinger', 'pepper_thrower', 'pepper_swinger', 'pepper_thrower', 'pepper_swinger', 'pepper_swinger', 'pepper_thrower', 'pepper_swinger', 'pepper_thrower', 'pepper_swinger'],
+    boss: 'pepper_wizard', wild: ['pepper_lobster'],
+    forage: ['fireball', 'fireball', 'fireball', 'fireball', 'honey', 'honey', 'glowberry', 'glowberry', 'mushroom', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'star_sprinkle'] },
+  20: { id: 20, quest: 2, qn: 9, name: 'Mushroom Grounds', scenery: 'mushroom', bait: 'truffle',
+    sky: 'radial-gradient(circle at 26% 18%, #e8d8ff, transparent 44%), linear-gradient(165deg, #9ab8c8, #6a7a9a 55%, #4a5a3a)',
+    bossName: 'Mushroom Monarch',
+    enemyPool: ['mush_rammer', 'mush_hopper', 'mush_rammer', 'mush_hopper', 'mush_hopper', 'mush_rammer', 'mush_hopper', 'mush_rammer', 'mush_hopper', 'mush_rammer'],
+    boss: 'mush_boss', wild: ['mushroom_bunny'],
+    forage: ['truffle', 'truffle', 'truffle', 'truffle', 'mushroom', 'mushroom', 'glowberry', 'glowberry', 'honey', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'star_sprinkle'] },
+  // the Quest 2 finale: like Quest 1's Final Battle — every pet fights, 5 of each Candy Quest 2 monster
+  21: { id: 21, quest: 2, qn: 10, name: 'Mixed Veggie Mountain', scenery: 'veggiemtn', bait: 'sour_apple', allPets: true,
+    sky: 'radial-gradient(circle at 26% 18%, #fff0c8, transparent 44%), linear-gradient(165deg, #b8d88a, #e0904a 55%, #6a4a8a)',
+    bossName: 'Veggie King', enemyPool: [], boss: 'veggie_king', wild: [],
+    forage: ['honey', 'honey', 'honey', 'glowberry', 'glowberry', 'mallow_mend', 'mallow_mend', 'gummy_worm', 'sour_dust', 'alien_goo', 'crystal', 'crystal', 'star_sprinkle', 'star_sprinkle'] },
 };
 
 // Broccoli Forest layout (world px), in the same style as the classic makeScenery()
@@ -164,9 +192,49 @@ function cornScenery() {
   [[600, 560], [1300, 700], [1860, 900], [400, 1000], [1100, 1060]].forEach(([x, y], i) => add('dirt', x, y, { s: 0.9 + (i % 3) * 0.3 }));
   return s;
 }
-const SCENERY = { broccoli: broccoliScenery, carrot: carrotScenery, cabbage: cabbageScenery, tomato: tomatoScenery, pea: peaScenery, cauli: cauliScenery, corn: cornScenery };
+// Pepper Forest: pepper trees hung with bell peppers and chilis, giant pepper boulders, chili bushes, a salsa pool
+function pepperScenery() {
+  const s = []; const add = (t, x, y, o = {}) => s.push({ t, x, y, ...o });
+  [[320, 380], [700, 320], [1120, 440], [1520, 340], [1900, 320], [520, 1180], [980, 1240], [1600, 1160], [2000, 1060]].forEach(([x, y], i) => add('peppertree', x, y, { s: 0.9 + (i % 3) * 0.2 }));
+  [[640, 520], [1240, 660], [1820, 840], [420, 1060], [1440, 1100]].forEach(([x, y], i) => add('bellboulder', x, y, { s: 0.8 + (i % 2) * 0.45, c: i % 3 }));
+  [[360, 640], [1080, 880], [1620, 600], [840, 440], [1300, 1020]].forEach(([x, y]) => add('chilibush', x, y));
+  [[480, 760], [1180, 540], [1700, 720], [900, 1120], [1500, 480], [260, 980]].forEach(([x, y]) => add('chilis', x, y));
+  [[600, 560], [1300, 700], [1860, 900], [400, 1000]].forEach(([x, y], i) => add('dirt', x, y, { s: 0.9 + (i % 3) * 0.3 }));
+  add('salsapool', 560, 900);
+  return s;
+}
+// Mushroom Grounds: a misty glade of giant mushroom trees, mossy logs, fairy rings and glowing toadstools
+function mushroomScenery() {
+  const s = []; const add = (t, x, y, o = {}) => s.push({ t, x, y, ...o });
+  [[320, 380], [700, 320], [1120, 440], [1520, 340], [1900, 320], [520, 1180], [980, 1240], [1600, 1160], [2000, 1060]].forEach(([x, y], i) => add('mushtree', x, y, { s: 0.9 + (i % 3) * 0.22, c: i % 3 }));
+  [[640, 520], [1240, 660], [1820, 840], [420, 1060]].forEach(([x, y], i) => add('mosslog', x, y, { s: 0.9 + (i % 2) * 0.3 }));
+  [[360, 640], [1080, 880], [1620, 600], [840, 440], [1300, 1020], [1440, 1100]].forEach(([x, y], i) => add('toadstools', x, y, { c: i % 3 }));
+  [[880, 700], [1500, 760]].forEach(([x, y]) => add('fairyring', x, y));
+  [[480, 760], [1180, 540], [1700, 720], [900, 1120]].forEach(([x, y], i) => add('dirt', x, y, { s: 0.9 + (i % 3) * 0.25 }));
+  add('pond', 560, 900);
+  return s;
+}
+// Mixed Veggie Mountain (3000×2000, like the Final Battle): landmarks from every Candy Quest 2 biome
+function veggieMountainScenery() {
+  const s = []; const add = (t, x, y, o = {}) => s.push({ t, x, y, ...o });
+  const big = ['brocctree', 'carrotpeak', 'cabbageboulder', 'tomatopalm', 'peatree', 'caulirock', 'cornstalk', 'peppertree', 'mushtree'];
+  const small = ['brocbush', 'carrottop', 'cabbagesprout', 'bigtomato', 'podbush', 'cauliplant', 'haybale', 'bellboulder', 'toadstools'];
+  let i = 0;
+  for (let gy = 0; gy < 4; gy++) for (let gx = 0; gx < 6; gx++) {
+    const x = 300 + gx * 480 + (gy % 2) * 200, y = 300 + gy * 440;
+    if (Math.hypot(x - 200, y - 760) < 380 || Math.hypot(x - 2080, y - 720) < 260 || Math.hypot(x - 1860, y - 730) < 240) continue; // keep start, gate, boss clear
+    add(big[i % big.length], x, y, { s: 0.9 + (i % 3) * 0.2, c: i % 3, f: i % 2 ? 1 : -1 });
+    add(small[i % small.length], x + 200, y + 180, { c: i % 3 });
+    i++;
+  }
+  [[700, 1500], [2300, 1600], [1500, 1200]].forEach(([x, y], j) => add('dirt', x, y, { s: 1.2 + j * 0.2 }));
+  add('pond', 900, 1100);
+  return s;
+}
+const SCENERY = { veggiemtn: veggieMountainScenery, mushroom: mushroomScenery, pepper: pepperScenery, broccoli: broccoliScenery, carrot: carrotScenery, cabbage: cabbageScenery, tomato: tomatoScenery, pea: peaScenery, cauli: cauliScenery, corn: cornScenery };
 export const sceneryFor = (kind) => (SCENERY[kind] ? SCENERY[kind]() : makeScenery(kind));
 
+Q2_LEVELS[21].enemyPool = Object.entries(Q2_MONSTERS).filter(([, m]) => !m.boss).flatMap(([k]) => [k, k, k, k, k]);
 Object.assign(ALLIES, Q2_ALLIES); Object.assign(MONSTERS, Q2_MONSTERS); Object.assign(ITEMS, Q2_ITEMS); Object.assign(LEVELS, Q2_LEVELS);
 
 export const QUESTS = [{ n: 1, title: 'Quest 1', blurb: 'Stop the Hichew King. Clear a level to unlock the next.' },

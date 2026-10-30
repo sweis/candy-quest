@@ -17,6 +17,8 @@ const R = {
   cabbageboulder: (s) => 62 * s, spire: (s) => 34 * s,
   tomatopalm: (s) => 12 * s, bigtomato: (s) => 46 * s, peatree: (s) => 12 * s, peaboulder: (s) => 38 * s, podbush: () => 22,
   giantpumpkin: (s) => 70 * s, deadtree: (s) => 14 * s, gravestone: (s) => 22 * s, haybale: () => 36, scarecrow: () => 10, cornstalk: (s) => 22 * s,
+  mushtree: (s) => 20 * s, mosslog: (s) => 40 * s,
+  peppertree: (s) => 14 * s, bellboulder: (s) => 46 * s, chilibush: () => 28,
   tower: (s) => 74 * s, banner: () => 7, chewblock: (s) => 48 * s, brazier: () => 14,
 };
 

@@ -24,7 +24,8 @@ export class World {
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, quality.maxDpr));
     r.outputColorSpace = THREE.SRGBColorSpace;
     r.toneMapping = THREE.ACESFilmicToneMapping; r.toneMappingExposure = 1.0;
-    r.shadowMap.enabled = quality.shadows; r.shadowMap.type = quality.softShadows ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
+    // PCFShadowMap + a blur radius on the high tier: PCFSoftShadowMap mis-binds its sampler on ANGLE/Metal (GL_INVALID_OPERATION every frame)
+    r.shadowMap.enabled = quality.shadows; r.shadowMap.type = THREE.PCFShadowMap;
     this.renderer = r;
     const gl = r.getContext();
     const dbg = gl.getExtension('WEBGL_debug_renderer_info');
@@ -42,7 +43,7 @@ export class World {
     const sun = new THREE.DirectionalLight(0xfff0d6, 3.1); sun.castShadow = quality.shadows;
     sun.shadow.mapSize.set(quality.shadowMap, quality.shadowMap);
     const sc = sun.shadow.camera; sc.left = -14; sc.right = 14; sc.top = 14; sc.bottom = -14; sc.near = 1; sc.far = 80;
-    sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03; sun.shadow.radius = 3;
+    sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03; sun.shadow.radius = quality.softShadows ? 3 : 1; sun.shadow.blurSamples = 8;
     this.sun = sun; this.sunDir = new THREE.Vector3(-0.55, 0.72, 0.42).normalize();
     this.scene.add(sun, sun.target);
 
@@ -97,7 +98,7 @@ export class World {
     const scale = (cat.scale || 1) * (e.scale || 1);
     const shadow = new THREE.Mesh(this.blobGeo, this.blobMat); shadow.scale.setScalar(cat.r * 2.3 * scale); shadow.renderOrder = 1; group.add(shadow);
     const v = { id: e.id, e, faction: e.faction, sprite: e.sprite, group, model, lod, far: false, parts, mat, rig: cat.rig, h: cat.h * scale, r: cat.r * scale, baseScale: scale,
-      yaw: e.facing >= 0 ? 0 : Math.PI, walk: 0, speed: 0, seed: Math.random() * 10, attackT: 0, attackDur: 0.3, hitT: 0, spawnT: e.faction === 'ally' ? 1 : 0, dieT: -1, stride: (cat.stride || 0.9) * scale, tailSwing: !!cat.tailSwing, rollR: (cat.rollR || 0.75) * scale,
+      yaw: e.facing >= 0 ? 0 : Math.PI, walk: 0, speed: 0, seed: Math.random() * 10, attackT: 0, attackDur: 0.3, hitT: 0, spawnT: e.faction === 'ally' ? 1 : 0, dieT: -1, stride: (cat.stride || 0.9) * scale, tailSwing: !!cat.tailSwing, hopK: cat.hop || 1, lungeK: cat.lunge || 1, rollR: (cat.rollR || 0.75) * scale,
       ranged: e.akind === 'ranged', flash: 0, rim: 0, fallback: !!cat.fallback };
     group.position.set(e.x * PX, 0, e.y * PX);
     this.scene.add(group);
@@ -299,6 +300,13 @@ export class World {
     const kk = new Kit(); kk.add('root', Geo.sphere(0.08, 8, 6), { c: 0xffd84a, s: [1, 1.2, 0.8] });
     this.special = { cabbage_lobber: { meshes: pool(cbg, 16), arc: 0.9, spin: true }, pea_launcher: { meshes: pool(peag, 24), arc: 0.15, spin: false },
       cauli_launcher: { meshes: pool(fk.static(), 16), arc: 0.6, spin: true }, corn_colonel: { meshes: pool(kk.static(), 24), arc: 0.1, spin: true } };
+    // thrown chilis, and the sorcerer's flaming peppers (glowing core: same glow program as everything else)
+    const ck = new Kit(); ck.add('root', Geo.tube([[-0.2, 0, 0], [0, -0.02, 0], [0.2, 0.04, 0]], 0.05, 10, 6), { c: 0xe8301e }); ck.add('root', Geo.cyl(0.05, 0.06, 0.05, 8), { c: 0x3d7a22, p: [-0.22, 0, 0], r: [0, 0, 90] });
+    const fk2 = new Kit(); fk2.add('root', Geo.tube([[-0.28, 0, 0], [0, -0.03, 0], [0.28, 0.06, 0]], 0.08, 10, 6), { c: 0xff4a1a }); fk2.add('root', Geo.sphere(0.13, 10, 8), { c: 0xffc040, glow: true });
+    const fireG = fk2.static(), fireGl = fk2.staticGlow();
+    const firePool = []; for (let i = 0; i < 16; i++) { const m = new THREE.Mesh(fireG, this.M.candy); m.add(new THREE.Mesh(fireGl, this.M.glow)); m.visible = false; this.scene.add(m); firePool.push(m); }
+    this.special.pepper_thrower = { meshes: pool(ck.static(), 24), arc: 0.7, spin: true };
+    this.special.pepper_wizard = { meshes: firePool, arc: 0.25, spin: true };
     this.projMeshes = [];
     for (let i = 0; i < 48; i++) { const m = new THREE.Mesh(qg, new THREE.MeshBasicMaterial({ vertexColors: true, map: glow.map, toneMapped: false })); m.material.name = 'proj'; m.visible = false; this.scene.add(m); this.projMeshes.push(m); }
   }

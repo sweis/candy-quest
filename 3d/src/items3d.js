@@ -159,6 +159,8 @@ const B = {
   },
   marshmallow(k) { k.add('root', G.cyl(0.15, 0.15, 0.24, 20), { c: 0xfffaf2, p: [0, 0.14, 0] }); k.add('root', G.torus(0.13, 0.03, 8, 20), { c: 0xffffff, p: [0, 0.26, 0], r: [90, 0, 0] }); },
   popcorn_ball(k) { k.add('root', G.sphere(0.18, 14, 10), { c: 0xe8a84a, p: [0, 0.22, 0] }); for (let i = 0; i < 14; i++) { const a = i * 2.4, y = 1 - (i / 14) * 2, rr = Math.sqrt(1 - y * y); k.add('root', G.sphere(0.06, 6, 4), { c: i % 3 ? 0xfff4d6 : 0xffd27a, p: [Math.cos(a) * rr * 0.17, 0.22 + y * 0.17, Math.sin(a) * rr * 0.17] }); } k.add('root', G.cyl(0.015, 0.015, 0.2, 6), { c: 0xf4ece0, p: [0, 0.05, 0] }); },
+  fireball(k) { k.add('root', G.sphere(0.18, 18, 14), { c: 0xd9201a, p: [0, 0.22, 0] }); k.add('root', G.sphere(0.06, 8, 6), { c: 0xffd0c0, p: [-0.07, 0.32, 0.1], glow: true }); for (const s of [-1, 1]) k.add('root', G.cone(0.08, 0.14, 8), { c: 0xffe6e0, p: [s * 0.26, 0.22, 0], r: [0, 0, s * 90] }); },
+  truffle(k) { k.add('root', G.sphere(0.17, 16, 12), { c: 0x5a3018, p: [0, 0.2, 0], s: [1, 0.9, 1] }); for (let i = 0; i < 10; i++) { const a = i * 2.4, y = 1 - (i / 10) * 1.4; k.add('root', G.sphere(0.025, 6, 4), { c: 0x8a5a36, p: [Math.cos(a) * 0.15 * Math.sqrt(Math.max(0, 1 - y * y)), 0.2 + y * 0.14, Math.sin(a) * 0.15 * Math.sqrt(Math.max(0, 1 - y * y))] }); } k.add('root', G.cyl(0.17, 0.15, 0.06, 16), { c: 0xffd8e8, p: [0, 0.04, 0] }); },
   star_pop(k) {
     k.add('root', G.cyl(0.018, 0.018, 0.26, 8), { c: 0xf4ece0, p: [0, 0.13, 0] });
     k.add('root', G.extrude(G.star(0.17, 0.08), 0.06, 0.02), { c: 0xffa53c, p: [0, 0.38, 0] });

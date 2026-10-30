@@ -316,6 +316,29 @@ const hooks = {
   sim: Sim, get G() { return app.G; }, get world() { return world; }, THREE,
 };
 
+// ------------------------------------------------------------------ self-test (dev): runnable by headless Chrome with no Node
+// Uses the same sim actions the HUD buttons call: tame the wild pet, chase the boss with auto-hit, walk into the gate.
+function selfTest() {
+  const out = document.createElement('pre'); out.id = 'selftest'; out.textContent = 'running'; document.body.appendChild(out);
+  const G = app.G, t0 = performance.now(); G.player.baseatk = 90; G.player.maxhp = G.player.hp = 900; G.autoHit = true;
+  const log = { level: G.level, name: G.CFG.name, tamed: [], errors: [] };
+  addEventListener('error', (e) => log.errors.push(String(e.message)));
+  app.frozen = true; // the self-test steps the sim itself (headless virtual time barely fires animation frames)
+  const iv = setInterval(() => {
+    try {
+      for (let i = 0; i < 30 && !G.won; i++) { Sim.step(G, 1); drain(); }
+      const w = [...G.ents.values()].find((e) => e.faction === 'wild'), boss = [...G.ents.values()].find((e) => e.boss);
+      G.inv[G.BAIT] = Math.max(G.inv[G.BAIT] || 0, 3);
+      if (w) Sim.aimAt(G, w.x, w.y, w.id); else if (boss) Sim.aimAt(G, boss.x, boss.y, boss.id); else Sim.aimAt(G, G.gate.x, G.gate.y, 'ground');
+      log.tamed = G.party.map((m) => m.key);
+      if (app.screen === 'win' || performance.now() - t0 > 120000) {
+        clearInterval(iv); Object.assign(log, { won: app.screen === 'win', simTime: +G.time.toFixed(1), kills: G.stats.kills, coins: G.coins, knockouts: G.stats.knockouts, programs: world.stats().programs });
+        out.textContent = JSON.stringify(log);
+      }
+    } catch (err) { log.errors.push(String(err)); }
+  }, 250);
+}
+
 // ------------------------------------------------------------------ boot
 async function boot() {
   const t0 = performance.now();
@@ -341,6 +364,13 @@ async function boot() {
   if (DEV) {
     window.cq = hooks; $('#diag').hidden = !diagOn;
     if (Q.has('level')) startLevel(+Q.get('level'));
+    if (Q.has('selftest')) selfTest(); // ?dev&level=N&selftest : the game plays itself and writes the result into #selftest
+    if (Q.has('thumb')) { // ?dev&level=N&thumb : frame a level-select thumbnail (used to render thumbs/ without Node)
+      for (const s of ['#hud', '#tags', '#toasts', '#diag']) { const e = $(s); if (e) e.style.display = 'none'; }
+      const b = [...app.G.ents.values()].find((e) => e.boss); hooks.teleport(b.x - 260, b.y + 60);
+      if (Q.has('showcase')) { hooks.clearAll(); for (const e of [...app.G.ents.values()]) if (e.boss || e.faction === 'wild') app.G.ents.delete(e.id); hooks.teleport(1100, 700); hooks.showcase(Q.get('showcase')); }
+      else hooks.freeze();
+    }
   }
   if (Q.has('diag')) $('#diag').hidden = false;
 }

@@ -42,8 +42,8 @@ export function animate(v, dt, time) {
     const b = P.body; const hop = moving ? Math.abs(Math.sin(w * 0.8)) : 0;
     const sq = 1 + Math.sin(t * 3) * 0.045 - hop * 0.08;
     b.scale.set(1 / Math.sqrt(sq), sq + hop * 0.14, 1 / Math.sqrt(sq));
-    b.position.y += hop * 0.28;
-    if (att >= 0) { const l = Math.sin(att * Math.PI); b.position.x += l * 0.45; b.scale.x *= 1 + l * 0.25; b.scale.y *= 1 - l * 0.15; }
+    b.position.y += hop * 0.28 * (v.hopK || 1);
+    if (att >= 0) { const l = Math.sin(att * Math.PI) * (v.lungeK || 1); b.position.x += l * 0.45; b.rotation.z -= l * 0.12; b.scale.x *= 1 + l * 0.25; b.scale.y *= 1 - l * 0.15; }
     if (hit > 0) { b.scale.y *= 1 - hit * 0.28; b.scale.x *= 1 + hit * 0.2; b.scale.z *= 1 + hit * 0.2; }
   } else if (v.rig === 'bird') {
     const b = P.body;

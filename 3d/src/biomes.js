@@ -301,6 +301,30 @@ export const PROPS = {
       const cg = G.capsule(0.08 * s, 0.32 * s, 4, 8); k.add('root', cg, { c: 0xffd84a, pat: PAT.dots, p: [x * s + 0.1 * s, h * 0.55 * s, z * s], r: [0, 0, -25] });
       k.add('root', G.capsule(0.015 * s, 0.25 * s, 2, 4), { c: 0xe8d48a, p: [x * s, (h + 0.1) * s, z * s] });
     } },
+  // ---------- pepper forest (Candy Quest 2)
+  peppertree(k, o, r) { const s = 1.35 * (o.s || 1), cols = [0xe8301e, 0xffc21a, 0xff8a1a, 0x4f9a2a];
+    k.add('root', G.tube([[0, -0.1, 0], [0.08 * s, 1.0 * s, 0], [-0.05 * s, 2.0 * s, 0.04], [0, 2.5 * s, 0]], 0.13 * s, 16, 8), { c: 0x5a8a2a });
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; k.add('root', G.sphere(0.65 * s, 12, 8), { c: i % 2 ? 0x3d8a2a : 0x5aa83a, p: [Math.cos(a) * 0.7 * s, (2.6 + (i % 3) * 0.2) * s, Math.sin(a) * 0.6 * s], s: [1, 0.55, 1] }); }
+    k.add('root', G.sphere(0.8 * s, 14, 10), { c: 0x4f9a2a, p: [0, 3.0 * s, 0], s: [1, 0.6, 1] });
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + 0.3, x = Math.cos(a) * 0.95 * s, z = Math.sin(a) * 0.8 * s;
+      if (i % 2) { const g = G.cone(0.08 * s, 0.4 * s, 8); k.add('root', g, { c: cols[i % 3], p: [x, 2.15 * s, z], r: [180, 0, 0] }); }
+      else { for (let j = 0; j < 4; j++) { const b = (j / 4) * Math.PI * 2; k.add('root', G.sphere(0.13 * s, 10, 8), { c: cols[i % 3], p: [x + Math.cos(b) * 0.07 * s, 2.15 * s, z + Math.sin(b) * 0.07 * s], s: [0.8, 1.1, 0.8] }); } } } },
+  bellboulder(k, o, r) { const s = 1.35 * (o.s || 1), col = [0xe8301e, 0xffc21a, 0x4f9a2a][o.c || 0];
+    for (let i = 0; i < 4; i++) { const a = (i / 4) * Math.PI * 2 + 0.4; k.add('root', G.sphere(0.48 * s, 16, 12), { c: col, p: [Math.cos(a) * 0.3 * s, 0.5 * s, Math.sin(a) * 0.3 * s], s: [0.8, 1.1, 0.8] }); }
+    k.add('root', G.sphere(0.64 * s, 18, 14), { c: col, p: [0, 0.5 * s, 0] }); k.add('root', G.cyl(0.18 * s, 0.22 * s, 0.12 * s, 12), { c: 0x3d7a22, p: [0, 1.15 * s, 0] }); },
+  chilibush(k, o, r) { for (let i = 0; i < 5; i++) { const a = (i / 5) * Math.PI * 2; k.add('root', G.sphere(0.32, 10, 8), { c: i % 2 ? 0x3d8a2a : 0x5aa83a, p: [Math.cos(a) * 0.3, 0.35, Math.sin(a) * 0.3] }); } for (let i = 0; i < 5; i++) { const a = r() * Math.PI * 2; k.add('root', G.cone(0.05, 0.22, 8), { c: [0xe8301e, 0xff8a1a][i % 2], p: [Math.cos(a) * 0.45, 0.3, Math.sin(a) * 0.45], r: [180, 0, 0] }); } },
+  chilis(k, o, r) { for (let i = 0; i < 3; i++) { const a = r() * Math.PI * 2; k.add('root', G.capsule(0.04, 0.22, 3, 6), { c: [0xe8301e, 0x4f9a2a, 0xff8a1a][i], p: [Math.cos(a) * 0.15, 0.05, Math.sin(a) * 0.15], r: [0, (a * 180) / Math.PI, 90] }); } },
+  // ---------- mushroom grounds (Candy Quest 2)
+  mushtree(k, o, r) { const s = 1.4 * (o.s || 1), col = [0xd92a2a, 0x8a4ad0, 0xe89a3a][o.c || 0], spot = [0xffffff, 0x9affe0, 0xfff4d0][o.c || 0];
+    k.add('root', G.lathe([[0, 0], [0.4 * s, 0], [0.3 * s, 0.4 * s], [0.24 * s, 1.6 * s], [0.3 * s, 2.3 * s], [0, 2.35 * s]], 16), { c: 0xf2e6d0 });
+    k.add('root', G.sphere(1.5 * s, 24, 12), { c: col, p: [0, 2.45 * s, 0], s: [1, 0.48, 1] });
+    k.add('root', G.cyl(1.45 * s, 0.9 * s, 0.16 * s, 24), { c: 0xf2e6d0, p: [0, 2.38 * s, 0] });
+    for (let i = 0; i < 12; i++) { const t = (i + 0.5) / 12, y = 1 - t * 0.8, rr = Math.sqrt(1 - y * y), a = i * 2.39996;
+      k.add('root', G.sphere(0.18 * s, 8, 6), { c: spot, p: [Math.cos(a) * rr * 1.43 * s, 2.45 * s + y * 0.7 * s, Math.sin(a) * rr * 1.43 * s], s: [1, 0.45, 1], dir: [Math.cos(a) * rr, y, Math.sin(a) * rr], glow: o.c === 1 }); } },
+  mosslog(k, o, r) { const s = o.s || 1; k.add('root', G.cyl(0.32 * s, 0.34 * s, 2.2 * s, 14), { c: 0x7a5a3a, p: [0, 0.32 * s, 0], r: [0, r() * 60, 90], order: 'YXZ' }); k.add('root', G.sphere(0.36 * s, 12, 8), { c: 0x5a8a3a, p: [0, 0.6 * s, 0], s: [2.6, 0.35, 1] });
+    for (let i = 0; i < 3; i++) k.add('root', G.sphere(0.12 * s, 10, 6), { c: 0xe89a3a, p: [(i - 1) * 0.5 * s, 0.7 * s, 0.25 * s], s: [1, 0.5, 1] }); },
+  toadstools(k, o, r) { const col = [0xd92a2a, 0x8a4ad0, 0xe89a3a][o.c || 0]; for (const [x, z, h] of [[0, 0, 0.5], [0.3, 0.15, 0.35], [-0.25, 0.2, 0.3]]) { k.add('root', G.cyl(0.05, 0.07, h, 8), { c: 0xf2e6d0, p: [x, h / 2, z] }); k.add('root', G.sphere(0.16 * (h / 0.4), 12, 8), { c: col, p: [x, h, z], s: [1, 0.55, 1] }); } },
+  fairyring(k, o, r) { for (let i = 0; i < 10; i++) { const a = (i / 10) * Math.PI * 2; k.add('root', G.cyl(0.03, 0.04, 0.16, 6), { c: 0xf2e6d0, p: [Math.cos(a) * 1.1, 0.08, Math.sin(a) * 1.1] }); k.add('root', G.sphere(0.09, 8, 6), { c: 0xffe8f8, p: [Math.cos(a) * 1.1, 0.17, Math.sin(a) * 1.1], s: [1, 0.55, 1], glow: true }); } },
   // ---------- Halloween dressing
   jackolantern(k, o, r) {
     const s = 0.9 * (o.s || 1);
@@ -326,12 +350,12 @@ function floretDome(k, c, R, r, cols = [0x2f7a3a, 0x3f8f45, 0x4a9e4c, 0x2a6a34],
 }
 // pools: water discs in carved basins
 export const POOLS = { pond: { color: 0x3fa6e6 }, cpool: { color: 0x8f6bf5, glow: 0x4a2ab0 }, gpool: { color: 0xe0489e, opacity: 0.92 }, swamp: { color: 0x2c5a3a, opacity: 0.95 },
-  chocpool: { color: 0x6b4427, opacity: 1, rough: 0.2 }, tidepool: { color: 0x56b8e8 }, bog: { color: 0x5aa86a, opacity: 0.9 }, spring: { color: 0x5cc4ec }, brook: { color: 0x5ab8d8 }, waterhole: { color: 0x6aa8b8, opacity: 0.9 }, oasis: { color: 0x56b8e8, ring: 0xfff0dc } };
+  chocpool: { color: 0x6b4427, opacity: 1, rough: 0.2 }, tidepool: { color: 0x56b8e8 }, bog: { color: 0x5aa86a, opacity: 0.9 }, spring: { color: 0x5cc4ec }, brook: { color: 0x5ab8d8 }, waterhole: { color: 0x6aa8b8, opacity: 0.9 }, salsapool: { color: 0xc8301a, opacity: 1, rough: 0.25 }, oasis: { color: 0x56b8e8, ring: 0xfff0dc } };
 // painted into the ground's vertex colours (flat decals never z-fight)
 export const PAINT = { dirt: { color: 0xd9b27c, rx: 1.5, rz: 0.92 }, foam: { color: 0xf4fbff, rx: 1.1, rz: 0.45 }, drift: { color: 0xffffff, rx: 1.8, rz: 0.8 }, dune: { color: 0xf6d0a0, rx: 2.8, rz: 1.0 } };
 // tall props that fade when they stand between the camera and Pip
-export const OCCLUDERS = new Set(['lolli', 'cane', 'rcrystal', 'stala', 'pine', 'gmound', 'vinetree', 'choctree', 'canecoral', 'beam', 'bigcane', 'tower', 'wall', 'banner', 'ccboulder', 'chewblock', 'mintrock', 'orerock', 'fudge', 'stone', 'cart', 'brocctree', 'carrotpeak', 'crag', 'cabbageboulder', 'spire', 'tomatopalm', 'bigtomato', 'peatree', 'peaboulder', 'giantpumpkin', 'deadtree', 'haybale', 'scarecrow', 'cornstalk']);
-export const FLAT = new Set(['pebble', 'tuft', 'flower', 'rail', 'snowlump', 'deserttuft', 'caneshards', 'shard', 'fern', 'coil', 'drift', 'dune', 'nerdpile', 'peapod', 'sprouts', 'babycarrots', 'carrottop', 'cabbagesprout', 'cherrytomatoes', 'savgrass', 'podbush', 'cauliplant']);
+export const OCCLUDERS = new Set(['lolli', 'cane', 'rcrystal', 'stala', 'pine', 'gmound', 'vinetree', 'choctree', 'canecoral', 'beam', 'bigcane', 'tower', 'wall', 'banner', 'ccboulder', 'chewblock', 'mintrock', 'orerock', 'fudge', 'stone', 'cart', 'brocctree', 'carrotpeak', 'crag', 'cabbageboulder', 'spire', 'tomatopalm', 'bigtomato', 'peatree', 'peaboulder', 'giantpumpkin', 'deadtree', 'haybale', 'scarecrow', 'cornstalk', 'peppertree', 'bellboulder', 'mushtree', 'mosslog']);
+export const FLAT = new Set(['pebble', 'tuft', 'flower', 'rail', 'snowlump', 'deserttuft', 'caneshards', 'shard', 'fern', 'coil', 'drift', 'dune', 'nerdpile', 'peapod', 'sprouts', 'babycarrots', 'carrottop', 'cabbagesprout', 'cherrytomatoes', 'savgrass', 'podbush', 'cauliplant', 'chilis', 'toadstools', 'fairyring']);
 
 // ---------------------------------------------------------------------- biome palettes + dressing
 const hedgeGum = (k, r) => { const cs = [0xff5da8, 0x7ad9c4, 0xffb84d, 0xa98cff, 0x9be15d, 0x5ab8ff]; gumdrop(k, 0, 0, 0.8 + r() * 0.4, cs[Math.floor(r() * cs.length)]); };
@@ -408,4 +432,16 @@ BIOMES.corn = { sky: [0x80b8e8, 0xfff0c8, 0xffe4a8], fog: 0xf4e2b0, ground: [0xb
   sun: 0xffeac0, sunI: 3.2, hemiSky: 0xfff2dc, hemiGround: 0x8a7a3a, hemiI: 1.1, clouds: true,
   scatter: [['savgrass', 0.6], ['tuft', 0.4, { c1: 0x6a8a3a, c2: 0xa8c06a }]], hedge: (k, r) => { const g = G.cyl(0.05, 0.06, 1.4, 6); g.translate(0, 0.7, 0); k.add('root', g, { c: 0x7aa84c }); },
   backdrop: (k, r) => PROPS.cornstalk(k, { s: 1.8 + r() * 1.2 }, r) };
+BIOMES.pepper = { sky: [0x7ab0e0, 0xffe0c8, 0xffc49a], fog: 0xf0d0b0, ground: [0x6a8a3a, 0x5a7a2a, 0x8aa04a, 0xa8603a], hill: 0x6a5a2a, hillH: 8,
+  sun: 0xffe0b8, sunI: 3.2, hemiSky: 0xfff0e0, hemiGround: 0x6a5a2a, hemiI: 1.15, clouds: true,
+  scatter: [['chilis', 0.3], ['tuft', 0.7, { c1: 0x4f8a2a, c2: 0x8fbf4a }]], hedge: (k, r) => PROPS.chilibush(k, {}, r),
+  backdrop: (k, r, i) => (i % 3 ? PROPS.peppertree(k, { s: 1.8 + r() * 1.2 }, r) : PROPS.bellboulder(k, { s: 2 + r() * 2, c: i % 3 }, r)) };
+BIOMES.mushroom = { sky: [0x6a7aa8, 0xc8d0e8, 0xe8e0f0], fog: 0xb8c0d8, fogNear: 34, fogFar: 120, ground: [0x5a7a3a, 0x4a6a32, 0x6a8a4a, 0x7a5a8a], hill: 0x3a4a3a, hillH: 9,
+  sun: 0xfff0e0, sunI: 2.8, hemiSky: 0xd8d0ff, hemiGround: 0x3a4a2a, hemiI: 1.2,
+  scatter: [['toadstools', 0.3, { c: 1 }], ['tuft', 0.7, { c1: 0x3f6a2a, c2: 0x6f9a4a }]], hedge: (k, r) => PROPS.toadstools(k, { c: Math.floor(r() * 3) }, r),
+  backdrop: (k, r, i) => PROPS.mushtree(k, { s: 1.8 + r() * 1.5, c: i % 3 }, r) };
+BIOMES.veggiemtn = { sky: [0x7ab0e0, 0xffe8c8, 0xffd0a0], fog: 0xe8d8b8, fogNear: 46, fogFar: 160, ground: [0x8a9a4a, 0x7a7a3a, 0xa0a85a, 0xb07a4a], hill: 0x8a6a4a, hillH: 20,
+  sun: 0xfff0d0, sunI: 3.2, hemiSky: 0xf4f0ff, hemiGround: 0x6a6a3a, hemiI: 1.15, clouds: true,
+  scatter: [['tuft', 0.6, { c1: 0x5a8a3a, c2: 0x9fbf6a }], ['chilis', 0.15], ['toadstools', 0.1, { c: 0 }], ['babycarrots', 0.15]], hedge: (k, r) => (r() < 0.5 ? PROPS.brocbush(k, {}, r) : PROPS.crag(k, { s: 0.45 }, r)),
+  backdrop: (k, r, i) => [() => PROPS.carrotpeak(k, { s: 2.5 + r() * 2 }, r), () => PROPS.cabbageboulder(k, { s: 2.5 + r() * 1.5 }, r), () => PROPS.brocctree(k, { s: 2.2 + r(), lite: true }, r), () => PROPS.mushtree(k, { s: 2 + r(), c: i % 3 }, r), () => PROPS.spire(k, { s: 3 + r() * 3 }, r)][i % 5]() };
 export const biome = (kind) => BIOMES[kind] || BIOMES.forest;
