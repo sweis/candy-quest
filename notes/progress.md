@@ -87,3 +87,10 @@ Real phones (only desktop Chrome phone emulation), Safari/Firefox, context-loss 
 2. Audio (WebAudio synth SFX) — classic has none; CLAUDE.md asks for it.
 3. Real-phone check of L10 (draw calls / tris are the risk); instancing if needed.
 4. Novice-bot 0-KO gate still fails on L1 (classic balance) — decide whether to tune.
+
+## 3d-0.8.0 (2026-11-01) — Candy Quest 3 "The Fruit Frenzy"
+- New: quest3.js (levels 22–31, 9 pets, 28 monsters, 9 baits), models5.js (fruit casts), biomes3.js (10 fruit biomes). Mixed Veggie Mountain now unlocks Apple Orchard.
+- Fix: Halloween win-screen reward pills / ghost buttons were light-on-light; now dark pills with light text.
+- Collision: 3 separation passes (pet overlap tolerance 4 px; L25 melon squeeze measured 3.3 px).
+- Verified: headless selftest wins L1, 11, 16, 21–31 with no page errors, programs constant at 12; unlock chain Q1→Q2→Q3 checked; captures of L22 and Halloween win screen.
+- Not verified: real-device performance; Quest 3 balance with a human player; L22–L31 thumbnails not generated yet.

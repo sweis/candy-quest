@@ -19,6 +19,10 @@ const R = {
   giantpumpkin: (s) => 70 * s, deadtree: (s) => 14 * s, gravestone: (s) => 22 * s, haybale: () => 36, scarecrow: () => 10, cornstalk: (s) => 22 * s,
   mushtree: (s) => 20 * s, mosslog: (s) => 40 * s,
   peppertree: (s) => 14 * s, bellboulder: (s) => 46 * s, chilibush: () => 28,
+  appletree: (s) => 16 * s, giantapple: (s) => 50 * s, fruitbush: () => 28, bananatree: (s) => 12 * s, bananabunch: (s) => 40 * s,
+  grapevine: (s) => 10 * s, grapebarrel: (s) => 30 * s, melonpalm: (s) => 12 * s, giantmelon: (s) => 58 * s, berrybush: (s) => 46 * s,
+  giantberry: (s) => 46 * s, lemontree: (s) => 16 * s, giantlemon: (s) => 46 * s, cherrytree: (s) => 16 * s, cliffrock: (s) => 44 * s,
+  pinepalm: (s) => 12 * s, lavarock: (s) => 44 * s, bogtree: (s) => 18 * s, bogstump: (s) => 30 * s,
   tower: (s) => 74 * s, banner: () => 7, chewblock: (s) => 48 * s, brazier: () => 14,
 };
 

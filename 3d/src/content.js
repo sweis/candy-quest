@@ -3,13 +3,14 @@
 import { ALLIES } from './data.js';
 import { sceneryFor as q2Scenery, QUESTS as Q } from './quest2.js';
 import { pumpkinScenery } from './halloween.js';
+import { q3Scenery } from './quest3.js';
 import './shop.js';
 export { ALLIES, MONSTERS, ITEMS, RECIPES, LEVELS } from './data.js';
 export { questOf } from './quest2.js';
 export { SHOP, SHOP_ALLIES, BOSS_COINS, MONSTER_COIN_CHANCE, canBuy, onSale } from './shop.js';
-export const sceneryFor = (kind) => (kind === 'pumpkin' ? pumpkinScenery() : q2Scenery(kind));
+export const sceneryFor = (kind) => (kind === 'pumpkin' ? pumpkinScenery() : kind.startsWith('q3') ? q3Scenery(kind) : q2Scenery(kind));
 // level-select sections; event sections only show while their event is on
-export const QUESTS = [...Q, { n: 'halloween', title: '🎃 Halloween Special', event: 'halloween', blurb: 'Only until Nov 3! Tame the Pumpkin Snake and face the Great Pumpkin.' }];
+export const QUESTS = [...Q, { n: 3, title: 'Candy Quest 3', blurb: 'The Fruit Frenzy! The fruits want their sugar back.' }, { n: 'halloween', title: '🎃 Halloween Special', event: 'halloween', blurb: 'Only until Nov 3! Tame the Pumpkin Snake and face the Great Pumpkin.' }];
 // Difficulty: every new quest starts back easy. A later quest's level n is scaled to match Quest 1's level n
 // (average HP/ATK/DEF/XP of its regular monsters, and its boss), past level 10 it keeps climbing ~10% a level.
 import { LEVELS as LV, MONSTERS as MO } from './data.js';

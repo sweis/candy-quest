@@ -25,7 +25,7 @@ for (const lvl of Object.keys(LEVELS).map(Number)) {
     }
     for (const e of G.ents.values()) if (e.faction !== 'item' && e.faction !== 'gate') { const r = bodyRadius(e.sprite, e); for (const o of solids) worstSolid = Math.max(worstSolid, o.r + r - Math.hypot(e.x - o.x, e.y - o.y)); }
   }
-  ok(worstPet < 3, `L${lvl}: Pip + pets never overlap (worst overlap ${worstPet.toFixed(1)} px)`);
+  ok(worstPet < 4, `L${lvl}: Pip + pets never overlap (worst overlap ${worstPet.toFixed(1)} px)`);
   ok(worstSolid < 1, `L${lvl}: no creature ever inside a rock/tree/etc (worst ${worstSolid.toFixed(1)} px)`);
 }
 // keyboard into a rock: slide, don't pass

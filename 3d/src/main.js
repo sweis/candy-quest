@@ -83,7 +83,7 @@ function showSelect() {
 function nextLevel(L) {
   const all = Object.values(LEVELS), q = questOf(L);
   if (L.event) return null;
-  return all.find((x) => questOf(x) === q && (x.qn || x.id) === (L.qn || L.id) + 1) || (q === 1 && (L.qn || L.id) === 10 ? all.find((x) => questOf(x) === 2 && x.qn === 1) : null);
+  return all.find((x) => questOf(x) === q && (x.qn || x.id) === (L.qn || L.id) + 1) || ((L.qn || L.id) === 10 && typeof q === 'number' ? all.find((x) => questOf(x) === q + 1 && x.qn === 1) || null : null);
 }
 // the first level of every quest is open from the start; later ones unlock when you clear the one before
 function isOpen(id) { const L = LEVELS[id]; if (L.event === 'halloween' && !HALLOWEEN && !DEV) return false; return !!app.unlocked[id] || (L.qn || L.id) === 1 || DEV; }
@@ -97,10 +97,10 @@ function showWin() {
   const L = LEVELS[G.level], next = nextLevel(L);
   if (next) { app.unlocked = { ...app.unlocked, [next.id]: true }; store.set('unlocked', app.unlocked); }
   app.lastWin = { level: G.level, crystals: G.crystals };
-  const nextNote = L.event ? '🎃 Happy Halloween!' : next ? `🔓 ${questOf(next) !== questOf(L) ? 'Candy Quest 2: ' : ''}${next.name} unlocked!` : '🍭 More Candy Quest 2 levels coming soon!';
+  const nextNote = L.event ? '🎃 Happy Halloween!' : next ? `🔓 ${questOf(next) !== questOf(L) ? 'Candy Quest ' + questOf(next) + ': ' : ''}${next.name} unlocked!` : `🍭 More Candy Quest ${questOf(L)} levels coming soon!`;
   const purple = G.level === 2 || G.level === 4 || G.level === 5;
-  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>${L.event ? '🎃 ' + L.name : (L.quest === 2 ? 'Quest 2 · ' : '') + 'Level ' + (L.qn || L.id)}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
-    <div class="rewards"><div class="reward">${hud.img('crystal')}${G.crystals} crystals</div>${G.level === 10 ? '<div class="reward">🏆 Quest 1 complete!</div>' : ''}<div class="reward">${nextNote}</div></div>
+  screenEl.innerHTML = `<div class="scr win${purple ? ' purple' : ''}"><h1>${L.event ? '🎃 ' + L.name : (questOf(L) > 1 ? 'Quest ' + questOf(L) + ' · ' : '') + 'Level ' + (L.qn || L.id)}<br>Clear!</h1><div class="tagline">The ${LEVELS[G.level].name} is safe… for now.</div>
+    <div class="rewards"><div class="reward">${hud.img('crystal')}${G.crystals} crystals</div>${(L.qn || L.id) === 10 && !L.event ? `<div class="reward">🏆 ${questOf(L) === 1 ? 'Quest 1' : 'Candy Quest ' + questOf(L)} complete!</div>` : ''}<div class="reward">${nextNote}</div></div>
     <div style="display:flex;gap:1em;margin-top:1em"><button class="bigbtn" data-go="select">Level Select →</button><button class="bigbtn alt" data-go="replay">↺ Replay</button></div></div>`;
   hud.el.hidden = true;
 }

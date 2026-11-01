@@ -118,7 +118,7 @@ function resolveCollisions(G, dt) {
   const mob = [];
   G.ents.forEach((e) => { if (!e.dead && GROUP[e.faction] != null) mob.push(e); });
   const mass = (e) => (e.faction === 'player' ? 4 : e.boss ? 6 : 1);
-  for (let pass = 0; pass < 2; pass++) {
+  for (let pass = 0; pass < 3; pass++) {
     for (let i = 0; i < mob.length; i++) {
       const a = mob[i], ra = radius(G, a), ga = GROUP[a.faction];
       for (let j = i + 1; j < mob.length; j++) {

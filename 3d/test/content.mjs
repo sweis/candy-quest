@@ -4,6 +4,7 @@ import { ALLIES, MONSTERS, ITEMS, LEVELS } from '../src/content.js';
 import { catalog } from '../src/models.js';
 import { ITEM_IDS } from '../src/items3d.js';
 import { BIOMES, PROPS, POOLS, PAINT } from '../src/biomes.js';
+import '../src/biomes3.js';
 import { sceneryFor } from '../src/content.js';
 let fails = 0; const ok = (c, m) => { if (!c) { console.log('FAIL ' + m); fails++; } };
 for (const [k, m] of Object.entries(MONSTERS)) ok(!catalog(m.sprite).fallback, `monster ${k} sprite ${m.sprite} has a model`);

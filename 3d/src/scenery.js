@@ -4,6 +4,7 @@ import { Kit, G, PAT, THREE, mergeGeos, materials } from './kit.js';
 import { sceneryFor } from './content.js';
 import { PROPS, POOLS, PAINT, OCCLUDERS, FLAT, BIOMES, biome } from './biomes.js';
 import { halloweenize } from './events.js';
+import './biomes3.js'; // registers Candy Quest 3 props + palettes
 
 export const PX = 1 / 50; // world px -> metres
 export { BIOMES, biome };

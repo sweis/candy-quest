@@ -2,6 +2,7 @@
 // the caller turns into sim actions). Light count and shader programs are fixed at init — FX use pooled meshes.
 import { THREE, materials, Kit, G as Geo, PAT, mergeGeos } from './kit.js';
 import { catalog, heroWeapon, heroArmor, witchHat } from './models.js';
+import { PROJ5 } from './models5.js';
 import { itemKit } from './items3d.js';
 import { buildBiome, buildGate, makeSky, PX } from './scenery.js';
 import { animate, bindRest } from './anim.js';
@@ -307,6 +308,9 @@ export class World {
     const firePool = []; for (let i = 0; i < 16; i++) { const m = new THREE.Mesh(fireG, this.M.candy); m.add(new THREE.Mesh(fireGl, this.M.glow)); m.visible = false; this.scene.add(m); firePool.push(m); }
     this.special.pepper_thrower = { meshes: pool(ck.static(), 24), arc: 0.7, spin: true };
     this.special.pepper_wizard = { meshes: firePool, arc: 0.25, spin: true };
+    for (const [src, P] of Object.entries(PROJ5)) { const pk = new Kit(); P.build(pk); const g = pk.static(), gl = pk.staticGlow(); const arr = [];
+      for (let i = 0; i < 16; i++) { const m = new THREE.Mesh(g, this.M.candy); if (gl) m.add(new THREE.Mesh(gl, this.M.glow)); m.castShadow = true; m.visible = false; this.scene.add(m); arr.push(m); }
+      this.special[src] = { meshes: arr, arc: P.arc, spin: P.spin }; }
     this.projMeshes = [];
     for (let i = 0; i < 48; i++) { const m = new THREE.Mesh(qg, new THREE.MeshBasicMaterial({ vertexColors: true, map: glow.map, toneMapped: false })); m.material.name = 'proj'; m.visible = false; this.scene.add(m); this.projMeshes.push(m); }
   }
